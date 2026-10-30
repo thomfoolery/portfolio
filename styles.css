@@ -1,41 +1,64 @@
-/* ANSI palette: black, bright green for words, dark green for frames and rules */
+/* Phosphor scale, Tailwind-style: 900 is full phosphor, each step down is 10% less opaque */
 :root {
-    --black: #000000;
     --phosphor: #00ff00;
-    --phosphor-dim: #00aa00;
-    --phosphor-deep: #005f00;
+    --green-900: var(--phosphor);
+    --green-800: color-mix(in srgb, var(--phosphor) 90%, transparent);
+    --green-700: color-mix(in srgb, var(--phosphor) 80%, transparent);
+    --green-600: color-mix(in srgb, var(--phosphor) 70%, transparent);
+    --green-500: color-mix(in srgb, var(--phosphor) 60%, transparent);
+    --green-400: color-mix(in srgb, var(--phosphor) 50%, transparent);
+    --green-300: color-mix(in srgb, var(--phosphor) 40%, transparent);
+    --green-200: color-mix(in srgb, var(--phosphor) 30%, transparent);
+    --green-100: color-mix(in srgb, var(--phosphor) 20%, transparent);
+    --black: #000000;
     --white: #ffffff;
-    --text: rgb(0 255 0 / 0.5);   /* base text: phosphor at 80% */
-    --line: 1.6em;
-    --line-art: 1.2em;
+    --line: 1.6em;      /* one terminal line of text */
+    --line-art: 1.2em;  /* one row of ASCII art */
     color-scheme: dark;
-    scrollbar-color: var(--phosphor-dim) var(--black);
+    scrollbar-color: var(--green-600) var(--black);
     background-color: var(--black);
     }
+
+/* Base: element defaults only, no classes */
 body {
     margin: 0;
     background-color: var(--black);
-    color: var(--text);
+    color: var(--green-400);
     font-family: ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace;
-    /* 72 columns always fit: the widest line is 72 chars at ~0.6em each */
-    font-size: min(14px, calc((100vw - 24px) / 43.5));
+    /* 72 columns always fit: the widest line is 72 chars at ~0.6em each.
+       Rounded to whole px so rows of block art land on pixel edges, with no hairline seams */
+    font-size: round(down, min(14px, calc((100vw - 24px) / 43.5)), 1px);
     font-weight: 100;
     line-height: var(--line);
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     }
+h1, h2, h3, p, ul, ol, figure, pre {
+    margin: 0;
+    }
+h1, h2, h3, small {
+    font-size: inherit;
+    font-weight: inherit;
+    }
+ul, ol {
+    padding: 0;
+    list-style: none;
+    }
+pre {
+    font: inherit;
+    }
 ::selection {
-    background-color: var(--phosphor-dim);
+    background-color: var(--green-600);
     color: var(--black);
     }
 
 /* Links: BBS lightbar — inverted cell on hover/focus, redrawn instantly */
 a:link, a:visited {
-    color: var(--phosphor);
+    color: var(--green-900);
     text-underline-offset: 0.2em;
     }
 a:hover, a:focus-visible {
-    background-color: var(--phosphor);
+    background-color: var(--green-900);
     color: var(--black);
     text-decoration: none;
     outline: 2px solid transparent; /* stays visible in forced-colors mode */
@@ -45,81 +68,87 @@ a:active {
     color: var(--black);
     }
 
-.container {
-    width: 72ch;
-    margin: 0 auto;
-    padding: calc(var(--line) * 2) 12px;
-    }
-pre {
-    font: inherit;
-    margin: 0;
-    }
-figure {
-    margin: 0;
-    color: var(--phosphor-dim);
-    }
-figure pre {
-  line-height: var(--line-art);
-    }
-.hi {
-    color: var(--phosphor);
-    }
-.lo {
-    color: var(--phosphor-dim);
-    }
-.date,
-.company,
-.drip {
-    color: var(--phosphor);
-    }
-.drip-trail {
-    color: var(--phosphor-dim);
-    }
-.bg {
-    color: var(--phosphor-deep);
-    }
+/* Color */
+.green-900 { color: var(--green-900); }
+.green-800 { color: var(--green-800); }
+.green-700 { color: var(--green-700); }
+.green-600 { color: var(--green-600); }
+.green-500 { color: var(--green-500); }
+.green-400 { color: var(--green-400); }
+.green-300 { color: var(--green-300); }
+.green-200 { color: var(--green-200); }
+.green-100 { color: var(--green-100); }
+.bg-black  { background-color: var(--black); }
 
-/* Section spacing in whole terminal lines */
-.content {
-    overflow-x: clip; /* not hidden: that makes .content a scroll container and breaks the sticky nav */
-    }
-.content > header {
-    margin-bottom: -1.5rem;
-    position: relative;
-    z-index: 1;
-    }
-/* Menu bar after the hero */
-.content > nav {
-    margin-block: var(--line);
-    }
-nav {
-    background-color: black;
-    position: sticky;
-    top:0;
-    padding-top: 1rem;
-    box-shadow: 0 0 20px black, 0 0 20px black, 0 0 30px black, 0 0 50px black;
-    }
-nav a:link, nav a:visited {
-    text-decoration: none; /* the [ ] brackets already mark the items */
-    }
-.content > * + section,
-.content > footer {
-    margin-top: 100dvh;
-    }
-.content > section:not(#welcome) > figure {
-    margin-bottom: calc(var(--line) * 2);
-    text-transform: uppercase;
-    }
-.title {
-    font-weight: 700;
-    }
+/* Type */
+.font-bold       { font-weight: 700; }
+.leading-tight   { line-height: var(--line-art); }
+.leading-none    { line-height: 1; } /* block art: rows of █ ▀ ▄ ░ ▒ ▓ touch with no gaps */
+.whitespace-pre  { white-space: pre; }
+.whitespace-nowrap { white-space: nowrap; }
+.a\:no-underline a { text-decoration: none; }
+.text-center { text-align: center; }
 
-/* Masthead: bold so the graffiti reads like a tag (mono bold keeps the same cell width) */
-header pre {
-    font-weight: 700;
-    }
+/* Layout */
+.flex      { display: flex; }
+.grid      { display: grid; }
+.justify-center { justify-content: center; }
+.cols-24ch { grid-template-columns: 24ch auto; }
+.grow      { flex-grow: 1; }
+.shrink-0  { flex-shrink: 0; }
+.min-w-0   { min-width: 0; }
+.overflow-hidden { overflow: hidden; }
+.overflow-x-clip { overflow-x: clip; } /* not hidden: that makes a scroll container and breaks the sticky nav */
+.relative  { position: relative; }
+.sticky    { position: sticky; }
+.top-0     { top: 0; }
+.z-1       { z-index: 1; }
+.shadow-black { box-shadow: 0 0 20px var(--black), 0 0 20px var(--black), 0 0 30px var(--black), 0 0 50px var(--black); }
+.gap-1 { gap: var(--line); }
+.gap-2 { gap: calc(var(--line) * 2); }
+.gap-3 { gap: calc(var(--line) * 3); }
+.gap-4 { gap: calc(var(--line) * 4); }
+.gap-5 { gap: calc(var(--line) * 5); }
+.gap-6 { gap: calc(var(--line) * 6); }
 
-.visually-hidden {
+/* Size, in character cells */
+.w-24ch { width: 24ch; }
+.w-25ch { width: 25ch; }
+.w-39ch { width: 39ch; }
+.w-72ch { width: 72ch; }
+.max-w-48ch { max-width: 48ch; }
+.max-w-52ch { max-width: 52ch; }
+.max-w-56ch { max-width: 56ch; }
+.max-w-60ch { max-width: 60ch; }
+
+/* Vertical space, in terminal lines (text) and rows (art) */
+.mt-1 { margin-top: var(--line); }
+.mt-2 { margin-top: calc(var(--line) * 2); }
+.mt-3 { margin-top: calc(var(--line) * 3); }
+.my-1 { margin-block: var(--line); }
+.py-2 { padding-block: calc(var(--line) * 2); }
+.mt-row-1 { margin-top: var(--line-art); }
+.pt-row-2 { padding-top: calc(var(--line-art) * 2); } /* padding: a margin here would collapse into the section's */
+.mt-screen { margin-top: 100dvh; }
+.-mb-1\.5rem { margin-bottom: -1.5rem; }
+.pt-1rem { padding-top: 1rem; }
+
+/* Horizontal space, in character columns */
+.mx-auto { margin-inline: auto; }
+.px-12px { padding-inline: 12px; }
+.ml-1  { margin-left: 1ch; }
+.ml-2  { margin-left: 2ch; }
+.ml-3  { margin-left: 3ch; }
+.ml-5  { margin-left: 5ch; }
+.ml-7  { margin-left: 7ch; }
+.ml-11 { margin-left: 11ch; }
+.ml-17 { margin-left: 17ch; }
+.ml-18 { margin-left: 18ch; }
+.ml-24 { margin-left: 24ch; }
+.ml-44 { margin-left: 44ch; }
+.mr-1  { margin-right: 1ch; }
+
+.sr-only {
     position: absolute;
     width: 1px;
     height: 1px;
