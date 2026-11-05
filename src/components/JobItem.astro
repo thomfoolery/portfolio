@@ -1,0 +1,20 @@
+---
+import JobHeading from './JobHeading.astro'
+import JobRoles from './JobRoles.astro'
+import type { Job } from '@/data/jobs'
+
+interface Props {
+  job: Job
+}
+
+const { job } = Astro.props
+---
+
+<li>
+  <details>
+    <summary>
+      <JobHeading job={job} />
+    </summary>
+    <JobRoles job={job} />
+  </details>
+</li>

@@ -1,0 +1,11 @@
+---
+import JobItem from './JobItem.astro'
+import { jobs } from '@/data/jobs'
+---
+
+<!-- every job after the first is spaced away by one line while the rows are collapsed -->
+<ol class="mt-3 [&>li+li]:mt-1">
+  {jobs.map((job) => (
+    <JobItem job={job} />
+  ))}
+</ol>

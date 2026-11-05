@@ -1,0 +1,52 @@
+---
+import ArtHtml from './ArtHtml.astro'
+import HonorsList from './HonorsList.astro'
+import JobsList from './JobsList.astro'
+import PostsList from './PostsList.astro'
+import SiteFooter from './SiteFooter.astro'
+import TheNav from './TheNav.astro'
+import hotkeys from '@/hotkeys.js?raw'
+import type { SectionArt } from '@/data/art'
+
+/** The structure every section of the résumé shares. */
+interface Props {
+  art: SectionArt
+}
+
+const { art } = Astro.props
+---
+
+<div class="w-[72ch] mx-auto py-2">
+  <div class="overflow-x-clip">
+    <header class="relative z-1 -mb-[1.5rem]">
+      <h1 class="sr-only">Thom Yuill &mdash; UX developer and design engineer</h1>
+      <ArtHtml html={art.header} />
+    </header>
+    <TheNav />
+    <main>
+      <slot name="welcome" />
+      <section id="posts" hidden aria-labelledby="posts-title" class="mt-[100dvh]">
+        <h2 id="posts-title" class="sr-only">
+          Posts
+        </h2>
+        <ArtHtml html={art.posts} /> <PostsList />
+      </section>
+      <section id="experience" aria-labelledby="experience-title" class="mt-[100dvh]">
+        <h2 id="experience-title" class="sr-only">
+          Jobs
+        </h2>
+        <ArtHtml html={art.experience} /> <JobsList />
+      </section>
+      <section id="honors" aria-labelledby="honors-title" class="mt-[100dvh]">
+        <h2 id="honors-title" class="sr-only">
+          Honors, awards &amp; certs
+        </h2>
+        <ArtHtml html={art.honors} /> <HonorsList />
+      </section>
+    </main>
+    <SiteFooter art={art.footer} />
+  </div>
+</div>
+<!-- The nav hotkeys are the site's only client script. Inlined, so no request. -->
+{/* eslint-disable-next-line astro/no-set-html-directive -- this is our own script text */}
+<script is:inline set:html={hotkeys} />

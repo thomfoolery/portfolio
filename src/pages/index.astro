@@ -1,0 +1,77 @@
+---
+import ArtHtml from '@/components/ArtHtml.astro'
+import ResumeFrame from '@/components/ResumeFrame.astro'
+import Base from '@/layouts/Base.astro'
+import { blockArt } from '@/data/art'
+---
+
+<Base
+  title="THOM YUILL | ux developer | design technologist | Waterloo, Canada"
+  description="Thom Yuill - web developer and UX designer based out of Waterloo, Canada."
+>
+  <ResumeFrame art={blockArt}>
+    <Fragment slot="welcome">
+      <section id="welcome" aria-labelledby="welcome-title" class="mt-[100dvh]">
+        <h2 id="welcome-title" class="sr-only">
+          Welcome
+        </h2>
+        <div class="text-center">
+          <ArtHtml html={blockArt.welcome} />
+          <p class="mt-3">Hi, my name is Thomas Yuill.</p>
+          <p class="mt-1">
+            I am a <span class="text-green-900">designer</span> and{' '}
+            <span class="text-green-900">engineer</span> and I currently work at{' '}
+            <a href="https://livekit.com/" title="Day job!!" target="_blank">
+              LiveKit
+            </a>
+            .
+          </p>
+          <p class="mt-1 max-w-[60ch] mx-auto">
+            I enjoy building dynamic, interactive, accessible, and aesthetic web experiences powered
+            with real-time data/media.
+          </p>
+        </div>
+        <div class="flex mt-3 justify-center gap-6">
+          <div>
+            <p>Shoot me a line on:</p>
+            <ul class="ml-[2ch]">
+              <li>
+                <a
+                  href="https://github.com/thomfoolery"
+                  title="Read the source, Luke"
+                  target="_blank"
+                >
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.linkedin.com/in/thomasyuill/"
+                  title="Very professional"
+                  target="_blank"
+                >
+                  LinkedIn
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <p>While you're at it:</p>
+            <ul class="ml-[2ch]">
+              <li>
+                <a href="#experience" title="Where I've been">
+                  browse past jobs
+                </a>
+              </li>
+              <li>
+                <a href="#honors" title="Shiny things">
+                  gaze upon my honors
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </Fragment>
+  </ResumeFrame>
+</Base>

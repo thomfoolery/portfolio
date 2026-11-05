@@ -1,0 +1,72 @@
+---
+import { LEADER } from '@/data/frame'
+import type { Job, Role, Row } from '@/data/jobs'
+
+/**
+ * The roles of one job, indented past the 2ch the [+] / [-] marker spends in
+ * the summary row. The indent lands on the <ul> rather than on each row, which
+ * lays out the same because a block child with a left margin is exactly that
+ * much narrower.
+ *
+ * The class names are written out rather than interpolated: Tailwind only sees
+ * a class if it appears in the source literally.
+ */
+interface Props {
+  job: Job
+}
+
+const { job } = Astro.props
+
+const roleIndent = 'ml-[9ch]'
+const projectIndent = 'ml-[11ch]'
+
+/** A role prints its title alone unless it opts into the leader. */
+const roleHasLeader = (role: Role) => role.layout === 'dots'
+/** A project row gets the leader unless it opts out. */
+const projectHasLeader = (row: Row) => (row.layout ?? 'dots') === 'dots'
+
+/** The row layout lives on the list, so no row needs a conditional class. */
+const projectList = (role: Role) => {
+  if (role.projectsLayout === 'grid') return 'grid grid-cols-[24ch_auto]'
+  if (role.projectsLayout === 'columns') return '[&>li]:flex'
+  return ''
+}
+---
+
+<ul class="mt-1 [&>li+li]:mt-1">
+  {job.roles.map((role) => (
+    <li>
+      {roleHasLeader(role) ? (
+        /* prettier-ignore */
+        <p class:list={['flex', roleIndent]}><span class="mr-[1ch] shrink-0">{role.label}</span><span class="grow overflow-hidden whitespace-nowrap text-green-100" aria-hidden="true">{LEADER}</span><span class="ml-[1ch] w-[25ch] shrink-0">{role.value}</span></p>
+      ) : role.value ? (
+        <p class:list={['flex', roleIndent]}>
+          <span>{role.label}</span>
+          <span class="ml-[2ch]">{role.value}</span>
+        </p>
+      ) : (
+        <p class={roleIndent}>{role.label}</p>
+      )}
+
+      {role.projects && (
+        <ul class:list={[projectIndent, projectList(role)]}>
+          {role.projects.map((project) => (
+            <li>
+              {role.projectsLayout === 'columns' ? (
+                <>
+                  <span class="w-[24ch] shrink-0">{project.label}</span>
+                  <span>{project.value}</span>
+                </>
+              ) : projectHasLeader(project) ? (
+                /* prettier-ignore */
+                <p class="flex"><span class="mr-[1ch] shrink-0">{project.label}</span><span class="grow overflow-hidden whitespace-nowrap text-green-100" aria-hidden="true">{LEADER}</span><span class="ml-[1ch] w-[25ch] shrink-0">{project.value}</span></p>
+              ) : (
+                project.label
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  ))}
+</ul>

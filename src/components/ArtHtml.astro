@@ -1,0 +1,20 @@
+---
+/**
+ * The ASCII art is build-time constant markup in src/data/art, never user input,
+ * so injecting it is safe. This is the site's only `set:html`, and the exemption
+ * is scoped to it so the rule stays armed everywhere else: a `set:html` on
+ * anything that could carry input still gets flagged. The rule is switched on by
+ * hand in eslint.config.ts, because the Astro preset leaves it off.
+ *
+ * `display: contents` keeps this wrapper out of the layout, so the art behaves
+ * as a direct child of whatever section holds it.
+ */
+interface Props {
+  html: string
+}
+
+const { html } = Astro.props
+---
+
+{/* eslint-disable-next-line astro/no-set-html-directive -- art is constant markup */}
+<div class="contents" set:html={html} />

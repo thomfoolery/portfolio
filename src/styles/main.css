@@ -1,0 +1,147 @@
+/* Sources are pinned to the code. Left to detect them on its own, Tailwind also
+   scans the markdown, where ordinary prose like "inline" and "table" mints real
+   rules and quietly grows the stylesheet. */
+@import 'tailwindcss' source(none);
+@source '../**/*.astro';
+@source '../**/*.ts';
+@source '../**/*.html';
+
+/* Phosphor scale, Tailwind-style: 900 is full phosphor, each step down is 10% less opaque */
+@theme {
+  --color-green-900: #00ff00;
+  --color-green-800: color-mix(in srgb, #00ff00 90%, transparent);
+  --color-green-700: color-mix(in srgb, #00ff00 80%, transparent);
+  --color-green-600: color-mix(in srgb, #00ff00 70%, transparent);
+  --color-green-500: color-mix(in srgb, #00ff00 60%, transparent);
+  --color-green-400: color-mix(in srgb, #00ff00 50%, transparent);
+  --color-green-300: color-mix(in srgb, #00ff00 40%, transparent);
+  --color-green-200: color-mix(in srgb, #00ff00 30%, transparent);
+  --color-green-100: color-mix(in srgb, #00ff00 20%, transparent);
+  --color-black: #000000;
+
+  /* Every length in this layout is a character cell or a line, never a pixel.
+       mt-1 is one terminal line, mt-3 is three, gap-6 is six. */
+  --spacing: 1.6em;
+  --spacing-art: 1.2em; /* one row of ASCII art */
+  --spacing-art-2: 2.4em;
+
+  --font-mono: ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', 'Courier New', monospace;
+  --default-font-family: var(--font-mono);
+
+  --leading-tight: 1.2em; /* art rows, so block characters touch with no seam */
+
+  --shadow-black: 0 0 20px #000, 0 0 20px #000, 0 0 30px #000, 0 0 50px #000;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    scrollbar-color: var(--color-green-600) var(--color-black);
+    background-color: var(--color-black);
+  }
+
+  /* Snap: the page settles on whole screens, so a scroll always lands on one
+       statement in the terminal session rather than straddling two. */
+  html {
+    scroll-snap-type: y mandatory;
+  }
+
+  body {
+    margin: 0;
+    /* The gutter lives here rather than on the frame, because preflight makes
+           everything border-box and a padded 72ch frame would be 24px narrow. */
+    padding-inline: 12px;
+    background-color: var(--color-black);
+    color: var(--color-green-400);
+    /* 72 columns always fit: the widest line is 72 chars at ~0.6em each.
+           Rounded to whole px so rows of block art land on pixel edges, with no
+           hairline seams between them. */
+    font-size: round(down, min(14px, calc((100vw - 24px) / 43.5)), 1px);
+    font-weight: 100;
+    line-height: 1.6em;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  h1,
+  h2,
+  h3,
+  small {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  pre {
+    font: inherit;
+  }
+
+  ::selection {
+    background-color: var(--color-green-600);
+    color: var(--color-black);
+  }
+
+  /* Links: BBS lightbar — inverted cell on hover/focus, redrawn instantly.
+       Preflight sets text-decoration: inherit, so the underline is stated here
+       rather than left to the UA. */
+  a:link,
+  a:visited {
+    color: var(--color-green-900);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  a:hover,
+  a:focus-visible {
+    background-color: var(--color-green-900);
+    color: var(--color-black);
+    text-decoration: none;
+    outline: 2px solid transparent; /* stays visible in forced-colors mode */
+  }
+  a:active {
+    background-color: var(--color-white);
+    color: var(--color-black);
+  }
+}
+
+@layer components {
+  /* Nav hotkey hints: only where there is a keyboard to press them on */
+  .hint {
+    color: var(--color-green-600);
+  }
+  @media (pointer: coarse) {
+    .hint {
+      display: none;
+    }
+  }
+  a:hover .hint,
+  a:focus-visible .hint,
+  a:active .hint {
+    color: inherit;
+  }
+
+  /* Jobs: <details> disclosure. The [+] / [-] marker is decoration; the summary
+       itself carries the open state for assistive tech, so it stays aria-hidden. */
+  summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  .toggle::before {
+    content: '[+]';
+    color: var(--color-green-600);
+    margin-right: 1ch;
+  }
+  details[open] > summary .toggle::before {
+    content: '[-]';
+    color: var(--color-green-900);
+  }
+  summary:hover .toggle::before,
+  summary:focus-visible .toggle::before {
+    color: var(--color-green-900);
+  }
+  summary:focus-visible {
+    outline: 2px solid var(--color-green-900);
+    outline-offset: 2px;
+  }
+}

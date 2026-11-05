@@ -1,0 +1,19 @@
+---
+import { GAP } from '@/data/frame'
+import { posts } from '@/data/posts'
+---
+
+<ol class="mt-3 [&>li+li]:mt-3">
+  {posts.map((post) => (
+    <li>
+      <article>
+        <!-- prettier-ignore -->
+        <h3 class="whitespace-pre ml-[3ch]">[<time datetime={post.datetime} class="text-green-900">{post.date}</time>]{GAP}<a href={post.href} title={post.linkTitle}>{post.title}</a></h3>
+        <p class="mt-1 ml-[17ch] max-w-[52ch]">{post.blurb}</p>
+      </article>
+    </li>
+  ))}
+</ol>
+<!-- The spaces either side of the link are the design. -->
+<!-- prettier-ignore -->
+<p class="mt-3 ml-[44ch]"><span class="text-green-600" aria-hidden="true">-+-</span> <a href="https://thomasyuill.com/posts" title="Moar">see all posts</a> <span class="text-green-600" aria-hidden="true">-+-</span></p>

@@ -1,0 +1,14 @@
+---
+import { navItems } from '@/data/nav'
+---
+
+<nav aria-label="Main" class="sticky top-0 bg-black pt-[1rem] shadow-black my-1">
+  <ul class="flex flex-wrap gap-x-[2ch]">
+    {navItems.map((item) => (
+      <li class={item.right ? 'ml-auto' : undefined}>
+        <!-- prettier-ignore -->
+        <a class="no-underline" href={item.href} title={item.title} target={item.external ? '_blank' : undefined} data-key={item.key} aria-keyshortcuts={item.key}>{item.key && <span class="hint" aria-hidden="true">[{item.key}] </span>}{item.label}</a>
+      </li>
+    ))}
+  </ul>
+</nav>

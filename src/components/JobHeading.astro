@@ -1,0 +1,22 @@
+---
+import { RULE, SPACE } from '@/data/frame'
+import type { Job } from '@/data/jobs'
+
+interface Props {
+  job: Job
+}
+
+const { job } = Astro.props
+---
+
+<!--
+  The date, the rule and the company share one flex row, and the row is laid out
+  in `white-space: pre`, so the spaces that hug the date are interpolated and the
+  markup stays on one line. See SPACE in data/frame.ts.
+
+  Prettier is held off below: reflowing this element onto several lines would turn
+  those spaces into newlines, and Astro's compiler drops whitespace that sits at a
+  line boundary before an element.
+-->
+<!-- prettier-ignore -->
+<h3 class="flex"><span class="toggle" aria-hidden="true" /><span class="whitespace-pre"><span class="text-green-600" aria-hidden="true">::</span> <time datetime={job.from.datetime} class="text-green-900">{job.from.label}</time> - <span class="text-green-900">{job.to.datetime ? <time datetime={job.to.datetime}>{job.to.label}</time> : job.to.label}</span>{SPACE}</span><span class="grow overflow-hidden whitespace-nowrap text-green-600" aria-hidden="true">{RULE}</span><span class="whitespace-pre">{SPACE}<span class="text-green-900">{job.company}</span> <span class="text-green-600" aria-hidden="true">::</span></span></h3>
