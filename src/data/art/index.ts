@@ -1,8 +1,8 @@
-import blockExperience from './block/experience.html?raw'
-import blockFooter from './block/footer.html?raw'
-import blockHeader from './block/header.html?raw'
-import blockHonors from './block/honors.html?raw'
-import blockPosts from './block/posts.html?raw'
+import blockExperience from './experience.html?raw'
+import blockFooter from './footer.html?raw'
+import blockHeader from './header.html?raw'
+import blockHonors from './honors.html?raw'
+import blockPosts from './posts.html?raw'
 
 /** One heading fragment per section of the résumé. */
 export type SectionArt = {
