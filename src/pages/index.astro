@@ -1,6 +1,7 @@
 ---
 import ArtHtml from '@/components/ArtHtml.astro'
 import ResumeFrame from '@/components/ResumeFrame.astro'
+import Section from '@/components/Section.astro'
 import Base from '@/layouts/Base.astro'
 import { blockArt } from '@/data/art'
 ---
@@ -11,7 +12,7 @@ import { blockArt } from '@/data/art'
 >
   <ResumeFrame art={blockArt}>
     <Fragment slot="welcome">
-      <section id="welcome" aria-labelledby="welcome-title" class="mt-[100dvh]">
+      <Section id="welcome" labelledby="welcome-title">
         <h2 id="welcome-title" class="sr-only">
           Welcome
         </h2>
@@ -71,7 +72,7 @@ import { blockArt } from '@/data/art'
             </ul>
           </div>
         </div>
-      </section>
+      </Section>
     </Fragment>
   </ResumeFrame>
 </Base>

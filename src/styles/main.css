@@ -22,8 +22,6 @@
   /* Every length in this layout is a character cell or a line, never a pixel.
        mt-1 is one terminal line, mt-3 is three, gap-6 is six. */
   --spacing: 1.6em;
-  --spacing-art: 1.2em; /* one row of ASCII art */
-  --spacing-art-2: 2.4em;
 
   --font-mono: ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', 'Courier New', monospace;
   --default-font-family: var(--font-mono);
@@ -56,7 +54,7 @@
     /* 72 columns always fit: the widest line is 72 chars at ~0.6em each.
            Rounded to whole px so rows of block art land on pixel edges, with no
            hairline seams between them. */
-    font-size: round(down, min(14px, calc((100vw - 24px) / 43.5)), 1px);
+    font-size: round(down, min(16px, calc((100vw - 24px) / 43.5)), 1px);
     font-weight: 100;
     line-height: 1.6em;
     -webkit-text-size-adjust: 100%;
@@ -73,6 +71,11 @@
 
   pre {
     font: inherit;
+  }
+
+  /* Prose gets a little more room than the terminal grid's one-line rhythm. */
+  p {
+    line-height: 1.7;
   }
 
   ::selection {

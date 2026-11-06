@@ -37,7 +37,7 @@ Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
 eslint.config.ts    type-aware lint; formatting is left to Prettier
 .prettierrc.json    single quotes, no semicolons, 100 columns
 src/
-  components/       TheNav, ResumeFrame, ArtHtml, the job and list components
+  components/       TheNav, ResumeFrame, Section, ArtHtml, the job and list ones
   data/             nav, jobs, posts, honors and art as data
     art/            the ASCII art, as .html fragments (30-45% of the page)
   layouts/          Base.astro, the document shell
@@ -52,7 +52,13 @@ src/
 ramp, and sets `--spacing` to one terminal line so `mt-3` is three lines rather
 than three-quarters of a rem. Lengths in this layout are character cells and
 lines, so `w-[72ch]` and `ml-[11ch]` are written out as arbitrary values rather
-than snapped to a pixel scale.
+than snapped to a pixel scale. Body text is 16px, clamped down so 72 columns
+still fit a narrow viewport, and `<p>` runs at a 1.7 line-height.
+
+**The page is a stack of panels.** `Section.astro` wraps the header, each
+section and the footer: each panel is at least one viewport tall and centres its
+content, except the footer, which aligns to the end. It renders the element it
+is asked for, so the header stays a `<header>` and the footer a `<footer>`.
 
 **One thing stays hand-written.** The `[+]/[-]` disclosure markers are in plain
 CSS, because Tailwind cannot express them and should not try.

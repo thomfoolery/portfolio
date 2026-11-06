@@ -22,10 +22,16 @@ to remove duplication within the résumé, not to ship a framework. So:
 Every length is a character cell or a terminal line.
 
 - `--spacing` is one line (1.6em), so `mt-3` is three lines, `gap-6` is six.
-  Widths are `w-[72ch]`, indents `ml-[11ch]`, art rows `mt-art` / `pt-art-2`.
+  Widths are `w-[72ch]` and indents `ml-[11ch]`.
+- Body text is 16px, clamped down so 72 columns still fit a narrow viewport.
+  `<p>` carries its own 1.7 line-height; everything else inherits the terminal
+  line (1.6em).
+- Every panel is one viewport tall with its content centred. `Section.astro`
+  renders the element it is given via `as`, so the header, the sections and the
+  footer share one rhythm, and the footer aligns its content to the end.
 - Do not snap these to Tailwind's rem scale. If a value is in `px` or `rem`,
-  say why in a comment. The 12px page gutter, the nav's 1rem lift, the header's
-  −1.5rem pull and the `100dvh` screen rhythm are the deliberate ones.
+  say why in a comment. The 12px page gutter and the nav's 1rem lift are the
+  deliberate ones.
 - `src/styles/main.css` is the theme, base and components. Keep the `[+]/[-]`
   markers hand-written — Tailwind cannot express them.
 

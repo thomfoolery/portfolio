@@ -1,0 +1,39 @@
+---
+/**
+ * One panel of the page: a full viewport tall with its content centred in it.
+ *
+ * The element is configurable so the header and footer can share the same
+ * rhythm as the sections without pretending to be `<section>`s.
+ */
+type Align = 'top' | 'center' | 'bottom'
+
+interface Props {
+  as?: 'section' | 'header' | 'footer' | 'div'
+  id?: string
+  labelledby?: string
+  hidden?: boolean
+  align?: Align
+  class?: string
+}
+
+const {
+  as = 'section',
+  id,
+  labelledby,
+  hidden = false,
+  align = 'center',
+  class: className,
+} = Astro.props
+
+const Tag = as
+const justify = { top: 'justify-start', center: 'justify-center', bottom: 'justify-end' }[align]
+---
+
+<Tag
+  id={id}
+  aria-labelledby={labelledby}
+  hidden={hidden || undefined}
+  class:list={['flex min-h-dvh flex-col', justify, className]}
+>
+  <slot />
+</Tag>

@@ -1,5 +1,6 @@
 ---
 import ArtHtml from './ArtHtml.astro'
+import Section from './Section.astro'
 import { RULE } from '@/data/frame'
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
 const { art } = Astro.props
 ---
 
-<footer class="mt-[100dvh]">
+<Section as="footer" align="bottom">
   <p class="ml-[18ch]">20+ GLORIOUS YEARS OF PUSHING PIXELS</p>
   <!-- prettier-ignore -->
   <p class="mt-1 ml-[24ch]"><span class="text-green-600" aria-hidden="true">-+-</span> nothing is real <span class="text-green-600" aria-hidden="true">-+-</span></p>
@@ -20,4 +21,4 @@ const { art } = Astro.props
   <p class="sr-only">
     <small>&copy; Thomas Yuill</small>
   </p>
-</footer>
+</Section>
