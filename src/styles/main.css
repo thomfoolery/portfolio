@@ -43,12 +43,6 @@
     background-color: var(--color-black);
   }
 
-  /* Snap: the page settles on whole screens, so a scroll always lands on one
-       statement in the terminal session rather than straddling two. */
-  html {
-    scroll-snap-type: y mandatory;
-  }
-
   body {
     margin: 0;
     /* The gutter lives here rather than on the frame, because preflight makes
@@ -119,11 +113,6 @@
     .hint {
       display: none;
     }
-  }
-  a:hover .hint,
-  a:focus-visible .hint,
-  a:active .hint {
-    color: inherit;
   }
 
   /* Jobs: <details> disclosure. The [+] / [-] marker is decoration; the summary
