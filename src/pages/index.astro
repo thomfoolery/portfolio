@@ -21,7 +21,7 @@ const { header, posts, experience, honors, footer } = blockArt
     <div class="overflow-x-clip">
       <Section as="header" align="center">
         <h1 class="sr-only">Thom Yuill - UX developer and design engineer</h1>
-        <ArtHtml html={header} />
+        <ArtHtml art={header} />
       </Section>
       <Nav />
       <main>
@@ -35,21 +35,21 @@ const { header, posts, experience, honors, footer } = blockArt
           <h2 id="posts-title" class="sr-only">
             Posts
           </h2>
-          <ArtHtml html={posts} />
+          <ArtHtml art={posts} />
           <PostsList />
         </Section>
         <Section id="experience" labelledby="experience-title">
           <h2 id="experience-title" class="sr-only">
             Jobs
           </h2>
-          <ArtHtml html={experience} />
+          <ArtHtml art={experience} />
           <JobsList />
         </Section>
         <Section id="honors" labelledby="honors-title">
           <h2 id="honors-title" class="sr-only">
             Honors, awards &amp; certs
           </h2>
-          <ArtHtml html={honors} />
+          <ArtHtml art={honors} />
           <HonorsList />
         </Section>
       </main>

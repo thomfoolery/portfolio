@@ -1,20 +1,24 @@
 ---
+import { renderFragment } from '@/lib/art'
+import type { SectionArtItem } from '@/data/art'
+
 /**
- * The ASCII art is build-time constant markup in src/data/art, never user input,
- * so injecting it is safe. This is the site's only `set:html`, and the exemption
- * is scoped to it so the rule stays armed everywhere else: a `set:html` on
- * anything that could carry input still gets flagged. The rule is switched on by
- * hand in eslint.config.ts, because the Astro preset leaves it off.
+ * Renders one art block from its two arrays: characters and colours. The art is
+ * build-time constant, so injecting the generated markup is safe — this is the
+ * site's only `set:html`, and the exemption is scoped to it so the rule stays
+ * armed for anything that could carry input.
  *
- * `display: contents` keeps this wrapper out of the layout, so the art behaves
- * as a direct child of whatever section holds it.
+ * `display: contents` keeps the wrapper out of the layout, so the art behaves as
+ * a direct child of whatever section holds it.
  */
 interface Props {
-  html: string
+  art: SectionArtItem
 }
 
-const { html } = Astro.props
+const { art } = Astro.props
+const fragment = renderFragment(`class="${art.className}" aria-hidden="true"`, art)
 ---
 
-{/* eslint-disable-next-line astro/no-set-html-directive -- art is constant markup */}
-<div class="contents" set:html={html} />
+{/* eslint-disable astro/no-set-html-directive -- art is constant, generated from src/data/art */}
+<div class="contents" set:html={fragment} />
+{/* eslint-enable astro/no-set-html-directive */}

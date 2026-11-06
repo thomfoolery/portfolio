@@ -2,10 +2,11 @@
 import ArtHtml from './ArtHtml.astro'
 import Section from './Section.astro'
 import { RULE } from '@/data/grid'
+import type { SectionArtItem } from '@/data/art'
 
 interface Props {
-  /** The wordmark, and on the index page the ghoul, arrive as one fragment. */
-  art: string
+  /** The wordmark, and on the index page the ghoul, arrive as one block. */
+  art: SectionArtItem
 }
 
 const { art } = Astro.props
@@ -15,7 +16,7 @@ const { art } = Astro.props
   <!-- prettier-ignore -->
   <p class="ml-[24ch]"><span class="text-green-600" aria-hidden="true">-+-</span> nothing is real <span class="text-green-600" aria-hidden="true">-+-</span></p>
   <p class="mt-1 ml-[18ch]">20+ GLORIOUS YEARS OF PUSHING PIXELS</p>
-  <ArtHtml html={art} />
+  <ArtHtml art={art} />
   <!-- prettier-ignore -->
   <p class="flex text-green-600"><span class="whitespace-pre" aria-hidden="true">.:[ <span class="text-green-900">127.0.0.1</span> ]:</span><span class="grow overflow-hidden whitespace-nowrap" aria-hidden="true">{RULE}</span><span class="whitespace-pre" aria-hidden="true">:[ <span class="text-green-900">:31337</span> ]:.</span></p>
   <p class="sr-only">

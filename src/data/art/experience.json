@@ -1,0 +1,24 @@
+{
+  "chars": [
+    [],
+    [" "," "," "," ","░"," "," ","░","▒","▒","▒","▒","▒","░","░","░","░","░","░"],
+    ["█","█","█","█","█","█","▄"," ","▄","█","█","█","█","█","▄"," "," ","█","█","█","█","█","█","▄"," "," ","▄","█","█","█","█","█","█","▄"],
+    [" ","▀","▀","▀","█","█","▓"," ","█","█","▓","▀","▀","█","█","▓"," ","█","█","▓","▀","▀","█","█","▓"," ","█","█","▓","▀","▀","▀","▀","▀"],
+    [" "," "," "," ","█","█","▓"," ","█","█","▓"," "," ","█","█","▓"," ","█","█","█","█","█","█","▄","▀"," ","▀","█","█","█","█","█","▄"],
+    ["▄","▄"," "," ","█","█","▓"," ","█","█","▓"," "," ","█","█","▓"," ","█","█","▓","▀","▀","█","█","▓"," "," "," ","▀","▀","▀","█","█","▓"],
+    ["▀","█","█","█","█","▀","▓"," ","▀","█","█","█","█","█","▀","▓"," ","█","█","█","█","█","█","▀","▓"," ","█","█","█","█","█","█","▀","▓"],
+    [" "," ","▀","▀","▀","▀"," "," "," "," ","▀","▀","▀","▀","▀"," "," "," ","▀","▀","▀","▀","▀","▀"," "," "," ","▀","▀","▀","▀","▀","▀"],
+    ["▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀","▀"]
+  ],
+  "colors": [
+    [],
+    [null,null,null,null,"green-300","green-300","green-300","green-300","green-400","green-400","green-400","green-400","green-400","green-300","green-300","green-300","green-300","green-300","green-300"],
+    ["green-900","green-900","green-900","green-900","green-900","green-900","green-400","green-400","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-900","green-400"],
+    [null,"green-400","green-400","green-400","green-900","green-900","green-400","green-400","green-900","green-900","green-400","green-400","green-400","green-900","green-900","green-400","green-400","green-900","green-900","green-400","green-400","green-400","green-900","green-900","green-400","green-400","green-900","green-900","green-400","green-400","green-400","green-400","green-400","green-400"],
+    [null,null,null,null,"green-900","green-900","green-400","green-400","green-900","green-900","green-400","green-400","green-400","green-900","green-900","green-400","green-400","green-900","green-900","green-900","green-900","green-900","green-900","green-800","green-400","green-400","green-900","green-900","green-900","green-900","green-900","green-900","green-800"],
+    ["green-800","green-800","green-800","green-800","green-800","green-800","green-400","green-400","green-800","green-800","green-400","green-400","green-400","green-800","green-800","green-400","green-400","green-800","green-800","green-400","green-400","green-400","green-800","green-800","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-800","green-800","green-400"],
+    ["green-700","green-700","green-700","green-700","green-700","green-700","green-400","green-400","green-700","green-700","green-700","green-700","green-700","green-700","green-700","green-400","green-400","green-700","green-700","green-700","green-700","green-700","green-700","green-700","green-400","green-400","green-700","green-700","green-700","green-700","green-700","green-700","green-700","green-400"],
+    [null,null,"green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400","green-400"],
+    ["green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600","green-600"]
+  ]
+}
