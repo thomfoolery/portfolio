@@ -6,8 +6,13 @@ import { navItems } from '@/data/nav'
   <ul class="flex flex-wrap gap-x-[2ch]">
     {navItems.map((item) => (
       <li class={item.right ? 'ml-auto' : undefined}>
+        {item.key && (
+          <span class="hint" aria-hidden="true">
+            [{item.key}]
+          </span>
+        )}
         <!-- prettier-ignore -->
-        <a class="no-underline" href={item.href} title={item.title} target={item.external ? '_blank' : undefined} data-key={item.key} aria-keyshortcuts={item.key}>{item.key && <span class="hint" aria-hidden="true">[{item.key}] </span>}{item.label}</a>
+        <a class="no-underline py-[3px] px-[1ch]" href={item.href} title={item.title} target={item.external ? '_blank' : undefined} data-key={item.key} aria-keyshortcuts={item.key}>{item.label}</a>
       </li>
     ))}
   </ul>

@@ -12,9 +12,9 @@ const measures = {
 
 <ol class="mt-3 [&>li+li]:mt-2">
   {honors.map((honor) => (
-    <li>
+    <li class="pl-2">
       <!-- prettier-ignore -->
-      <h3 class="whitespace-pre"><time datetime={honor.datetime} class="text-green-900">{honor.date}</time>{GAP}{honor.href ? <a href={honor.href}>{honor.title}</a> : <span class="text-green-900">{honor.title}</span>}</h3>
+      <h3 class="whitespace-pre"><time datetime={honor.datetime} class="text-green-900">{honor.date}</time>{GAP}{honor.href ? <a href={honor.href}>{honor.title} ➚</a> : <span class="text-green-900">{honor.title}</span>}</h3>
       <p class:list={['mt-1 ml-[11ch]', measures[honor.measure]]}>{honor.blurb}</p>
     </li>
   ))}

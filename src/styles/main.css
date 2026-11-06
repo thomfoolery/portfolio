@@ -28,12 +28,17 @@
 
   --leading-tight: 1.2em; /* art rows, so block characters touch with no seam */
 
+  /* Disclosure motion: quick to move, slow to settle. */
+  --ease-disclosure: cubic-bezier(0.32, 0.72, 0, 1);
+
   --shadow-black: 0 0 20px #000, 0 0 20px #000, 0 0 30px #000, 0 0 50px #000;
 }
 
 @layer base {
   :root {
     color-scheme: dark;
+    /* Let block-size animate to `auto`, which is what the disclosure needs. */
+    interpolate-size: allow-keywords;
     scrollbar-color: var(--color-green-600) var(--color-black);
     background-color: var(--color-black);
   }
@@ -50,7 +55,7 @@
            everything border-box and a padded 72ch frame would be 24px narrow. */
     padding-inline: 12px;
     background-color: var(--color-black);
-    color: var(--color-green-400);
+    color: var(--color-green-500);
     /* 72 columns always fit: the widest line is 72 chars at ~0.6em each.
            Rounded to whole px so rows of block art land on pixel edges, with no
            hairline seams between them. */
@@ -108,7 +113,7 @@
 @layer components {
   /* Nav hotkey hints: only where there is a keyboard to press them on */
   .hint {
-    color: var(--color-green-600);
+    color: var(--color-green-300);
   }
   @media (pointer: coarse) {
     .hint {
@@ -146,5 +151,30 @@
   summary:focus-visible {
     outline: 2px solid var(--color-green-900);
     outline-offset: 2px;
+  }
+
+  /* The disclosure eases open and its contents fade with it. `overflow: hidden`
+       does two jobs: it clips the collapsing box, and it contains the content's
+       top margin, so a closed job leaves no stray gap behind. `allow-discrete`
+       keeps the content rendered until the close has finished, rather than the
+       UA hiding it the moment the attribute goes. */
+  details::details-content {
+    block-size: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      block-size 280ms var(--ease-disclosure),
+      opacity 280ms var(--ease-disclosure),
+      content-visibility 280ms var(--ease-disclosure);
+    transition-behavior: allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    details::details-content {
+      transition: none;
+    }
   }
 }
