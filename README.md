@@ -37,7 +37,7 @@ Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
 eslint.config.ts    type-aware lint; formatting is left to Prettier
 .prettierrc.json    single quotes, no semicolons, 100 columns
 src/
-  components/       the shell: ResumeFrame, Section, Nav, SiteFooter, ArtHtml
+  components/       the shell: Section, Nav, SiteFooter, ArtHtml
     jobs/           JobsList, the job rows and jobs.ts
     posts/          PostsList and posts.ts
     honors/         HonorsList and honors.ts

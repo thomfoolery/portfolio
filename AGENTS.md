@@ -91,5 +91,6 @@ dependency decision: ask first.
   `components/posts/posts.ts`, `components/honors/honors.ts`. Edit the data, not
   the markup. Page-level data — `nav.ts`, `grid.ts`, the art — stays in `src/data/`.
 - The site is one page, `src/pages/index.astro`, built from `src/components/`.
-  Its structure belongs in `ResumeFrame.astro`; the page supplies only the art
-  and the welcome copy. Job entries are collapsible `<details>`.
+  The page holds the structure — the frame, the header panel, the nav, the four
+  sections in order, the footer — and destructures `blockArt` for the fragments.
+  Job entries are collapsible `<details>`.

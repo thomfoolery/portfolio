@@ -1,85 +1,121 @@
 ---
-import ResumeFrame from '@/components/ResumeFrame.astro'
+import ArtHtml from '@/components/ArtHtml.astro'
+import HonorsList from '@/components/honors/HonorsList.astro'
+import JobsList from '@/components/jobs/JobsList.astro'
+import Nav from '@/components/Nav.astro'
+import PostsList from '@/components/posts/PostsList.astro'
 import Section from '@/components/Section.astro'
+import SiteFooter from '@/components/SiteFooter.astro'
 import Base from '@/layouts/Base.astro'
 import { blockArt } from '@/data/art'
+
+const { header, posts, experience, honors, footer } = blockArt
 ---
 
 <Base
   title="THOM YUILL | ux developer | design technologist | Waterloo, Canada"
   description="Thom Yuill - web developer and UX designer based out of Waterloo, Canada."
 >
-  <ResumeFrame art={blockArt}>
-    <Fragment slot="welcome">
-      <Section id="welcome" labelledby="welcome-title">
-        <h2 id="welcome-title" class="sr-only">
-          Welcome
-        </h2>
-        <div>
-          <p class="mt-3">
-            Hi,
-            <br />
-            <br />
-            My name is <span class="text-green-900">Thom Yuill</span>.
-          </p>
-          <p class="mt-1">
-            I am a <span class="text-green-900">designer</span> and{' '}
-            <span class="text-green-900">engineer</span> and I currently work at{' '}
-            <a href="https://livekit.com/" title="Day job!!" target="_blank">
-              LiveKit ➚
-            </a>
-            .
-          </p>
-          <p class="mt-1 mx-auto">
-            I enjoy building dynamic, interactive, accessible, and aesthetic web experiences powered
-            with real-time data/media.
-          </p>
-        </div>
-        <div class="flex mt-3 gap-6 ml-2">
-          <div>
-            <p class="mb-1">Shoot me a line on</p>
-            <ul class="ml-[1ch]">
-              <li class="text-green-300">
-                [g]{' '}
-                <a
-                  href="https://github.com/thomfoolery"
-                  title="Read the source, Luke"
-                  target="_blank"
-                >
-                  GitHub ➚
-                </a>
-              </li>
-              <li class="text-green-300">
-                [l]{' '}
-                <a
-                  href="https://www.linkedin.com/in/thomasyuill/"
-                  title="Very professional"
-                  target="_blank"
-                >
-                  LinkedIn ➚
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <p class="mb-1">While you're at it</p>
-            <ul class="ml-[1ch]">
-              <li>
-                [2]{' '}
-                <a href="#experience" title="Where I've been">
-                  browse past jobs
-                </a>
-              </li>
-              <li>
-                [3]{' '}
-                <a href="#honors" title="Shiny things">
-                  gaze upon my honors
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
+  <div class="w-[72ch] mx-auto">
+    <div class="overflow-x-clip">
+      <Section as="header" align="center">
+        <h1 class="sr-only">Thom Yuill - UX developer and design engineer</h1>
+        <ArtHtml html={header} />
       </Section>
-    </Fragment>
-  </ResumeFrame>
+      <Nav />
+      <main>
+        <Section id="welcome" labelledby="welcome-title">
+          <h2 id="welcome-title" class="sr-only">
+            Welcome
+          </h2>
+          <div>
+            <p class="mt-3">
+              Hi,
+              <br />
+              <br />
+              My name is <span class="text-green-900">Thom Yuill</span>.
+            </p>
+            <p class="mt-1">
+              I am a <span class="text-green-900">designer</span> and{' '}
+              <span class="text-green-900">engineer</span> and I currently work at{' '}
+              <a href="https://livekit.com/" title="Day job!!" target="_blank">
+                LiveKit ➚
+              </a>
+              .
+            </p>
+            <p class="mt-1 mx-auto">
+              I enjoy building dynamic, interactive, accessible, and aesthetic web experiences
+              powered with real-time data/media.
+            </p>
+          </div>
+          <div class="flex mt-3 gap-6 ml-2">
+            <div>
+              <p class="mb-1">Shoot me a line on</p>
+              <ul class="ml-[1ch]">
+                <li class="text-green-300">
+                  [g]{' '}
+                  <a
+                    href="https://github.com/thomfoolery"
+                    title="Read the source, Luke"
+                    target="_blank"
+                  >
+                    GitHub ➚
+                  </a>
+                </li>
+                <li class="text-green-300">
+                  [l]{' '}
+                  <a
+                    href="https://www.linkedin.com/in/thomasyuill/"
+                    title="Very professional"
+                    target="_blank"
+                  >
+                    LinkedIn ➚
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <p class="mb-1">While you're at it</p>
+              <ul class="ml-[1ch]">
+                <li>
+                  [2]{' '}
+                  <a href="#experience" title="Where I've been">
+                    browse past jobs
+                  </a>
+                </li>
+                <li>
+                  [3]{' '}
+                  <a href="#honors" title="Shiny things">
+                    gaze upon my honors
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </Section>
+        <Section id="posts" labelledby="posts-title" hidden>
+          <h2 id="posts-title" class="sr-only">
+            Posts
+          </h2>
+          <ArtHtml html={posts} />
+          <PostsList />
+        </Section>
+        <Section id="experience" labelledby="experience-title">
+          <h2 id="experience-title" class="sr-only">
+            Jobs
+          </h2>
+          <ArtHtml html={experience} />
+          <JobsList />
+        </Section>
+        <Section id="honors" labelledby="honors-title">
+          <h2 id="honors-title" class="sr-only">
+            Honors, awards &amp; certs
+          </h2>
+          <ArtHtml html={honors} />
+          <HonorsList />
+        </Section>
+      </main>
+      <SiteFooter art={footer} />
+    </div>
+  </div>
 </Base>

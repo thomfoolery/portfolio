@@ -19,4 +19,8 @@ const { label, value, class: className } = Astro.props
 ---
 
 {/* prettier-ignore */}
-<p class:list={['flex', className]}><span class="mr-[1ch] shrink-0">{label}</span><span class="grow overflow-hidden whitespace-nowrap text-green-100" aria-hidden="true">{LEADER}</span><span class="ml-[1ch] w-[25ch] shrink-0">{value}</span></p>
+<p class:list={['flex', className]}>
+  <span class="mr-[1ch] shrink-0">{label}</span>
+  <span class="grow overflow-hidden whitespace-nowrap text-green-100" aria-hidden="true">{LEADER}</span>
+  <span class="ml-[1ch] w-[25ch] shrink-0">{value}</span>
+</p>
