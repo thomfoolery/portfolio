@@ -1,0 +1,22 @@
+---
+import { LEADER } from '@/data/frame'
+
+/**
+ * One dotted row: the label, the leader that fills the gap between, and the
+ * value in a 25ch column. A role and a project are the same row, only indented
+ * differently — a role indents the row, a project indents the list holding it.
+ *
+ * The row is laid out in `white-space: pre`, so the markup stays on one line and
+ * the formatter is held off it. See AGENTS.md.
+ */
+interface Props {
+  label: string
+  value?: string
+  class?: string
+}
+
+const { label, value, class: className } = Astro.props
+---
+
+{/* prettier-ignore */}
+<p class:list={['flex', className]}><span class="mr-[1ch] shrink-0">{label}</span><span class="grow overflow-hidden whitespace-nowrap text-green-100" aria-hidden="true">{LEADER}</span><span class="ml-[1ch] w-[25ch] shrink-0">{value}</span></p>

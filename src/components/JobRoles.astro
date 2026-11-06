@@ -1,5 +1,5 @@
 ---
-import { LEADER } from '@/data/frame'
+import LeaderRow from './LeaderRow.astro'
 import type { Job, Role, Row } from '@/data/jobs'
 
 /**
@@ -37,8 +37,7 @@ const projectList = (role: Role) => {
   {job.roles.map((role) => (
     <li>
       {roleHasLeader(role) ? (
-        /* prettier-ignore */
-        <p class:list={['flex', roleIndent]}><span class="mr-[1ch] shrink-0">{role.label}</span><span class="grow overflow-hidden whitespace-nowrap text-green-100" aria-hidden="true">{LEADER}</span><span class="ml-[1ch] w-[25ch] shrink-0">{role.value}</span></p>
+        <LeaderRow label={role.label} value={role.value} class={roleIndent} />
       ) : role.value ? (
         <p class:list={['flex', roleIndent]}>
           <span>{role.label}</span>
@@ -58,8 +57,7 @@ const projectList = (role: Role) => {
                   <span>{project.value}</span>
                 </>
               ) : projectHasLeader(project) ? (
-                /* prettier-ignore */
-                <p class="flex"><span class="mr-[1ch] shrink-0">{project.label}</span><span class="grow overflow-hidden whitespace-nowrap text-green-100" aria-hidden="true">{LEADER}</span><span class="ml-[1ch] w-[25ch] shrink-0">{project.value}</span></p>
+                <LeaderRow label={project.label} value={project.value} />
               ) : (
                 project.label
               )}
