@@ -41,6 +41,7 @@ src/
     jobs/           JobsList, the job rows and jobs.ts
     posts/          PostsList and posts.ts
     honors/         HonorsList and honors.ts
+    welcome/        Welcome, the introduction
     hotkeys.js      the nav's script, inlined into the page at build time
   data/             nav.ts, grid.ts and the art
     art/            the ASCII art, as .html fragments (30-45% of the page)
