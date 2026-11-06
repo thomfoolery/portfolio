@@ -1,16 +1,16 @@
 /** A date that may or may not be worth marking up as a <time>. */
 export type Dateish = { label: string; datetime?: string }
 
-/** A line in the CV. `dots` prints the leader between label and value. */
-export type Row = {
-  label: string
-  value?: string
-  layout?: 'dots' | 'plain'
-}
+/**
+ * A project row. A bare string is a plain line; an object prints the leader
+ * between its label and its value.
+ */
+export type Row = string | { label: string; value: string }
 
 export type Role = {
   label: string
   value?: string
+  /** `dots` prints the leader between the label and the value */
   layout?: 'dots' | 'plain'
   projects?: Row[]
   /** one per line, two-up in a 24ch grid, or label beside value in 24ch */
@@ -104,12 +104,7 @@ export const jobs: Job[] = [
     from: { label: '2012', datetime: '2012' },
     to: { label: '2015', datetime: '2015' },
     company: 'THEREDPIN.CA',
-    roles: [
-      {
-        label: 'Lead frontend developer',
-        projects: [{ label: 'TheRedPin.ca', layout: 'plain' }],
-      },
-    ],
+    roles: [{ label: 'Lead frontend developer', projects: ['TheRedPin.ca'] }],
   },
   {
     from: { label: '2010', datetime: '2010' },
@@ -118,10 +113,7 @@ export const jobs: Job[] = [
     roles: [
       {
         label: 'Sr web developer',
-        projects: [
-          { label: 'PcFinancial.ca', layout: 'plain' },
-          { label: 'Infiniti.com', layout: 'plain' },
-        ],
+        projects: ['PcFinancial.ca', 'Infiniti.com'],
       },
     ],
   },
@@ -148,12 +140,7 @@ export const jobs: Job[] = [
       {
         label: 'Frontend developer',
         projectsLayout: 'grid',
-        projects: [
-          { label: 'iCoke.ca', layout: 'plain' },
-          { label: 'JoeFresh.ca', layout: 'plain' },
-          { label: 'Molson.ca', layout: 'plain' },
-          { label: 'TimHortons.ca', layout: 'plain' },
-        ],
+        projects: ['iCoke.ca', 'JoeFresh.ca', 'Molson.ca', 'TimHortons.ca'],
       },
     ],
   },

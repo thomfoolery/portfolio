@@ -1,6 +1,6 @@
 ---
 import LeaderRow from './LeaderRow.astro'
-import type { Job, Role, Row } from '@/data/jobs'
+import type { Job, Role } from '@/data/jobs'
 
 /**
  * The roles of one job, indented past the 2ch the [+] / [-] marker spends in
@@ -22,8 +22,6 @@ const projectIndent = 'ml-[7ch]'
 
 /** A role prints its title alone unless it opts into the leader. */
 const roleHasLeader = (role: Role) => role.layout === 'dots'
-/** A project row gets the leader unless it opts out. */
-const projectHasLeader = (row: Row) => (row.layout ?? 'dots') === 'dots'
 
 /** The row layout lives on the list, so no row needs a conditional class. */
 const projectList = (role: Role) => {
@@ -51,15 +49,15 @@ const projectList = (role: Role) => {
         <ul class:list={[projectIndent, projectList(role)]}>
           {role.projects.map((project) => (
             <li>
-              {role.projectsLayout === 'columns' ? (
+              {typeof project === 'string' ? (
+                project
+              ) : role.projectsLayout === 'columns' ? (
                 <>
                   <span class="w-[24ch] shrink-0">{project.label}</span>
                   <span>{project.value}</span>
                 </>
-              ) : projectHasLeader(project) ? (
-                <LeaderRow label={project.label} value={project.value} />
               ) : (
-                project.label
+                <LeaderRow label={project.label} value={project.value} />
               )}
             </li>
           ))}
