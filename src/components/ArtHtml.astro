@@ -9,16 +9,24 @@ import type { SectionArtItem } from '@/data/art'
  * armed for anything that could carry input.
  *
  * `display: contents` keeps the wrapper out of the layout, so the art behaves as
- * a direct child of whatever section holds it.
+ * a direct child of whatever section holds it. In dev the wrapper becomes a real
+ * box instead: a `contents` box has no corner to hang the editor trigger on.
  */
 interface Props {
   art: SectionArtItem
 }
 
 const { art } = Astro.props
+const dev = import.meta.env.DEV
 const fragment = renderFragment(`class="${art.className}" aria-hidden="true"`, art)
 ---
 
 {/* eslint-disable astro/no-set-html-directive -- art is constant, generated from src/data/art */}
-<div class="contents" set:html={fragment} />
+<div
+  class={dev ? undefined : 'contents'}
+  style={dev ? 'position:relative;width:fit-content' : undefined}
+  data-art-frame={dev ? '' : undefined}
+  data-art-path={dev ? art.path : undefined}
+  set:html={fragment}
+/>
 {/* eslint-enable astro/no-set-html-directive */}

@@ -7,6 +7,7 @@ interface Props {
 }
 
 const { title, description } = Astro.props
+const dev = import.meta.env.DEV
 ---
 
 <!doctype html>
@@ -21,5 +22,6 @@ const { title, description } = Astro.props
   <body>
     {' '}
     <slot />{' '}
+    {dev && <script type="module" is:inline src="/src/components/art-editor/editor.js"></script>}
   </body>
 </html>
