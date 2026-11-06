@@ -37,13 +37,16 @@ Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
 eslint.config.ts    type-aware lint; formatting is left to Prettier
 .prettierrc.json    single quotes, no semicolons, 100 columns
 src/
-  components/       TheNav, ResumeFrame, Section, ArtHtml, the job and list ones
-  data/             nav, jobs, posts, honors and art as data
+  components/       the shell: ResumeFrame, Section, Nav, SiteFooter, ArtHtml
+    jobs/           JobsList, the job rows and jobs.ts
+    posts/          PostsList and posts.ts
+    honors/         HonorsList and honors.ts
+    hotkeys.js      the nav's script, inlined into the page at build time
+  data/             nav.ts, grid.ts and the art
     art/            the ASCII art, as .html fragments (30-45% of the page)
   layouts/          Base.astro, the document shell
   pages/            index.astro, the one page
   styles/           main.css (Tailwind theme, base and components)
-  hotkeys.js        inlined into the page at build time
 ```
 
 ## How it fits together
@@ -70,14 +73,17 @@ extra layout.
 **Two whitespace rules worth knowing.** The template compiler condenses runs of
 whitespace and drops leading or trailing whitespace inside an element, and this
 layout is a character grid. Significant spaces are interpolated from `GAP` and
-`SPACE` in `src/data/frame.ts`, and the job heading row is kept on one line.
+`SPACE` in `src/data/grid.ts`, and the job heading row is kept on one line.
 
-Six elements also carry `<!-- prettier-ignore -->` for the same reason: Prettier's
-Astro printer reflows inline runs onto separate lines, which turns those spaces into
-newlines for the compiler to drop. The directive has to be alone in its comment,
-because Prettier matches the text exactly — `<!-- prettier-ignore: reason -->` is
-silently ignored and the row is reflowed anyway. The reason goes in the comment
-above it.
+Seven elements also carry a `prettier-ignore` for the same reason: Prettier's Astro
+printer reflows inline runs onto separate lines, which turns those spaces into
+newlines for the compiler to drop. Write the directive alone in its comment —
+Prettier matches the text exactly, so `prettier-ignore: why` is silently ignored and
+the row is reflowed anyway.
+
+Use the JSX form, `{/* prettier-ignore */}`. The HTML form works for Prettier too,
+but Astro emits it into the page: six of the seven guards currently ship as
+comments.
 
 **The art goes through one component.** `ArtHtml` injects the `src/data/art`
 fragments and holds the single exemption from `astro/no-set-html-directive`, with its reason. The

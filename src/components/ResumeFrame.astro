@@ -29,19 +29,22 @@ const { art } = Astro.props
         <h2 id="posts-title" class="sr-only">
           Posts
         </h2>
-        <ArtHtml html={art.posts} /> <PostsList />
+        <ArtHtml html={art.posts} />
+        <PostsList />
       </Section>
       <Section id="experience" labelledby="experience-title">
         <h2 id="experience-title" class="sr-only">
           Jobs
         </h2>
-        <ArtHtml html={art.experience} /> <JobsList />
+        <ArtHtml html={art.experience} />
+        <JobsList />
       </Section>
       <Section id="honors" labelledby="honors-title">
         <h2 id="honors-title" class="sr-only">
           Honors, awards &amp; certs
         </h2>
-        <ArtHtml html={art.honors} /> <HonorsList />
+        <ArtHtml html={art.honors} />
+        <HonorsList />
       </Section>
     </main>
     <SiteFooter art={art.footer} />

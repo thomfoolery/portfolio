@@ -11,8 +11,8 @@ to remove duplication within the résumé, not to ship a framework. So:
 
 - `pnpm build` writes flat HTML to `dist/`. Astro runs at build time only.
   The output has no framework and makes no external requests.
-- The page ships one inlined `<script>` (`src/hotkeys.js`), because the nav
-  hotkeys need it.
+- The page ships one inlined `<script>`, `src/components/hotkeys.js`, because the
+  nav hotkeys need it.
 - Serve `dist/`. The URL is `/index.html`.
 - A new client dependency, or anything that grows the shipped JS, has to be
   justified against that.
@@ -40,17 +40,20 @@ Every length is a character cell or a terminal line.
 1. **Whitespace is data here.** The template compiler condenses runs of
    whitespace and drops leading or trailing whitespace inside an element. In a
    `white-space: pre` row that silently eats spaces, and the rows are the design.
-   Use `GAP` / `SPACE` from `src/data/frame.ts` and keep such a row on one
+   Use `GAP` / `SPACE` from `src/data/grid.ts` and keep such a row on one
    source line. See `JobHeading.astro`.
 2. **Preflight is border-box.** A padded `w-[72ch]` frame comes out 24px narrow
    and the art gets clipped. The gutter lives on `body`, not on the frame.
 3. **Prettier would reflow the grid.** Its Astro printer breaks inline runs onto
    separate lines, which turns those significant spaces into newlines for the
-   compiler to drop. Six elements therefore carry `<!-- prettier-ignore -->`,
-   with the reason in the comment above. Write the directive alone in its
-   comment: Prettier matches the text exactly, so `<!-- prettier-ignore: why -->`
-   is silently ignored and the row is reflowed anyway. After any `pnpm format`,
-   the guards are what keep the design still — check them before trusting it.
+   compiler to drop. Seven elements therefore carry a `prettier-ignore`, with the
+   reason in the comment above. Write the directive alone in its comment: Prettier
+   matches the text exactly, so `prettier-ignore: why` is silently ignored and the
+   row is reflowed anyway. After any `pnpm format`, the guards are what keep the
+   design still — check them before trusting it.
+   Use the JSX form, `{/* prettier-ignore */}`. The HTML form works for Prettier
+   too, but Astro emits it into the page, so it ships a comment per use — six of
+   the seven currently do.
 
 ## Verify against the previous output, do not eyeball it
 
@@ -84,8 +87,9 @@ dependency decision: ask first.
   exemption. Do not componentize the art itself, and do not add a second
   `set:html` elsewhere:
   the rule is deliberately still armed for anything that could carry input.
-- The résumé's content lives in `src/data/` as data (`nav`, `jobs`, `posts`,
-  `honors`). Edit the data, not the markup.
+- A résumé section's data lives beside its components: `components/jobs/jobs.ts`,
+  `components/posts/posts.ts`, `components/honors/honors.ts`. Edit the data, not
+  the markup. Page-level data — `nav.ts`, `grid.ts`, the art — stays in `src/data/`.
 - The site is one page, `src/pages/index.astro`, built from `src/components/`.
   Its structure belongs in `ResumeFrame.astro`; the page supplies only the art
   and the welcome copy. Job entries are collapsible `<details>`.
