@@ -87,9 +87,9 @@ dependency decision: ask first.
   exemption. Do not componentize the art itself, and do not add a second
   `set:html` elsewhere:
   the rule is deliberately still armed for anything that could carry input.
-- A résumé section's data lives beside its components: `components/jobs/jobs.ts`,
-  `components/posts/posts.ts`, `components/honors/honors.ts`. Edit the data, not
-  the markup. Page-level data — `nav.ts`, `grid.ts`, the art — stays in `src/data/`.
+- The résumé's data lives in `src/data/` — `jobs.ts`, `honors.ts`, `nav.ts`,
+  `grid.ts`, the art. Edit the data, not the markup. `posts.ts` is the exception:
+  it sits beside `PostsList` in `components/posts/`.
 - The site is one page, `src/pages/index.astro`, built from `src/components/`.
   The page holds the structure — the frame, the header panel, the nav, the
   sections in order, the footer — and destructures `blockArt` for the fragments.

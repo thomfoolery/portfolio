@@ -38,12 +38,12 @@ eslint.config.ts    type-aware lint; formatting is left to Prettier
 .prettierrc.json    single quotes, no semicolons, 100 columns
 src/
   components/       the shell: Section, Nav, SiteFooter, ArtHtml
-    jobs/           JobsList, the job rows and jobs.ts
+    jobs/           JobsList and the job rows
     posts/          PostsList and posts.ts
-    honors/         HonorsList and honors.ts
+    honors/         HonorsList
     welcome/        Welcome, the introduction
     hotkeys.js      the nav's script, inlined into the page at build time
-  data/             nav.ts, grid.ts and the art
+  data/             nav.ts, jobs.ts, honors.ts, grid.ts and the art
     art/            the ASCII art, as .html fragments (30-45% of the page)
   layouts/          Base.astro, the document shell
   pages/            index.astro, the one page

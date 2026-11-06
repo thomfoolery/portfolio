@@ -25,7 +25,12 @@ const { header, posts, experience, honors, footer } = blockArt
       </Section>
       <Nav />
       <main>
-        <Welcome />
+        <Section id="welcome" labelledby="welcome-title">
+          <h2 id="welcome-title" class="sr-only">
+            Welcome
+          </h2>
+          <Welcome />
+        </Section>
         <Section id="posts" labelledby="posts-title" hidden>
           <h2 id="posts-title" class="sr-only">
             Posts
