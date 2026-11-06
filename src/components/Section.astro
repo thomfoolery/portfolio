@@ -29,19 +29,25 @@ const {
 
 const Tag = as
 const justify = { top: 'justify-start', center: 'justify-center', bottom: 'justify-end' }[align]
+
+/**
+ * What each element adds to the shared panel classes. Only the sections and the
+ * footer are flex columns; the header stays in flow, so its art can tuck the nav
+ * up under it.
+ */
+const perElement = {
+  header: '-mb-3',
+  section: ['flex flex-col pb-[50dvh]', justify],
+  footer: ['flex flex-col pb-2', justify],
+  div: '',
+}[as]
 ---
 
 <Tag
   id={id}
   aria-labelledby={labelledby}
   hidden={hidden || undefined}
-  class:list={[
-    'min-h-dvh pt-5',
-    as === 'header' && '-mb-3',
-    as === 'section' && ['flex flex-col pb-[50dvh]', justify],
-    as === 'footer' && ['flex flex-col pb-2', justify],
-    className,
-  ]}
+  class:list={['min-h-dvh pt-5', perElement, className]}
 >
   <slot />
 </Tag>
