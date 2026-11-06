@@ -1,5 +1,4 @@
 ---
-import ArtHtml from '@/components/ArtHtml.astro'
 import ResumeFrame from '@/components/ResumeFrame.astro'
 import Section from '@/components/Section.astro'
 import Base from '@/layouts/Base.astro'
@@ -16,9 +15,8 @@ import { blockArt } from '@/data/art'
         <h2 id="welcome-title" class="sr-only">
           Welcome
         </h2>
-        <div class="text-center">
-          <ArtHtml html={blockArt.welcome} />
-          <p class="mt-3">Hi, my name is Thomas Yuill.</p>
+        <div>
+          <p class="mt-3">Hi, my name is Thom Yuill.</p>
           <p class="mt-1">
             I am a <span class="text-green-900">designer</span> and{' '}
             <span class="text-green-900">engineer</span> and I currently work at{' '}
@@ -27,16 +25,17 @@ import { blockArt } from '@/data/art'
             </a>
             .
           </p>
-          <p class="mt-1 max-w-[60ch] mx-auto">
+          <p class="mt-1 mx-auto">
             I enjoy building dynamic, interactive, accessible, and aesthetic web experiences powered
             with real-time data/media.
           </p>
         </div>
-        <div class="flex mt-3 justify-center gap-6">
+        <div class="flex mt-3 gap-6 ml-2">
           <div>
             <p>Shoot me a line on:</p>
             <ul class="ml-[2ch]">
               <li>
+                [g]{' '}
                 <a
                   href="https://github.com/thomfoolery"
                   title="Read the source, Luke"
@@ -46,6 +45,7 @@ import { blockArt } from '@/data/art'
                 </a>
               </li>
               <li>
+                [l]{' '}
                 <a
                   href="https://www.linkedin.com/in/thomasyuill/"
                   title="Very professional"

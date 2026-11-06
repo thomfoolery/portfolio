@@ -36,9 +36,10 @@ const justify = { top: 'justify-start', center: 'justify-center', bottom: 'justi
   aria-labelledby={labelledby}
   hidden={hidden || undefined}
   class:list={[
-    'flex min-h-dvh flex-col pt-[5em]',
-    as === 'section' && 'pb-[50dvh]',
-    justify,
+    'min-h-dvh pt-5',
+    as === 'header' && '-mb-3',
+    as === 'section' && ['flex flex-col pb-[50dvh]', justify],
+    as === 'footer' && ['flex flex-col pb-2', justify],
     className,
   ]}
 >

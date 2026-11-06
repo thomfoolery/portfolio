@@ -75,7 +75,7 @@
 
   /* Prose gets a little more room than the terminal grid's one-line rhythm. */
   p {
-    line-height: 1.7;
+    line-height: 2;
   }
 
   ::selection {
@@ -132,7 +132,7 @@
   }
   .toggle::before {
     content: '[+]';
-    color: var(--color-green-600);
+    color: var(--color-green-200);
     margin-right: 1ch;
   }
   details[open] > summary .toggle::before {

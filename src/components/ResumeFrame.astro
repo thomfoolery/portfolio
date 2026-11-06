@@ -5,7 +5,7 @@ import JobsList from './JobsList.astro'
 import PostsList from './PostsList.astro'
 import Section from './Section.astro'
 import SiteFooter from './SiteFooter.astro'
-import TheNav from './TheNav.astro'
+import Nav from './Nav.astro'
 import hotkeys from '@/hotkeys.js?raw'
 import type { SectionArt } from '@/data/art'
 
@@ -17,13 +17,13 @@ interface Props {
 const { art } = Astro.props
 ---
 
-<div class="w-[72ch] mx-auto py-2">
+<div class="w-[72ch] mx-auto">
   <div class="overflow-x-clip">
-    <Section as="header" align="center" class="relative z-1">
-      <h1 class="sr-only">Thom Yuill &mdash; UX developer and design engineer</h1>
+    <Section as="header" align="center">
+      <h1 class="sr-only">Thom Yuill - UX developer and design engineer</h1>
       <ArtHtml html={art.header} />
     </Section>
-    <TheNav />
+    <Nav />
     <main>
       <slot name="welcome" />
       <Section id="posts" labelledby="posts-title" hidden>

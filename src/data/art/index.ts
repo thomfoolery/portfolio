@@ -3,12 +3,10 @@ import blockFooter from './block/footer.html?raw'
 import blockHeader from './block/header.html?raw'
 import blockHonors from './block/honors.html?raw'
 import blockPosts from './block/posts.html?raw'
-import blockWelcome from './block/welcome.html?raw'
 
 /** One heading fragment per section of the résumé. */
 export type SectionArt = {
   header: string
-  welcome: string
   posts: string
   experience: string
   honors: string
@@ -22,7 +20,6 @@ export type SectionArt = {
  */
 export const blockArt: SectionArt = {
   header: blockHeader,
-  welcome: blockWelcome,
   posts: blockPosts,
   experience: blockExperience,
   honors: blockHonors,
