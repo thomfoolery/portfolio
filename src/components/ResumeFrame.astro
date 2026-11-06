@@ -6,7 +6,6 @@ import PostsList from './posts/PostsList.astro'
 import Section from './Section.astro'
 import SiteFooter from './SiteFooter.astro'
 import Nav from './Nav.astro'
-import hotkeys from '@/hotkeys.js?raw'
 import type { SectionArt } from '@/data/art'
 
 /** The structure every section of the résumé shares. */
@@ -48,6 +47,3 @@ const { art } = Astro.props
     <SiteFooter art={art.footer} />
   </div>
 </div>
-<!-- The nav hotkeys are the site's only client script. Inlined, so no request. -->
-{/* eslint-disable-next-line astro/no-set-html-directive -- this is our own script text */}
-<script is:inline set:html={hotkeys} />

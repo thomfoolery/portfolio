@@ -1,4 +1,5 @@
 ---
+import hotkeys from './hotkeys.js?raw'
 import { navItems } from '@/data/nav'
 ---
 
@@ -17,3 +18,6 @@ import { navItems } from '@/data/nav'
     ))}
   </ul>
 </nav>
+<!-- The nav's hotkeys are the page's only client script. Inlined, so no request. -->
+{/* eslint-disable-next-line astro/no-set-html-directive -- this is our own script text */}
+<script is:inline set:html={hotkeys} />
