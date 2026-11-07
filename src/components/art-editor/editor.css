@@ -60,9 +60,14 @@
   flex: 1;
   min-height: 0;
 }
+/* The grid is centred in the stage. `safe` matters: a plain centring here would
+   put the top-left of an oversized grid out of reach, because the overflow then
+   starts left of the scroll origin. */
 .ae-stage {
   flex: 1;
   min-width: 0;
+  display: grid;
+  place-content: safe center;
   overflow: auto;
   padding: 2ch;
 }
@@ -92,7 +97,10 @@
   margin-top: 2ch;
   color: var(--color-green-600);
 }
-.ae-modes,
+.ae-hint {
+  color: var(--color-green-300);
+}
+.ae-tools,
 .ae-swatches,
 .ae-actions,
 .ae-size {
@@ -100,6 +108,9 @@
   flex-wrap: wrap;
   gap: 1ch;
   margin-top: 1ch;
+}
+.ae-tools .ae-swatch {
+  padding: 0 1ch;
 }
 .ae-swatch {
   min-width: 2.5ch;
