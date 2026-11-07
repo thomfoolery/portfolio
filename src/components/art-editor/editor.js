@@ -15,8 +15,12 @@
  * somewhere else, and `t` puts a cursor down to type at. With a box up, `b` also
  * turns that area into the brush — a copy, centred on the pointer and projected
  * onto the grid in place, so where it will land is visible before it does. Any
- * character picked after that replaces it. `cmd+z` and `shift+cmd+z` walk a stack of whole-canvas
- * snapshots, one per stroke, twelve deep.
+ * character picked after that replaces it.
+ *
+ * `cmd+z` and `shift+cmd+z` walk a stack of whole-canvas snapshots, one per
+ * stroke, twelve deep. Escape puts a tool down; asked again with unsaved changes
+ * in hand it asks before closing, because the only way back from a discard is
+ * the file on disk.
  *
  * It is loaded from Base.astro behind `import.meta.env.DEV`, so it never reaches
  * a build and nothing here ships.
@@ -47,6 +51,11 @@ const CHROME = `
     <span class="ae-status" data-status></span>
     <button class="ae-button" data-close type="button" aria-label="Close">×</button>
   </header>
+  <div class="ae-confirm" data-confirm>
+    <span>unsaved changes</span>
+    <button class="ae-button" data-keep type="button">keep editing</button>
+    <button class="ae-button" data-discard type="button">discard</button>
+  </div>
   <div class="ae-body">
     <div class="ae-stage"><div class="ae-canvas" data-canvas></div></div>
     <aside class="ae-palette">
@@ -105,6 +114,10 @@ function open(frame) {
   let glyph = GLYPHS[0]
   let color = DEFAULT_COLOR
   let painting = false
+  /** Set by the first edit, and cleared only by a save. */
+  let dirty = false
+  /** True while the unsaved-changes question is on screen. */
+  let asking = false
   /** A block lifted out of a selection, which becomes the brush until dropped. */
   let stamp = null
   /** Where the area brush would land, while the pointer is over the canvas. */
@@ -271,6 +284,8 @@ function open(frame) {
     undoStack.push(snapshot(art))
     if (undoStack.length > UNDO_LIMIT) undoStack.shift()
     redoStack.length = 0 // a fresh edit abandons the redo branch
+    dirty = true
+    hideConfirm() // an edit is an answer to the question
   }
 
   const restore = (state) => {
@@ -778,9 +793,10 @@ function open(frame) {
     if (event.key === 'Escape') {
       claim()
       // One Escape puts the tool down — the box and the caret both hold
-      // something — and the next closes the overlay.
-      if (tool === 'select' || tool === 'text') setTool('draw')
-      else close()
+      // something — the next asks to leave, and a further one gets on with it.
+      if (asking) hideConfirm()
+      else if (tool === 'select' || tool === 'text') setTool('draw')
+      else requestClose()
       return
     }
 
@@ -826,6 +842,26 @@ function open(frame) {
   }
 
   // --- close, cancel, save
+  /** Ask before throwing away work that has not been written back to the file. */
+  const showConfirm = () => {
+    asking = true
+    $('[data-confirm]').setAttribute('data-open', '')
+    $('[data-keep]').focus()
+  }
+
+  const hideConfirm = () => {
+    if (!asking) return
+    asking = false
+    $('[data-confirm]').removeAttribute('data-open')
+    overlay.focus()
+  }
+
+  /** Escape and the × both land here: only a clean editor leaves without a word. */
+  const requestClose = () => {
+    if (dirty) showConfirm()
+    else close()
+  }
+
   function close() {
     document.removeEventListener('keydown', onKey, true)
     window.removeEventListener('pointerup', stopPainting)
@@ -845,6 +881,7 @@ function open(frame) {
       })
       const body = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(body.error ?? response.statusText)
+      dirty = false // the file has it now
       close()
     } catch (error) {
       status.setAttribute('data-error', '')
@@ -852,9 +889,11 @@ function open(frame) {
     }
   }
 
-  $('[data-close]').addEventListener('click', close)
-  $('[data-cancel]').addEventListener('click', close)
+  $('[data-close]').addEventListener('click', requestClose)
+  $('[data-cancel]').addEventListener('click', close) // Cancel says what it does
   $('[data-save]').addEventListener('click', save)
+  $('[data-keep]').addEventListener('click', hideConfirm)
+  $('[data-discard]').addEventListener('click', close)
 
   drawGrid()
   document.addEventListener('keydown', onKey, true)

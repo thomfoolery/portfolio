@@ -55,6 +55,23 @@
   color: var(--color-green-900);
 }
 
+/* The unsaved-changes question. `data-open` rather than `hidden`: this rule sets
+   `display`, and at equal specificity that would beat preflight's `[hidden]`. */
+.ae-confirm {
+  display: none;
+  align-items: center;
+  gap: 2ch;
+  padding: 0.5ch 1ch;
+  border-bottom: 1px solid var(--color-green-700);
+  color: var(--color-green-300);
+}
+.ae-confirm[data-open] {
+  display: flex;
+}
+.ae-confirm [data-discard] {
+  margin-left: auto;
+}
+
 .ae-body {
   display: flex;
   flex: 1;
