@@ -8,7 +8,8 @@
  *
  * Both palettes are live at once, so the tool decides what a click on the grid
  * does: stamp a glyph, recolour one that is already there, sample a cell, or
- * blank it. `0`-`9` pick a colour.
+ * blank it. `0`-`9` pick a colour, `e` and `shift+e` sample a cell's glyph or its
+ * colour, and `d` takes the eraser.
  *
  * It is loaded from Base.astro behind `import.meta.env.DEV`, so it never reaches
  * a build and nothing here ships.
@@ -20,8 +21,10 @@ const TEXTURES = ['░', '▒', '▓', '█', '▀', '▄', '▌', '▐', '·']
 /** Swatch order, and the order the `0`-`9` hotkeys follow. `null` is the section's own colour. */
 const STEPS = [null, ...COLORS]
 const TOOLS = ['texture', 'colour', 'eyedropper', 'eraser']
-/** The two tools with a key of their own. The other two are reached by picking a swatch. */
-const TOOL_KEYS = { e: 'eyedropper', d: 'eraser' }
+/** What the eyedropper takes, and what its button says while it will take it. */
+const PICKS = { both: 'eyedropper', texture: 'pick texture', colour: 'pick colour' }
+/** The keys: `e` samples one facet, `shift+e` the other, and the button takes both. */
+const TOOL_HINTS = { eyedropper: 'e glyph, shift+e colour', eraser: 'd' }
 const ENDPOINT = '/__art-editor/save'
 const DEFAULT_COLOR = COLORS[3]
 
@@ -35,7 +38,7 @@ const CHROME = `
   <div class="ae-body">
     <div class="ae-stage"><div class="ae-canvas" data-canvas></div></div>
     <aside class="ae-palette">
-      <h2>tool <span class="ae-hint">e d</span></h2>
+      <h2>tool <span class="ae-hint">e / shift+e / d</span></h2>
       <div class="ae-tools" data-tools></div>
       <h2>character</h2>
       <div class="ae-swatches" data-textures></div>
@@ -80,6 +83,7 @@ function open(frame) {
   const path = frame.dataset.artPath ?? ''
   let art = parse(pre.outerHTML)
   let tool = 'texture'
+  let pick = 'both'
   let texture = TEXTURES[0]
   let color = DEFAULT_COLOR
   let painting = false
@@ -120,7 +124,7 @@ function open(frame) {
       }
     }
     canvas.replaceChildren(cells)
-    dims.textContent = `${cols} × ${rows}`
+    dims.textContent = `${cols} x ${rows}`
     colsInput.value = String(cols)
     rowsInput.value = String(rows)
   }
@@ -139,8 +143,8 @@ function open(frame) {
   }
 
   const toolButtons = TOOLS.map((name) => {
-    const key = Object.keys(TOOL_KEYS).find((k) => TOOL_KEYS[k] === name)
-    const button = swatch(name, `tool: ${name}${key ? ` (${key})` : ''}`, () => selectTool(name))
+    const hint = TOOL_HINTS[name]
+    const button = swatch(name, `tool: ${name}${hint ? ` (${hint})` : ''}`, () => selectTool(name))
     button.dataset.tool = name
     $('[data-tools]').append(button)
     return button
@@ -163,15 +167,16 @@ function open(frame) {
   const colorButtons = STEPS.map((step, index) =>
     swatch(
       String(index),
-      step ? `colour: ${step}` : 'colour: the section’s own (pre)',
+      step ? `colour: ${step}` : 'colour: pre (inherited)',
       () => pickColor(index),
       colorVar(step) || 'var(--color-green-600)',
     ),
   )
   $('[data-colors]').append(...colorButtons)
 
-  function selectTool(name) {
+  function selectTool(name, pickWith) {
     tool = name
+    if (name === 'eyedropper') pick = pickWith ?? 'both'
     syncPalette()
   }
 
@@ -184,6 +189,8 @@ function open(frame) {
   function syncPalette() {
     for (const button of toolButtons) {
       button.setAttribute('aria-pressed', String(button.dataset.tool === tool))
+      // The eyedropper says which facet a click on the grid will take.
+      if (button.dataset.tool === 'eyedropper') button.textContent = PICKS[pick]
     }
     textureButtons.forEach((button, i) => {
       button.setAttribute('aria-pressed', String(TEXTURES[i] === texture))
@@ -216,8 +223,8 @@ function open(frame) {
       if (char === ' ') return // colour paints glyphs that are there
       setColor(art, row, col, color)
     } else if (tool === 'eyedropper') {
-      if (char !== ' ') texture = char // a blank cell has no glyph to take
-      color = art.colors[row]?.[col] ?? null
+      if (pick !== 'colour' && char !== ' ') texture = char // a blank cell holds no glyph
+      if (pick !== 'texture') color = art.colors[row]?.[col] ?? null
       syncPalette()
     } else {
       setChar(art, row, col, ' ')
@@ -261,13 +268,16 @@ function open(frame) {
       close()
       return
     }
-    const named = TOOL_KEYS[event.key.toLowerCase()]
+    const key = event.key.toLowerCase()
     if (!event.repeat && /^[0-9]$/.test(event.key)) {
       event.preventDefault()
       pickColor(Number(event.key))
-    } else if (!event.repeat && named) {
+    } else if (!event.repeat && key === 'e') {
       event.preventDefault()
-      selectTool(named)
+      selectTool('eyedropper', event.shiftKey ? 'colour' : 'texture')
+    } else if (!event.repeat && key === 'd') {
+      event.preventDefault()
+      selectTool('eraser')
     }
     // Everything else stays out of the page behind. These three are left alone so
     // a focused swatch still activates: stopping an event in the capture phase
@@ -285,7 +295,7 @@ function open(frame) {
   }
 
   async function save() {
-    status.textContent = 'saving…'
+    status.textContent = 'saving...'
     status.removeAttribute('data-error')
     try {
       const response = await fetch(ENDPOINT, {
