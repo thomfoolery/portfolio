@@ -89,6 +89,10 @@
 .ae-cell.ae-sel {
   background-color: color-mix(in srgb, var(--color-green-900) 35%, transparent);
 }
+/* The text caret: the same fill, brighter, because it is only one cell. */
+.ae-cell.ae-cur {
+  background-color: color-mix(in srgb, var(--color-green-900) 70%, transparent);
+}
 
 .ae-palette {
   flex: none;

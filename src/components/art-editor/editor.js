@@ -6,18 +6,16 @@
  * characters and colours — in a full-screen overlay. Save posts them to the dev
  * server, which writes the block's JSON.
  *
- * Drawing is a pair of toggles rather than a mode: `t` turns painting the glyph
- * on and off, `c` the colour, and both at once stamp a whole cell. The
- * eyedropper and delete are tools instead, and while either is up the toggles do
- * not draw. A pick takes whatever the toggles say is being drawn — which is also
- * what its own highlights show — and then hands the editor back to drawing.
- * `cmd+z` and `shift+cmd+z` walk a stack of whole-canvas snapshots, one per
- * stroke, twelve deep.
+ * Drawing is a pair of toggles rather than a mode: `b` turns painting the brush
+ * on and off, `c` the colour, both at once stamps a whole cell, and `tab` walks
+ * the three combinations. `0`-`9` pick the ink.
  *
- * `s` gives the select tool: drag a box on the grid, then either `x` crops the
- * art to it, or drag inside the box to carry those cells somewhere else. A move
- * lifts the cells out of the art — leaving blanks behind — and drops them
- * wherever the pointer lets go, overwriting what was there.
+ * The tools take over instead of drawing. `e` samples a cell's brush and ink,
+ * `d` blanks cells, `s` draws a box that `x` crops to or that a drag carries
+ * somewhere else, and `t` puts a cursor down to type at. With a box up, `b` also
+ * turns that area into the brush — a copy, good for stamping until a character
+ * is picked again. `cmd+z` and `shift+cmd+z` walk a stack of whole-canvas
+ * snapshots, one per stroke, twelve deep.
  *
  * It is loaded from Base.astro behind `import.meta.env.DEV`, so it never reaches
  * a build and nothing here ships.
@@ -25,11 +23,17 @@
 import { COLORS, bounds, parse, resize } from '@/lib/art'
 import './editor.css'
 
-const TEXTURES = ['░', '▒', '▓', '█', '▀', '▄', '▌', '▐', '·']
+const GLYPHS = ['░', '▒', '▓', '█', '▀', '▄', '▌', '▐', '·']
 /** Swatch order, and the order the `0`-`9` hotkeys follow. `null` is the section's own colour. */
 const STEPS = [null, ...COLORS]
-const FACETS = ['texture', 'colour']
-const TOOLS = ['eyedropper', 'delete', 'select']
+const FACETS = ['brush', 'colour']
+/** What `tab` walks: the brush, the ink, then both at once. */
+const FACET_CYCLE = [
+  { brush: true, colour: false },
+  { brush: false, colour: true },
+  { brush: true, colour: true },
+]
+const TOOLS = ['eyedropper', 'delete', 'select', 'text']
 const ENDPOINT = '/__art-editor/save'
 const DEFAULT_COLOR = COLORS[3]
 /** How many strokes back `cmd+z` reaches. */
@@ -45,14 +49,14 @@ const CHROME = `
   <div class="ae-body">
     <div class="ae-stage"><div class="ae-canvas" data-canvas></div></div>
     <aside class="ae-palette">
-      <h2>draw <span class="ae-hint">t / c</span></h2>
+      <h2>draw <span class="ae-hint">b / c / tab</span></h2>
       <div class="ae-tools" data-draw></div>
-      <h2>tool <span class="ae-hint">e / d / s</span></h2>
+      <h2>tool <span class="ae-hint">e / d / s / t</span></h2>
       <div class="ae-tools" data-tools></div>
       <h2>selection <span class="ae-hint">x</span></h2>
       <div class="ae-tools" data-selection></div>
-      <h2>character</h2>
-      <div class="ae-swatches" data-textures></div>
+      <h2>brush</h2>
+      <div class="ae-swatches" data-brush></div>
       <h2>colour <span class="ae-hint">0-9</span></h2>
       <div class="ae-swatches" data-colors></div>
       <h2>size</h2>
@@ -68,6 +72,7 @@ const CHROME = `
   </div>`
 
 const colorVar = (color) => (color ? `var(--color-${color})` : '')
+const clamp = (value, low, high) => Math.min(high, Math.max(low, value))
 
 /** Write a character, growing a ragged row rather than leaving holes in it. */
 function setChar(art, row, col, char) {
@@ -94,11 +99,15 @@ function open(frame) {
   const path = frame.dataset.artPath ?? ''
   let art = parse(pre.outerHTML)
   /** Which of the two things a stroke paints. Both at once stamps a whole cell. */
-  const drawing = { texture: true, colour: false }
+  const drawing = { brush: true, colour: false }
   let tool = 'draw'
-  let texture = TEXTURES[0]
+  let glyph = GLYPHS[0]
   let color = DEFAULT_COLOR
   let painting = false
+  /** A block lifted out of a selection, which becomes the brush until dropped. */
+  let stamp = null
+  /** Where the text cursor sits while the text tool is up. */
+  let cursor = null
   /** The box the select tool works on, in grid coordinates. */
   let selection = null
   /** Cells lifted out of the art while a selection is being carried. */
@@ -148,9 +157,13 @@ function open(frame) {
     cell.textContent = state.char
     cell.style.color = colorVar(state.color)
     cell.classList.toggle('ae-sel', inSelection(row, col))
+    cell.classList.toggle(
+      'ae-cur',
+      tool === 'text' && cursor != null && cursor.row === row && cursor.col === col,
+    )
   }
 
-  /** Repaint a rectangle of the grid. Only a move or a box ever needs one. */
+  /** Repaint a rectangle of the grid. Only a move, a stamp or the cursor needs one. */
   const repaintRect = (top, left, bottom, right) => {
     for (let row = Math.max(0, top); row <= Math.min(grid.rows - 1, bottom); row += 1) {
       for (let col = Math.max(0, left); col <= Math.min(grid.cols - 1, right); col += 1) {
@@ -162,6 +175,8 @@ function open(frame) {
   const drawGrid = () => {
     const { cols, rows } = bounds(art)
     grid = { cols, rows }
+    if (cursor)
+      cursor = { row: clamp(cursor.row, 0, rows - 1), col: clamp(cursor.col, 0, cols - 1) }
     canvas.style.gridTemplateColumns = `repeat(${cols}, 1ch)`
     const cells = document.createDocumentFragment()
     for (let row = 0; row < rows; row += 1) {
@@ -219,25 +234,33 @@ function open(frame) {
   }
 
   // --- selection
-  const clamp = (value, low, high) => Math.min(high, Math.max(low, value))
-
-  /** Lift the selected cells out of the art, leaving blank the cells behind them. */
-  const lift = () => {
+  /** Read a rectangle of the art out as a block of its own. */
+  const readBlock = (top, left, bottom, right) => {
     const chars = []
     const colors = []
-    for (let row = selection.top; row <= selection.bottom; row += 1) {
+    for (let row = top; row <= bottom; row += 1) {
       const lineChars = []
       const lineColors = []
-      for (let col = selection.left; col <= selection.right; col += 1) {
+      for (let col = left; col <= right; col += 1) {
         lineChars.push(art.chars[row]?.[col] ?? ' ')
         lineColors.push(art.colors[row]?.[col] ?? null)
-        setChar(art, row, col, ' ')
-        setColor(art, row, col, null)
       }
       chars.push(lineChars)
       colors.push(lineColors)
     }
-    floating = { chars, colors, row: selection.top, col: selection.left }
+    return { chars, colors }
+  }
+
+  /** Lift the selected cells out of the art, leaving blank the cells behind them. */
+  const lift = () => {
+    const block = readBlock(selection.top, selection.left, selection.bottom, selection.right)
+    for (let row = selection.top; row <= selection.bottom; row += 1) {
+      for (let col = selection.left; col <= selection.right; col += 1) {
+        setChar(art, row, col, ' ')
+        setColor(art, row, col, null)
+      }
+    }
+    floating = { ...block, row: selection.top, col: selection.left }
   }
 
   /** Put a carried block back down, overwriting whatever is under it. */
@@ -252,25 +275,20 @@ function open(frame) {
     floating = null
   }
 
+  /** The area becomes the brush. A copy, so the art keeps what it had. */
+  const startBrush = () => {
+    if (!selection) return
+    stamp = readBlock(selection.top, selection.left, selection.bottom, selection.right)
+    drawing.brush = true
+    setTool('draw') // and that clears the box
+  }
+
   /** The art becomes the selection, and the selection has nothing left to hold. */
   const crop = () => {
     if (!selection) return
     remember()
     drop()
-    const { top, bottom, left, right } = selection
-    const chars = []
-    const colors = []
-    for (let row = top; row <= bottom; row += 1) {
-      const lineChars = []
-      const lineColors = []
-      for (let col = left; col <= right; col += 1) {
-        lineChars.push(art.chars[row]?.[col] ?? ' ')
-        lineColors.push(art.colors[row]?.[col] ?? null)
-      }
-      chars.push(lineChars)
-      colors.push(lineColors)
-    }
-    art = { chars, colors }
+    art = readBlock(selection.top, selection.left, selection.bottom, selection.right)
     selection = null
     drawGrid()
     syncPalette()
@@ -283,6 +301,65 @@ function open(frame) {
     selection = null
     repaintRect(was.top, was.left, was.bottom, was.right)
     syncPalette()
+  }
+
+  // --- text
+  const refreshCursor = (was) => {
+    if (was) repaintRect(was.row, was.col, was.row, was.col)
+    if (cursor) repaintRect(cursor.row, cursor.col, cursor.row, cursor.col)
+  }
+
+  const moveCursor = (down, right) => {
+    if (!cursor) return
+    const was = cursor
+    cursor = {
+      row: clamp(cursor.row + down, 0, grid.rows - 1),
+      col: clamp(cursor.col + right, 0, grid.cols - 1),
+    }
+    refreshCursor(was)
+  }
+
+  const typeChar = (char) => {
+    if (!cursor) return
+    remember()
+    setChar(art, cursor.row, cursor.col, char)
+    setColor(art, cursor.row, cursor.col, color)
+    const was = cursor
+    // Step on, wrapping to the next row, and stay put at the end of the art.
+    if (cursor.col + 1 < grid.cols) cursor = { row: cursor.row, col: cursor.col + 1 }
+    else if (cursor.row + 1 < grid.rows) cursor = { row: cursor.row + 1, col: 0 }
+    refreshCursor(was)
+  }
+
+  const backspace = () => {
+    if (!cursor) return
+    const was = cursor
+    // Step back first, then rub out what is under the cursor.
+    if (cursor.col > 0) cursor = { row: cursor.row, col: cursor.col - 1 }
+    else if (cursor.row > 0) cursor = { row: cursor.row - 1, col: grid.cols - 1 }
+    remember()
+    setChar(art, cursor.row, cursor.col, ' ')
+    setColor(art, cursor.row, cursor.col, null)
+    refreshCursor(was)
+  }
+
+  /** Text mode owns the keyboard, so the tool hotkeys have to wait their turn. */
+  const typeAtCursor = (event) => {
+    if (!cursor || tool !== 'text') return false
+    if (event.key === 'ArrowUp') moveCursor(-1, 0)
+    else if (event.key === 'ArrowDown') moveCursor(1, 0)
+    else if (event.key === 'ArrowLeft') moveCursor(0, -1)
+    else if (event.key === 'ArrowRight') moveCursor(0, 1)
+    else if (event.key === 'Backspace') backspace()
+    else if (event.key === 'Enter') {
+      const was = cursor
+      cursor = { row: Math.min(cursor.row + 1, grid.rows - 1), col: 0 }
+      refreshCursor(was)
+    } else if (event.key.length === 1) typeChar(event.key)
+    else return false
+    event.preventDefault()
+    event.stopPropagation()
+    return true
   }
 
   // --- palette
@@ -311,6 +388,12 @@ function open(frame) {
   const cropButton = action('crop', 'crop to the selection (x)', crop)
   $('[data-selection]').append(cropButton)
 
+  const stampButton = swatch('area', 'the brush is this area — click to drop it', () => {
+    stamp = null
+    syncPalette()
+  })
+  $('[data-brush]').append(stampButton)
+
   const drawButtons = FACETS.map((facet) => {
     const button = swatch(facet, `draw: ${facet}`, () => toggleDraw(facet))
     button.dataset.facet = facet
@@ -325,20 +408,25 @@ function open(frame) {
     return button
   })
 
-  const textureButtons = TEXTURES.map((char) =>
+  const glyphButtons = GLYPHS.map((char) =>
     swatch(
       char,
-      `character: ${char}`,
+      `brush: ${char}`,
       () => {
-        texture = char
-        drawing.texture = true // picking a glyph is how you ask to paint it
-        tool = 'draw'
+        glyph = char
+        stamp = null // picking a character is what makes the area brush temporary
+        if (tool === 'text')
+          typeChar(char) // clicking a glyph types it
+        else {
+          drawing.brush = true
+          setTool('draw')
+        }
         syncPalette()
       },
       'var(--color-green-900)',
     ),
   )
-  $('[data-textures]').append(...textureButtons)
+  $('[data-brush]').append(...glyphButtons)
 
   const colorButtons = STEPS.map((step, index) =>
     swatch(
@@ -350,11 +438,15 @@ function open(frame) {
   )
   $('[data-colors]').append(...colorButtons)
 
-  /** Any key or swatch that means "I want to draw now" comes back through here. */
   /** Leaving the select tool puts the box away: nothing else knows what to do with it. */
   function setTool(name) {
+    const was = tool
     tool = name
     if (name !== 'select') clearSelection()
+    if (name === 'text' && !cursor) cursor = { row: 0, col: 0 }
+    if (cursor && (was === 'text' || name === 'text')) {
+      repaintRect(cursor.row, cursor.col, cursor.row, cursor.col)
+    }
     syncPalette()
   }
 
@@ -363,10 +455,22 @@ function open(frame) {
     setTool('draw')
   }
 
+  /** `tab` walks the three ways of drawing, forward or back. */
+  function cycleDraw(step) {
+    const at = FACET_CYCLE.findIndex(
+      (state) => state.brush === drawing.brush && state.colour === drawing.colour,
+    )
+    const next =
+      FACET_CYCLE[(((at + step) % FACET_CYCLE.length) + FACET_CYCLE.length) % FACET_CYCLE.length]
+    drawing.brush = next.brush
+    drawing.colour = next.colour
+    setTool('draw')
+  }
+
   function pickColor(index) {
     color = STEPS[index] ?? null
     drawing.colour = true
-    setTool('draw')
+    setTool(tool === 'text' ? 'text' : 'draw') // typing wants its ink changed, not its tool
   }
 
   function selectTool(name) {
@@ -380,8 +484,11 @@ function open(frame) {
     for (const button of toolButtons) {
       button.setAttribute('aria-pressed', String(button.dataset.tool === tool))
     }
-    textureButtons.forEach((button, i) => {
-      button.setAttribute('aria-pressed', String(TEXTURES[i] === texture))
+    stampButton.hidden = stamp == null
+    stampButton.textContent = stamp ? `area ${bounds(stamp).cols}x${stamp.chars.length}` : 'area'
+    stampButton.setAttribute('aria-pressed', String(stamp != null))
+    glyphButtons.forEach((button, i) => {
+      button.setAttribute('aria-pressed', String(stamp == null && GLYPHS[i] === glyph))
     })
     colorButtons.forEach((button, i) => {
       button.setAttribute('aria-pressed', String(STEPS[i] === color))
@@ -414,7 +521,10 @@ function open(frame) {
     if (tool === 'eyedropper') {
       // Takes what drawing would have painted, then gets out of the way. The
       // stroke ends here: a drag must not carry on into drawing.
-      if (drawing.texture && char !== ' ') texture = char // a blank cell holds no glyph
+      if (drawing.brush && char !== ' ') {
+        glyph = char // a blank cell holds no glyph
+        stamp = null
+      }
       if (drawing.colour) color = art.colors[row]?.[col] ?? null
       tool = 'draw'
       painting = false
@@ -429,10 +539,30 @@ function open(frame) {
       return
     }
 
-    if (drawing.texture) setChar(art, row, col, texture)
+    if (stamp) {
+      // The block is the brush, and the cell under the pointer is its top left.
+      // Past the edge of the canvas it is cropped, not wrapped.
+      const width = bounds(stamp).cols
+      stamp.chars.forEach((line, r) => {
+        line.forEach((blockChar, c) => {
+          const at = { row: row + r, col: col + c }
+          if (at.row >= grid.rows || at.col >= grid.cols) return
+          if (drawing.brush) {
+            setChar(art, at.row, at.col, blockChar)
+            setColor(art, at.row, at.col, stamp.colors[r][c]) // a copy is whole
+          } else if (drawing.colour && (art.chars[at.row]?.[at.col] ?? ' ') !== ' ') {
+            setColor(art, at.row, at.col, stamp.colors[r][c])
+          }
+        })
+      })
+      repaintRect(row, col, row + stamp.chars.length - 1, col + width - 1)
+      return
+    }
+
+    if (drawing.brush) setChar(art, row, col, glyph)
     // Colour on its own only touches glyphs that are already there; alongside the
-    // glyph it is a whole cell being stamped.
-    if (drawing.colour && (drawing.texture || char !== ' ')) setColor(art, row, col, color)
+    // brush it is a whole cell being stamped.
+    if (drawing.colour && (drawing.brush || char !== ' ')) setColor(art, row, col, color)
     paintCell(cell, row, col)
   }
 
@@ -520,13 +650,21 @@ function open(frame) {
       selectDown(hit)
       return
     }
+    if (tool === 'text') {
+      // Placing the caret is not an edit, so it is not a step in the history.
+      const was = cursor
+      cursor = { row: hit.row, col: hit.col }
+      refreshCursor(was)
+      return
+    }
     // A stroke is the unit of history. The eyedropper changes the brush, not the
     // art, so it has nothing to remember.
-    if (tool === 'delete' || (tool === 'draw' && (drawing.texture || drawing.colour))) remember()
+    if (tool === 'delete' || (tool === 'draw' && (drawing.brush || drawing.colour))) remember()
     painting = true
     applyAt(hit.cell)
   })
   canvas.addEventListener('pointermove', (event) => {
+    if (tool === 'text') return
     if (tool === 'select') {
       const hit = hitAt(event)
       if (hit) selectDrag(hit)
@@ -543,35 +681,56 @@ function open(frame) {
   // the bubble phase and would otherwise scroll the page behind the overlay.
   const onKey = (event) => {
     const key = event.key.toLowerCase()
-    // Undo and redo keep the modifiers that every other key turns away.
-    if ((event.metaKey || event.ctrlKey) && key === 'z') {
+    const claim = () => {
       event.preventDefault()
       event.stopPropagation()
+    }
+
+    // Undo and redo keep the modifiers that every other key turns away.
+    if ((event.metaKey || event.ctrlKey) && key === 'z') {
+      claim()
       if (event.shiftKey) redoOnce()
       else undoOnce()
       return
     }
     if (event.metaKey || event.ctrlKey || event.altKey) return
+
     const target = event.target
     if (target instanceof Element && target.closest('input, textarea, select, [contenteditable]')) {
       event.stopPropagation() // the field keeps the key; the page behind keeps still
       return
     }
+
     if (event.key === 'Escape') {
-      event.preventDefault()
-      event.stopPropagation()
-      close()
+      claim()
+      if (tool === 'text')
+        setTool('draw') // one Escape puts the caret away, the next closes
+      else close()
       return
     }
+
+    // `tab` cycles the draw facets, which costs the overlay its focus traversal.
+    if (key === 'tab') {
+      claim()
+      cycleDraw(event.shiftKey ? -1 : 1)
+      return
+    }
+
+    if (typeAtCursor(event)) return
+
     if (!event.repeat && /^[0-9]$/.test(event.key)) {
       event.preventDefault()
       pickColor(Number(event.key))
-    } else if (!event.repeat && key === 't') {
+    } else if (!event.repeat && key === 'b') {
       event.preventDefault()
-      toggleDraw('texture')
+      if (selection) startBrush()
+      else toggleDraw('brush')
     } else if (!event.repeat && key === 'c') {
       event.preventDefault()
       toggleDraw('colour')
+    } else if (!event.repeat && key === 't') {
+      event.preventDefault()
+      selectTool('text')
     } else if (!event.repeat && key === 'e') {
       event.preventDefault()
       selectTool('eyedropper')
@@ -585,10 +744,10 @@ function open(frame) {
       event.preventDefault()
       crop()
     }
-    // Everything else stays out of the page behind. These three are left alone so
-    // a focused swatch still activates: stopping an event in the capture phase
-    // keeps it from reaching the element the key was aimed at.
-    if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Tab') event.stopPropagation()
+    // Everything else stays out of the page behind. Enter and space are left
+    // alone so a focused swatch still activates: stopping an event in the capture
+    // phase keeps it from reaching the element the key was aimed at.
+    if (event.key !== 'Enter' && event.key !== ' ') event.stopPropagation()
   }
 
   // --- close, cancel, save
