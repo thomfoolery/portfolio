@@ -13,8 +13,9 @@
  * The tools take over instead of drawing. `e` samples a cell's brush and ink,
  * `d` blanks cells, `s` draws a box that `x` crops to or that a drag carries
  * somewhere else, and `t` puts a cursor down to type at. With a box up, `b` also
- * turns that area into the brush — a copy, good for stamping until a character
- * is picked again. `cmd+z` and `shift+cmd+z` walk a stack of whole-canvas
+ * turns that area into the brush — a copy, centred on the pointer and projected
+ * onto the grid in place, so where it will land is visible before it does. Any
+ * character picked after that replaces it. `cmd+z` and `shift+cmd+z` walk a stack of whole-canvas
  * snapshots, one per stroke, twelve deep.
  *
  * It is loaded from Base.astro behind `import.meta.env.DEV`, so it never reaches
@@ -106,6 +107,10 @@ function open(frame) {
   let painting = false
   /** A block lifted out of a selection, which becomes the brush until dropped. */
   let stamp = null
+  /** Where the area brush would land, while the pointer is over the canvas. */
+  let ghost = null
+  /** The last cell the pointer was over, so a new brush can project at once. */
+  let lastHit = null
   /** Where the text cursor sits while the text tool is up. */
   let cursor = null
   /** The box the select tool works on, in grid coordinates. */
@@ -141,14 +146,24 @@ function open(frame) {
     col >= selection.left &&
     col <= selection.right
 
+  const inGhost = (row, col) =>
+    ghost != null &&
+    row >= ghost.row &&
+    row < ghost.row + ghost.rows &&
+    col >= ghost.col &&
+    col < ghost.col + ghost.cols
+
   /** What a cell shows: whatever is floating over it, otherwise the art itself. */
   const cellState = (row, col) => {
-    if (floating) {
-      const r = row - floating.row
-      const c = col - floating.col
-      const line = floating.chars[r]
-      if (line && c >= 0 && c < line.length) return { char: line[c], color: floating.colors[r][c] }
+    const from = (block) => {
+      const r = row - block.row
+      const c = col - block.col
+      if (r < 0 || r >= block.rows || c < 0 || c >= block.cols) return null
+      return { char: block.chars[r][c], color: block.colors[r][c] }
     }
+    // The projection covers the art, and a carried block covers both.
+    const state = (ghost && from(ghost)) || (floating && from(floating))
+    if (state) return state
     return { char: art.chars[row]?.[col] ?? ' ', color: art.colors[row]?.[col] ?? null }
   }
 
@@ -157,6 +172,7 @@ function open(frame) {
     cell.textContent = state.char
     cell.style.color = colorVar(state.color)
     cell.classList.toggle('ae-sel', inSelection(row, col))
+    cell.classList.toggle('ae-ghost', inGhost(row, col))
     cell.classList.toggle(
       'ae-cur',
       tool === 'text' && cursor != null && cursor.row === row && cursor.col === col,
@@ -170,6 +186,51 @@ function open(frame) {
         paintCell(canvas.children[row * grid.cols + col], row, col)
       }
     }
+  }
+
+  /** Repaint the union of two boxes, so a projection can move without a full grid. */
+  const repaintBlocks = (a, b) => {
+    if (!a) {
+      repaintRect(b.row, b.col, b.row + b.rows - 1, b.col + b.cols - 1)
+      return
+    }
+    repaintRect(
+      Math.min(a.row, b.row),
+      Math.min(a.col, b.col),
+      Math.max(a.row + a.rows - 1, b.row + b.rows - 1),
+      Math.max(a.col + a.cols - 1, b.col + b.cols - 1),
+    )
+  }
+
+  /** Where a block lands when the cell under the pointer is its centre. */
+  const centred = (block, row, col) => ({
+    row: row - Math.floor(block.rows / 2),
+    col: col - Math.floor(block.cols / 2),
+  })
+
+  /** Project the area brush where it would land, so it can be placed by eye. */
+  const previewAt = (hit) => {
+    if (!stamp || tool !== 'draw') return
+    const at = { ...stamp, ...centred(stamp, hit.row, hit.col) }
+    if (ghost && ghost.row === at.row && ghost.col === at.col) return
+    const was = ghost
+    ghost = at // set before the repaint, so the new place draws its own projection
+    repaintBlocks(was, at)
+  }
+
+  const hideGhost = () => {
+    if (!ghost) return
+    const was = ghost
+    ghost = null
+    repaintBlocks(null, was)
+  }
+
+  /** Changing the brush changes what a projection would show, so it goes. */
+  const setStamp = (next) => {
+    hideGhost()
+    stamp = next
+    syncPalette()
+    if (next && lastHit) previewAt(lastHit)
   }
 
   const drawGrid = () => {
@@ -248,7 +309,7 @@ function open(frame) {
       chars.push(lineChars)
       colors.push(lineColors)
     }
-    return { chars, colors }
+    return { chars, colors, rows: chars.length, cols: chars[0].length }
   }
 
   /** Lift the selected cells out of the art, leaving blank the cells behind them. */
@@ -278,9 +339,10 @@ function open(frame) {
   /** The area becomes the brush. A copy, so the art keeps what it had. */
   const startBrush = () => {
     if (!selection) return
-    stamp = readBlock(selection.top, selection.left, selection.bottom, selection.right)
+    const block = readBlock(selection.top, selection.left, selection.bottom, selection.right)
     drawing.brush = true
     setTool('draw') // and that clears the box
+    setStamp(block)
   }
 
   /** The art becomes the selection, and the selection has nothing left to hold. */
@@ -389,8 +451,7 @@ function open(frame) {
   $('[data-selection]').append(cropButton)
 
   const stampButton = swatch('area', 'the brush is this area — click to drop it', () => {
-    stamp = null
-    syncPalette()
+    setStamp(null)
   })
   $('[data-brush]').append(stampButton)
 
@@ -414,7 +475,7 @@ function open(frame) {
       `brush: ${char}`,
       () => {
         glyph = char
-        stamp = null // picking a character is what makes the area brush temporary
+        setStamp(null) // picking a character is what makes the area brush temporary
         if (tool === 'text')
           typeChar(char) // clicking a glyph types it
         else {
@@ -443,6 +504,7 @@ function open(frame) {
     const was = tool
     tool = name
     if (name !== 'select') clearSelection()
+    if (name !== 'draw') hideGhost() // the projection belongs to drawing
     if (name === 'text' && !cursor) cursor = { row: 0, col: 0 }
     if (cursor && (was === 'text' || name === 'text')) {
       repaintRect(cursor.row, cursor.col, cursor.row, cursor.col)
@@ -485,7 +547,7 @@ function open(frame) {
       button.setAttribute('aria-pressed', String(button.dataset.tool === tool))
     }
     stampButton.hidden = stamp == null
-    stampButton.textContent = stamp ? `area ${bounds(stamp).cols}x${stamp.chars.length}` : 'area'
+    stampButton.textContent = stamp ? `area ${stamp.cols}x${stamp.rows}` : 'area'
     stampButton.setAttribute('aria-pressed', String(stamp != null))
     glyphButtons.forEach((button, i) => {
       button.setAttribute('aria-pressed', String(stamp == null && GLYPHS[i] === glyph))
@@ -523,7 +585,7 @@ function open(frame) {
       // stroke ends here: a drag must not carry on into drawing.
       if (drawing.brush && char !== ' ') {
         glyph = char // a blank cell holds no glyph
-        stamp = null
+        setStamp(null)
       }
       if (drawing.colour) color = art.colors[row]?.[col] ?? null
       tool = 'draw'
@@ -540,22 +602,23 @@ function open(frame) {
     }
 
     if (stamp) {
-      // The block is the brush, and the cell under the pointer is its top left.
-      // Past the edge of the canvas it is cropped, not wrapped.
-      const width = bounds(stamp).cols
+      // The block is the brush, centred on the cell under the pointer. Past the
+      // edge of the canvas it is cropped, not wrapped.
+      const at = centred(stamp, row, col)
       stamp.chars.forEach((line, r) => {
         line.forEach((blockChar, c) => {
-          const at = { row: row + r, col: col + c }
-          if (at.row >= grid.rows || at.col >= grid.cols) return
+          const cell = { row: at.row + r, col: at.col + c }
+          if (cell.row < 0 || cell.col < 0) return
+          if (cell.row >= grid.rows || cell.col >= grid.cols) return
           if (drawing.brush) {
-            setChar(art, at.row, at.col, blockChar)
-            setColor(art, at.row, at.col, stamp.colors[r][c]) // a copy is whole
-          } else if (drawing.colour && (art.chars[at.row]?.[at.col] ?? ' ') !== ' ') {
-            setColor(art, at.row, at.col, stamp.colors[r][c])
+            setChar(art, cell.row, cell.col, blockChar)
+            setColor(art, cell.row, cell.col, stamp.colors[r][c]) // a copy is whole
+          } else if (drawing.colour && (art.chars[cell.row]?.[cell.col] ?? ' ') !== ' ') {
+            setColor(art, cell.row, cell.col, stamp.colors[r][c])
           }
         })
       })
-      repaintRect(row, col, row + stamp.chars.length - 1, col + width - 1)
+      repaintRect(at.row, at.col, at.row + stamp.rows - 1, at.col + stamp.cols - 1)
       return
     }
 
@@ -589,14 +652,18 @@ function open(frame) {
 
   const selectDrag = (hit) => {
     if (grab && floating) {
-      const block = { rows: floating.chars.length, cols: bounds(floating).cols }
-      const row = clamp(grab.from.row + (hit.row - grab.row), 0, grid.rows - block.rows)
-      const col = clamp(grab.from.col + (hit.col - grab.col), 0, grid.cols - block.cols)
+      const row = clamp(grab.from.row + (hit.row - grab.row), 0, grid.rows - floating.rows)
+      const col = clamp(grab.from.col + (hit.col - grab.col), 0, grid.cols - floating.cols)
       if (row === floating.row && col === floating.col) return
       const was = selection
       floating.row = row
       floating.col = col
-      selection = { top: row, bottom: row + block.rows - 1, left: col, right: col + block.cols - 1 }
+      selection = {
+        top: row,
+        bottom: row + floating.rows - 1,
+        left: col,
+        right: col + floating.cols - 1,
+      }
       repaintRect(
         Math.min(was.top, selection.top),
         Math.min(was.left, selection.left),
@@ -646,6 +713,7 @@ function open(frame) {
   canvas.addEventListener('pointerdown', (event) => {
     const hit = hitAt(event)
     if (!hit) return
+    lastHit = hit
     if (tool === 'select') {
       selectDown(hit)
       return
@@ -657,6 +725,7 @@ function open(frame) {
       refreshCursor(was)
       return
     }
+    if (tool === 'draw') previewAt(hit)
     // A stroke is the unit of history. The eyedropper changes the brush, not the
     // art, so it has nothing to remember.
     if (tool === 'delete' || (tool === 'draw' && (drawing.brush || drawing.colour))) remember()
@@ -665,14 +734,19 @@ function open(frame) {
   })
   canvas.addEventListener('pointermove', (event) => {
     if (tool === 'text') return
+    const hit = hitAt(event)
+    if (!hit) return
+    lastHit = hit
     if (tool === 'select') {
-      const hit = hitAt(event)
-      if (hit) selectDrag(hit)
+      selectDrag(hit)
       return
     }
-    if (!painting) return
-    const hit = hitAt(event)
-    if (hit) applyAt(hit.cell)
+    if (tool === 'draw') previewAt(hit)
+    if (painting) applyAt(hit.cell)
+  })
+  canvas.addEventListener('pointerleave', () => {
+    lastHit = null
+    hideGhost()
   })
   window.addEventListener('pointerup', stopPainting)
 
@@ -703,8 +777,9 @@ function open(frame) {
 
     if (event.key === 'Escape') {
       claim()
-      if (tool === 'text')
-        setTool('draw') // one Escape puts the caret away, the next closes
+      // One Escape puts the tool down — the box and the caret both hold
+      // something — and the next closes the overlay.
+      if (tool === 'select' || tool === 'text') setTool('draw')
       else close()
       return
     }

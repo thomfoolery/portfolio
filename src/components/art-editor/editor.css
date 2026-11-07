@@ -93,6 +93,11 @@
 .ae-cell.ae-cur {
   background-color: color-mix(in srgb, var(--color-green-900) 70%, transparent);
 }
+/* The area brush's landing place: the block itself, dimmed, over the art. */
+.ae-cell.ae-ghost {
+  background-color: color-mix(in srgb, var(--color-green-900) 25%, transparent);
+  opacity: 0.6;
+}
 
 .ae-palette {
   flex: none;
