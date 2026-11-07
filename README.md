@@ -55,8 +55,9 @@ src/
 ## Typography
 
 The page draws one typeface, and it ships it: **Commit Mono** (OFL 1.1, notice in
-`src/fonts/CommitMono-OFL.txt`), subset to the 102 characters the page actually
-contains — printable ASCII, `©`, and the six block glyphs the art is built from.
+`src/fonts/CommitMono-OFL.txt`), subset to the characters the page draws:
+printable ASCII, `©`, the block glyphs the art is built from, and the handful the
+dev-only editor paints with.
 It is variable, `wght 200-700`, so the page's three roles take three weights:
 prose 200, the terminal's own voice 300, headlines 700, and the nav's button-links 600. `➚` is the one character Commit Mono has no glyph for, so that prose marker
 falls back to a system face.
@@ -70,7 +71,7 @@ python3 -m venv /tmp/venv && /tmp/venv/bin/pip install fonttools brotli
 curl -O https://raw.githubusercontent.com/eigilnikolajsen/commit-mono/main/src/fonts/fontlab/CommitMonoV143-VF.ttf
 /tmp/venv/bin/python -m fontTools.varLib.instancer CommitMonoV143-VF.ttf ital=0 --output /tmp/vf.ttf
 /tmp/venv/bin/pyftsubset /tmp/vf.ttf --flavor=woff2 --layout-features='' \
-  --unicodes='U+0020-007E,U+00A9,U+2580,U+2584,U+2588,U+2591,U+2592,U+2593' \
+  --unicodes='U+0020-007E,U+00A9,U+00B7,U+00D7,U+2580,U+2584,U+2588,U+258C,U+2590,U+2591,U+2592,U+2593' \
   --output-file=src/fonts/commit-mono-subset.woff2
 ```
 

@@ -6,10 +6,11 @@
 @source '../**/*.ts';
 @source '../**/*.html';
 
-/* Commit Mono, subset to the 102 characters this page draws: printable ASCII,
-   ©, and the six block glyphs the art is built from. One variable file, wght
-   200-700, ital pinned to 0 and no OpenType features — a ligature could reflow
-   the art. README.md carries the command that regenerates it. */
+/* Commit Mono, subset to the characters this page draws — printable ASCII, ©,
+   and the block glyphs the art is built from — plus the few the dev-only editor
+   paints with, so no swatch can put a glyph in the art that the font cannot
+   draw. One variable file, wght 200-700, ital pinned to 0, and no OpenType
+   features: a ligature could reflow the art. README.md has the command. */
 @font-face {
   font-family: 'Commit Mono';
   src: url('../fonts/commit-mono-subset.woff2') format('woff2');
