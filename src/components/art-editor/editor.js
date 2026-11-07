@@ -11,6 +11,8 @@
  * eyedropper and delete are tools instead, and while either is up the toggles do
  * not draw. A pick takes whatever the toggles say is being drawn — which is also
  * what its own highlights show — and then hands the editor back to drawing.
+ * `cmd+z` and `shift+cmd+z` walk a stack of whole-canvas snapshots, one per
+ * stroke, twelve deep.
  *
  * It is loaded from Base.astro behind `import.meta.env.DEV`, so it never reaches
  * a build and nothing here ships.
@@ -25,6 +27,8 @@ const FACETS = ['texture', 'colour']
 const TOOLS = ['eyedropper', 'delete']
 const ENDPOINT = '/__art-editor/save'
 const DEFAULT_COLOR = COLORS[3]
+/** How many strokes back `cmd+z` reaches. */
+const UNDO_LIMIT = 12
 
 const CHROME = `
   <header class="ae-bar">
@@ -130,6 +134,44 @@ function open(frame) {
     rowsInput.value = String(rows)
   }
 
+  // --- history
+  // One entry per stroke rather than per cell, and past the limit the oldest
+  // falls off. Snapshots are copied on the way in and on the way out, so what a
+  // stack holds is never the array the editor is drawing on.
+  const snapshot = (source) => ({
+    chars: source.chars.map((row) => [...row]),
+    colors: source.colors.map((row) => [...row]),
+  })
+  const undoStack = []
+  const redoStack = []
+
+  const remember = () => {
+    undoStack.push(snapshot(art))
+    if (undoStack.length > UNDO_LIMIT) undoStack.shift()
+    redoStack.length = 0 // a fresh edit abandons the redo branch
+  }
+
+  const restore = (state) => {
+    art = snapshot(state)
+    drawGrid() // the size inputs follow, so an undone resize shows its old numbers
+  }
+
+  function undoOnce() {
+    const state = undoStack.pop()
+    if (!state) return
+    redoStack.push(snapshot(art))
+    if (redoStack.length > UNDO_LIMIT) redoStack.shift()
+    restore(state)
+  }
+
+  function redoOnce() {
+    const state = redoStack.pop()
+    if (!state) return
+    undoStack.push(snapshot(art))
+    if (undoStack.length > UNDO_LIMIT) undoStack.shift()
+    restore(state)
+  }
+
   // --- palette
   const swatch = (label, title, onPick, color) => {
     const button = document.createElement('button')
@@ -221,6 +263,7 @@ function open(frame) {
   const applySize = () => {
     const cols = Math.min(400, Math.max(1, Number(colsInput.value) || 1))
     const rows = Math.min(200, Math.max(1, Number(rowsInput.value) || 1))
+    remember()
     art = resize(art, cols, rows)
     drawGrid()
   }
@@ -267,6 +310,9 @@ function open(frame) {
     painting = false
   }
   canvas.addEventListener('pointerdown', (event) => {
+    // A stroke is the unit of history. The eyedropper changes the brush, not the
+    // art, so it has nothing to remember.
+    if (tool === 'delete' || (tool === 'draw' && (drawing.texture || drawing.colour))) remember()
     painting = true
     paintAt(event)
   })
@@ -279,6 +325,15 @@ function open(frame) {
   // Capture, on the document: the nav's global hotkeys listen for bare keys in
   // the bubble phase and would otherwise scroll the page behind the overlay.
   const onKey = (event) => {
+    const key = event.key.toLowerCase()
+    // Undo and redo keep the modifiers that every other key turns away.
+    if ((event.metaKey || event.ctrlKey) && key === 'z') {
+      event.preventDefault()
+      event.stopPropagation()
+      if (event.shiftKey) redoOnce()
+      else undoOnce()
+      return
+    }
     if (event.metaKey || event.ctrlKey || event.altKey) return
     const target = event.target
     if (target instanceof Element && target.closest('input, textarea, select, [contenteditable]')) {
@@ -291,7 +346,6 @@ function open(frame) {
       close()
       return
     }
-    const key = event.key.toLowerCase()
     if (!event.repeat && /^[0-9]$/.test(event.key)) {
       event.preventDefault()
       pickColor(Number(event.key))
