@@ -3,7 +3,7 @@ import hotkeys from './hotkeys.js?raw'
 import { navItems } from '@/data/nav'
 ---
 
-<nav aria-label="Main" class="sticky top-0 bg-black pt-[1rem] shadow-black">
+<nav aria-label="Main" class="sticky top-0 bg-black pt-[1rem] shadow-black z-100">
   <ul class="flex flex-wrap gap-x-[2ch]">
     {navItems.map((item) => (
       <li class={item.right ? 'ml-auto' : undefined}>
