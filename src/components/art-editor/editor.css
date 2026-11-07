@@ -85,6 +85,10 @@
   height: 1em;
   text-align: center;
 }
+/* The select tool's box. Cells are contiguous, so a fill reads as one rectangle. */
+.ae-cell.ae-sel {
+  background-color: color-mix(in srgb, var(--color-green-900) 35%, transparent);
+}
 
 .ae-palette {
   flex: none;
@@ -145,4 +149,13 @@
 .ae-button:focus-visible {
   background: var(--color-green-900);
   color: var(--color-black);
+}
+.ae-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.ae-button:disabled:hover,
+.ae-button:disabled:focus-visible {
+  background: var(--color-black);
+  color: var(--color-green-900);
 }

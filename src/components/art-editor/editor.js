@@ -14,6 +14,11 @@
  * `cmd+z` and `shift+cmd+z` walk a stack of whole-canvas snapshots, one per
  * stroke, twelve deep.
  *
+ * `s` gives the select tool: drag a box on the grid, then either `x` crops the
+ * art to it, or drag inside the box to carry those cells somewhere else. A move
+ * lifts the cells out of the art — leaving blanks behind — and drops them
+ * wherever the pointer lets go, overwriting what was there.
+ *
  * It is loaded from Base.astro behind `import.meta.env.DEV`, so it never reaches
  * a build and nothing here ships.
  */
@@ -24,7 +29,7 @@ const TEXTURES = ['░', '▒', '▓', '█', '▀', '▄', '▌', '▐', '·']
 /** Swatch order, and the order the `0`-`9` hotkeys follow. `null` is the section's own colour. */
 const STEPS = [null, ...COLORS]
 const FACETS = ['texture', 'colour']
-const TOOLS = ['eyedropper', 'delete']
+const TOOLS = ['eyedropper', 'delete', 'select']
 const ENDPOINT = '/__art-editor/save'
 const DEFAULT_COLOR = COLORS[3]
 /** How many strokes back `cmd+z` reaches. */
@@ -42,8 +47,10 @@ const CHROME = `
     <aside class="ae-palette">
       <h2>draw <span class="ae-hint">t / c</span></h2>
       <div class="ae-tools" data-draw></div>
-      <h2>tool <span class="ae-hint">e / d</span></h2>
+      <h2>tool <span class="ae-hint">e / d / s</span></h2>
       <div class="ae-tools" data-tools></div>
+      <h2>selection <span class="ae-hint">x</span></h2>
+      <div class="ae-tools" data-selection></div>
       <h2>character</h2>
       <div class="ae-swatches" data-textures></div>
       <h2>colour <span class="ae-hint">0-9</span></h2>
@@ -92,6 +99,15 @@ function open(frame) {
   let texture = TEXTURES[0]
   let color = DEFAULT_COLOR
   let painting = false
+  /** The box the select tool works on, in grid coordinates. */
+  let selection = null
+  /** Cells lifted out of the art while a selection is being carried. */
+  let floating = null
+  /** Where a new box started, and where a carry was grabbed. */
+  let anchor = null
+  let grab = null
+  /** The drawn grid's shape, for turning a coordinate back into a cell. */
+  let grid = { cols: 0, rows: 0 }
 
   const overlay = document.createElement('div')
   overlay.className = 'ae-overlay'
@@ -109,13 +125,43 @@ function open(frame) {
   const rowsInput = $('[data-rows]')
   $('[data-path]').textContent = path
 
+  const inSelection = (row, col) =>
+    selection != null &&
+    row >= selection.top &&
+    row <= selection.bottom &&
+    col >= selection.left &&
+    col <= selection.right
+
+  /** What a cell shows: whatever is floating over it, otherwise the art itself. */
+  const cellState = (row, col) => {
+    if (floating) {
+      const r = row - floating.row
+      const c = col - floating.col
+      const line = floating.chars[r]
+      if (line && c >= 0 && c < line.length) return { char: line[c], color: floating.colors[r][c] }
+    }
+    return { char: art.chars[row]?.[col] ?? ' ', color: art.colors[row]?.[col] ?? null }
+  }
+
   const paintCell = (cell, row, col) => {
-    cell.textContent = art.chars[row]?.[col] ?? ' '
-    cell.style.color = colorVar(art.colors[row]?.[col] ?? null)
+    const state = cellState(row, col)
+    cell.textContent = state.char
+    cell.style.color = colorVar(state.color)
+    cell.classList.toggle('ae-sel', inSelection(row, col))
+  }
+
+  /** Repaint a rectangle of the grid. Only a move or a box ever needs one. */
+  const repaintRect = (top, left, bottom, right) => {
+    for (let row = Math.max(0, top); row <= Math.min(grid.rows - 1, bottom); row += 1) {
+      for (let col = Math.max(0, left); col <= Math.min(grid.cols - 1, right); col += 1) {
+        paintCell(canvas.children[row * grid.cols + col], row, col)
+      }
+    }
   }
 
   const drawGrid = () => {
     const { cols, rows } = bounds(art)
+    grid = { cols, rows }
     canvas.style.gridTemplateColumns = `repeat(${cols}, 1ch)`
     const cells = document.createDocumentFragment()
     for (let row = 0; row < rows; row += 1) {
@@ -172,6 +218,73 @@ function open(frame) {
     restore(state)
   }
 
+  // --- selection
+  const clamp = (value, low, high) => Math.min(high, Math.max(low, value))
+
+  /** Lift the selected cells out of the art, leaving blank the cells behind them. */
+  const lift = () => {
+    const chars = []
+    const colors = []
+    for (let row = selection.top; row <= selection.bottom; row += 1) {
+      const lineChars = []
+      const lineColors = []
+      for (let col = selection.left; col <= selection.right; col += 1) {
+        lineChars.push(art.chars[row]?.[col] ?? ' ')
+        lineColors.push(art.colors[row]?.[col] ?? null)
+        setChar(art, row, col, ' ')
+        setColor(art, row, col, null)
+      }
+      chars.push(lineChars)
+      colors.push(lineColors)
+    }
+    floating = { chars, colors, row: selection.top, col: selection.left }
+  }
+
+  /** Put a carried block back down, overwriting whatever is under it. */
+  const drop = () => {
+    if (!floating) return
+    floating.chars.forEach((line, r) => {
+      line.forEach((char, c) => {
+        setChar(art, floating.row + r, floating.col + c, char)
+        setColor(art, floating.row + r, floating.col + c, floating.colors[r][c])
+      })
+    })
+    floating = null
+  }
+
+  /** The art becomes the selection, and the selection has nothing left to hold. */
+  const crop = () => {
+    if (!selection) return
+    remember()
+    drop()
+    const { top, bottom, left, right } = selection
+    const chars = []
+    const colors = []
+    for (let row = top; row <= bottom; row += 1) {
+      const lineChars = []
+      const lineColors = []
+      for (let col = left; col <= right; col += 1) {
+        lineChars.push(art.chars[row]?.[col] ?? ' ')
+        lineColors.push(art.colors[row]?.[col] ?? null)
+      }
+      chars.push(lineChars)
+      colors.push(lineColors)
+    }
+    art = { chars, colors }
+    selection = null
+    drawGrid()
+    syncPalette()
+  }
+
+  const clearSelection = () => {
+    if (!selection) return
+    drop() // a block that is mid-carry is never the thing to throw away
+    const was = selection
+    selection = null
+    repaintRect(was.top, was.left, was.bottom, was.right)
+    syncPalette()
+  }
+
   // --- palette
   const swatch = (label, title, onPick, color) => {
     const button = document.createElement('button')
@@ -184,6 +297,19 @@ function open(frame) {
     button.addEventListener('click', onPick)
     return button
   }
+
+  const action = (label, title, onClick) => {
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.className = 'ae-button'
+    button.textContent = label
+    button.title = title
+    button.addEventListener('click', onClick)
+    return button
+  }
+
+  const cropButton = action('crop', 'crop to the selection (x)', crop)
+  $('[data-selection]').append(cropButton)
 
   const drawButtons = FACETS.map((facet) => {
     const button = swatch(facet, `draw: ${facet}`, () => toggleDraw(facet))
@@ -225,22 +351,26 @@ function open(frame) {
   $('[data-colors]').append(...colorButtons)
 
   /** Any key or swatch that means "I want to draw now" comes back through here. */
+  /** Leaving the select tool puts the box away: nothing else knows what to do with it. */
+  function setTool(name) {
+    tool = name
+    if (name !== 'select') clearSelection()
+    syncPalette()
+  }
+
   function toggleDraw(facet) {
     drawing[facet] = !drawing[facet]
-    tool = 'draw'
-    syncPalette()
+    setTool('draw')
   }
 
   function pickColor(index) {
     color = STEPS[index] ?? null
     drawing.colour = true
-    tool = 'draw'
-    syncPalette()
+    setTool('draw')
   }
 
   function selectTool(name) {
-    tool = tool === name ? 'draw' : name // the button toggles, so it can also get you out
-    syncPalette()
+    setTool(tool === name ? 'draw' : name) // the button toggles, so it can also get you out
   }
 
   function syncPalette() {
@@ -256,6 +386,10 @@ function open(frame) {
     colorButtons.forEach((button, i) => {
       button.setAttribute('aria-pressed', String(STEPS[i] === color))
     })
+    cropButton.disabled = selection == null
+    cropButton.title = selection
+      ? `crop to ${selection.right - selection.left + 1} x ${selection.bottom - selection.top + 1} (x)`
+      : 'crop to the selection (x)'
   }
   syncPalette()
 
@@ -264,6 +398,7 @@ function open(frame) {
     const cols = Math.min(400, Math.max(1, Number(colsInput.value) || 1))
     const rows = Math.min(200, Math.max(1, Number(rowsInput.value) || 1))
     remember()
+    clearSelection() // the box was measured against the old shape
     art = resize(art, cols, rows)
     drawGrid()
   }
@@ -301,23 +436,105 @@ function open(frame) {
     paintCell(cell, row, col)
   }
 
-  const paintAt = (event) => {
+  const hitAt = (event) => {
     const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest('.ae-cell')
-    if (cell) applyAt(cell)
+    if (!cell) return null
+    return { row: Number(cell.dataset.row), col: Number(cell.dataset.col), cell }
+  }
+
+  const selectDown = (hit) => {
+    if (selection && inSelection(hit.row, hit.col)) {
+      remember() // a carry is one step, like a stroke
+      lift()
+      grab = { row: hit.row, col: hit.col, from: { row: floating.row, col: floating.col } }
+      return
+    }
+    floating = null
+    grab = null
+    anchor = { row: hit.row, col: hit.col }
+    selection = { top: hit.row, bottom: hit.row, left: hit.col, right: hit.col }
+    repaintRect(hit.row, hit.col, hit.row, hit.col)
+    syncPalette()
+  }
+
+  const selectDrag = (hit) => {
+    if (grab && floating) {
+      const block = { rows: floating.chars.length, cols: bounds(floating).cols }
+      const row = clamp(grab.from.row + (hit.row - grab.row), 0, grid.rows - block.rows)
+      const col = clamp(grab.from.col + (hit.col - grab.col), 0, grid.cols - block.cols)
+      if (row === floating.row && col === floating.col) return
+      const was = selection
+      floating.row = row
+      floating.col = col
+      selection = { top: row, bottom: row + block.rows - 1, left: col, right: col + block.cols - 1 }
+      repaintRect(
+        Math.min(was.top, selection.top),
+        Math.min(was.left, selection.left),
+        Math.max(was.bottom, selection.bottom),
+        Math.max(was.right, selection.right),
+      )
+      syncPalette()
+      return
+    }
+    if (!anchor) return
+    const was = selection
+    selection = {
+      top: Math.min(anchor.row, hit.row),
+      bottom: Math.max(anchor.row, hit.row),
+      left: Math.min(anchor.col, hit.col),
+      right: Math.max(anchor.col, hit.col),
+    }
+    repaintRect(
+      Math.min(was.top, selection.top),
+      Math.min(was.left, selection.left),
+      Math.max(was.bottom, selection.bottom),
+      Math.max(was.right, selection.right),
+    )
+    syncPalette()
+  }
+
+  const selectUp = () => {
+    if (floating) {
+      drop()
+      repaintRect(selection.top, selection.left, selection.bottom, selection.right)
+    } else if (anchor && selection.bottom === anchor.row && selection.right === anchor.col) {
+      // A click that never moved means no selection, rather than a box of one.
+      const was = selection
+      selection = null
+      repaintRect(was.top, was.left, was.bottom, was.right)
+    }
+    anchor = null
+    grab = null
+    syncPalette()
   }
 
   const stopPainting = () => {
     painting = false
+    selectUp()
   }
+
   canvas.addEventListener('pointerdown', (event) => {
+    const hit = hitAt(event)
+    if (!hit) return
+    if (tool === 'select') {
+      selectDown(hit)
+      return
+    }
     // A stroke is the unit of history. The eyedropper changes the brush, not the
     // art, so it has nothing to remember.
     if (tool === 'delete' || (tool === 'draw' && (drawing.texture || drawing.colour))) remember()
     painting = true
-    paintAt(event)
+    applyAt(hit.cell)
   })
   canvas.addEventListener('pointermove', (event) => {
-    if (painting) paintAt(event)
+    if (tool === 'select') {
+      const hit = hitAt(event)
+      if (hit) selectDrag(hit)
+      return
+    }
+    if (!painting) return
+    const hit = hitAt(event)
+    if (hit) applyAt(hit.cell)
   })
   window.addEventListener('pointerup', stopPainting)
 
@@ -361,6 +578,12 @@ function open(frame) {
     } else if (!event.repeat && key === 'd') {
       event.preventDefault()
       selectTool('delete')
+    } else if (!event.repeat && key === 's') {
+      event.preventDefault()
+      selectTool('select')
+    } else if (!event.repeat && key === 'x') {
+      event.preventDefault()
+      crop()
     }
     // Everything else stays out of the page behind. These three are left alone so
     // a focused swatch still activates: stopping an event in the capture phase
