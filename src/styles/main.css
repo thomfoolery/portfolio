@@ -6,6 +6,18 @@
 @source '../**/*.ts';
 @source '../**/*.html';
 
+/* Commit Mono, subset to the 102 characters this page draws: printable ASCII,
+   ©, and the six block glyphs the art is built from. One variable file, wght
+   200-700, ital pinned to 0 and no OpenType features — a ligature could reflow
+   the art. README.md carries the command that regenerates it. */
+@font-face {
+  font-family: 'Commit Mono';
+  src: url('../fonts/commit-mono-subset.woff2') format('woff2');
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Phosphor scale, Tailwind-style: 900 is full phosphor, each step down is 10% less opaque */
 @theme {
   --color-green-900: #00ff00;
@@ -23,7 +35,8 @@
        mt-1 is one terminal line, mt-3 is three, gap-6 is six. */
   --spacing: 1.6em;
 
-  --font-mono: ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', 'Courier New', monospace;
+  --font-mono:
+    'Commit Mono', ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', 'Courier New', monospace;
   --default-font-family: var(--font-mono);
 
   --leading-tight: 1.2em; /* art rows, so block characters touch with no seam */
@@ -54,7 +67,10 @@
            Rounded to whole px so rows of block art land on pixel edges, with no
            hairline seams between them. */
     font-size: round(down, min(16px, calc((100vw - 24px) / 43.5)), 1px);
-    font-weight: 100;
+    /* The terminal's own voice: art, rules, hints. Commit Mono bottoms out at
+        200, so this is 300 — one step above prose, where `font-weight: 100`
+        used to land by falling through to the system mono's Light. */
+    font-weight: 300;
     line-height: 1.6em;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -65,7 +81,23 @@
   h3,
   small {
     font-size: inherit;
-    font-weight: inherit;
+  }
+
+  /* Three roles, three weights: prose a step below the terminal's 300, headlines
+     at the boldest instance the font has, and the links that behave as buttons —
+     the nav — between them. */
+  p,
+  li,
+  small {
+    font-weight: 200;
+  }
+  h1,
+  h2,
+  h3 {
+    font-weight: 700;
+  }
+  nav a {
+    font-weight: 600;
   }
 
   pre {

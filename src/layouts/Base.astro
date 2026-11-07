@@ -1,5 +1,6 @@
 ---
 import '@/styles/main.css'
+import fontUrl from '@/fonts/commit-mono-subset.woff2?url'
 
 interface Props {
   title: string
@@ -17,6 +18,8 @@ const dev = import.meta.env.DEV
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <!-- The font draws the first viewport, so fetch it alongside the stylesheet. -->
+    <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
     <!-- super-low bandwidth tribute to cultdeadcow.com -->
   </head>
   <body>

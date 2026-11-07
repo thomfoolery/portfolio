@@ -25,8 +25,9 @@ with its hashed stylesheet.
 Serve `dist/`. It is flat HTML plus one hashed stylesheet:
 
 ```
-dist/index.html      the résumé, block art, job entries collapsible
-dist/_astro/*.css    the hashed stylesheet
+dist/index.html                 the résumé, block art, job entries collapsible
+dist/_astro/*.css               the hashed stylesheet
+dist/_astro/*.woff2             the hashed Commit Mono subset
 ```
 
 Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
@@ -44,11 +45,38 @@ src/
     welcome/        Welcome, the introduction
     hotkeys.js      the nav's script, inlined into the page at build time
   data/             nav.ts, jobs.ts, honors.ts, grid.ts and the art
-    art/            the ASCII art, as .html fragments (30-45% of the page)
+    art/            the ASCII art, as character and colour arrays
+  fonts/            the Commit Mono subset, with its OFL licence
   layouts/          Base.astro, the document shell
   pages/            index.astro, the one page
   styles/           main.css (Tailwind theme, base and components)
 ```
+
+## Typography
+
+The page draws one typeface, and it ships it: **Commit Mono** (OFL 1.1, notice in
+`src/fonts/CommitMono-OFL.txt`), subset to the 102 characters the page actually
+contains — printable ASCII, `©`, and the six block glyphs the art is built from.
+It is variable, `wght 200-700`, so the page's three roles take three weights:
+prose 200, the terminal's own voice 300, headlines 700, and the nav's button-links 600. `➚` is the one character Commit Mono has no glyph for, so that prose marker
+falls back to a system face.
+
+The subset is committed, so a build needs no font tooling. To regenerate it after
+a version bump — `pyftsubset` in a throwaway venv, never a project dependency:
+
+```sh
+python3 -m venv /tmp/venv && /tmp/venv/bin/pip install fonttools brotli
+
+curl -O https://raw.githubusercontent.com/eigilnikolajsen/commit-mono/main/src/fonts/fontlab/CommitMonoV143-VF.ttf
+/tmp/venv/bin/python -m fontTools.varLib.instancer CommitMonoV143-VF.ttf ital=0 --output /tmp/vf.ttf
+/tmp/venv/bin/pyftsubset /tmp/vf.ttf --flavor=woff2 --layout-features='' \
+  --unicodes='U+0020-007E,U+00A9,U+2580,U+2584,U+2588,U+2591,U+2592,U+2593' \
+  --output-file=src/fonts/commit-mono-subset.woff2
+```
+
+`--layout-features=''` is load-bearing: a ligature in the art would reflow the
+grid. Check any new subset the same way — every glyph it ships must advance
+0.6000em, or 72 columns stop lining up.
 
 ## How it fits together
 
@@ -67,9 +95,10 @@ is asked for, so the header stays a `<header>` and the footer a `<footer>`.
 **One thing stays hand-written.** The `[+]/[-]` disclosure markers are in plain
 CSS, because Tailwind cannot express them and should not try.
 
-**The art is content.** It is injected from `src/data/art/*.html` through a
-`display: contents` wrapper, so it does not become a component and costs no
-extra layout.
+**The art is content.** Each block in `src/data/art/` is two arrays — characters
+and colours — rendered to markup at build time and injected through a
+`display: contents` wrapper, so it does not become a component and costs no extra
+layout.
 
 **Two whitespace rules worth knowing.** The template compiler condenses runs of
 whitespace and drops leading or trailing whitespace inside an element, and this
