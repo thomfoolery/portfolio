@@ -215,15 +215,23 @@ function open(frame) {
     )
   }
 
-  /** Where a block lands when the cell under the pointer is its centre. */
+  /**
+   * Where a block lands when the cell under the pointer is its centre, clamped
+   * into the canvas. Cropping at the edge instead of clamping would drop the
+   * block's top rows and write its lower rows into row 0 — which is how the
+   * first row of the art kept getting overwritten by a stamp aimed elsewhere.
+   */
   const centred = (block, row, col) => ({
-    row: row - Math.floor(block.rows / 2),
-    col: col - Math.floor(block.cols / 2),
+    row: clamp(row - Math.floor(block.rows / 2), 0, grid.rows - block.rows),
+    col: clamp(col - Math.floor(block.cols / 2), 0, grid.cols - block.cols),
   })
+
+  /** A block bigger than the canvas has nowhere to go. */
+  const fits = (block) => block.rows <= grid.rows && block.cols <= grid.cols
 
   /** Project the area brush where it would land, so it can be placed by eye. */
   const previewAt = (hit) => {
-    if (!stamp || tool !== 'draw') return
+    if (!stamp || tool !== 'draw' || !fits(stamp)) return
     const at = { ...stamp, ...centred(stamp, hit.row, hit.col) }
     if (ghost && ghost.row === at.row && ghost.col === at.col) return
     const was = ghost
@@ -617,8 +625,9 @@ function open(frame) {
     }
 
     if (stamp) {
-      // The block is the brush, centred on the cell under the pointer. Past the
-      // edge of the canvas it is cropped, not wrapped.
+      // The block is the brush, centred on the cell under the pointer and kept
+      // on the canvas, so the projection and the write agree about where it is.
+      if (!fits(stamp)) return
       const at = centred(stamp, row, col)
       stamp.chars.forEach((line, r) => {
         line.forEach((blockChar, c) => {
