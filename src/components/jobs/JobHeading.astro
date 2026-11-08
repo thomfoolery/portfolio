@@ -24,6 +24,6 @@ const { job } = Astro.props
   <span class="whitespace-pre">
     <time datetime={job.from.datetime} class="text-green-900">{job.from.label}</time> - <span class="text-green-900">{job.to.datetime ? <time datetime={job.to.datetime}>{job.to.label}</time> : job.to.label}</span>{SPACE}
   </span>
-  <span class="grow overflow-hidden whitespace-nowrap text-green-200" aria-hidden="true">{RULE}</span>
+  <span class="grow overflow-hidden whitespace-nowrap text-green-100" aria-hidden="true">{RULE}</span>
   <span class="whitespace-pre">{SPACE}<span class="text-green-900">{job.company}</span></span>
 </h3>

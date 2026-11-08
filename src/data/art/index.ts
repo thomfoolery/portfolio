@@ -8,8 +8,6 @@ import blockPosts from './posts.json'
 
 /** One block: its two arrays, how it is drawn, and where it is stored. */
 export type SectionArtItem = Art & {
-  /** the `<pre>`'s classes; the art is always `aria-hidden` */
-  className: string
   /** the file, so the dev-only editor knows what to save back to */
   path: string
 }
@@ -28,12 +26,12 @@ export type SectionArt = {
  * meets the types: TypeScript widens the colour strings, and a typo in a file
  * would otherwise surface as a broken page rather than a failed build.
  */
-const block = (source: unknown, className: string, path: string): SectionArtItem => {
+const block = (source: unknown, path: string): SectionArtItem => {
   const art = source as Art
   if (!Array.isArray(art.chars) || !Array.isArray(art.colors)) {
     throw new Error(`${path}: expected { chars: string[][], colors: (string | null)[][] }`)
   }
-  return { ...art, className, path }
+  return { ...art, path }
 }
 
 /**
@@ -42,9 +40,9 @@ const block = (source: unknown, className: string, path: string): SectionArtItem
  * one of colours — and rendered to markup at build time by ArtHtml.
  */
 export const blockArt: SectionArt = {
-  header: block(blockHeader, 'leading-none font-bold text-green-600', 'src/data/art/header.json'),
-  posts: block(blockPosts, 'leading-none text-green-600', 'src/data/art/posts.json'),
-  experience: block(blockExperience, 'leading-none text-green-600', 'src/data/art/experience.json'),
-  honors: block(blockHonors, 'leading-none text-green-600', 'src/data/art/honors.json'),
-  footer: block(blockFooter, 'leading-tight text-green-600 my-1', 'src/data/art/footer.json'),
+  header: block(blockHeader, 'src/data/art/header.json'),
+  posts: block(blockPosts, 'src/data/art/posts.json'),
+  experience: block(blockExperience, 'src/data/art/experience.json'),
+  honors: block(blockHonors, 'src/data/art/honors.json'),
+  footer: block(blockFooter, 'src/data/art/footer.json'),
 }

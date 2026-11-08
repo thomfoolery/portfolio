@@ -14,11 +14,15 @@ import type { SectionArtItem } from '@/data/art'
  */
 interface Props {
   art: SectionArtItem
+  class?: string
 }
 
-const { art } = Astro.props
+const { art, class: className } = Astro.props
 const dev = import.meta.env.DEV
-const fragment = renderFragment(`class="${art.className}" aria-hidden="true"`, art)
+const fragment = renderFragment(
+  `class="leading-none text-green-600 ${className ?? ''}" aria-hidden="true`.trimEnd(),
+  art,
+)
 ---
 
 {/* eslint-disable astro/no-set-html-directive -- art is constant, generated from src/data/art */}
