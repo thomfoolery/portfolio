@@ -1,31 +1,13 @@
 ---
-import ArtHtml from './ArtHtml.astro'
 import Section from './Section.astro'
-import type { SectionArtItem } from '@/data/art'
 
-interface Props {
-  /** The wordmark, and on the index page the ghoul, arrive as one block. */
-  art: SectionArtItem
-}
+interface Props {}
 
-const { art } = Astro.props
+const year = new Date().getFullYear()
 ---
 
 <Section as="footer" align="bottom">
-  <!-- prettier-ignore -->
-  <p class="text-center font-light">20+ GLORIOUS YEARS OF PUSHING PIXELS</p>
-  <!-- prettier-ignore -->
-  <ArtHtml art={art} class="my-1"/>
-  <p class="ml-[24ch] font-black">
-    <span class="text-green-600" aria-hidden="true">
-      -+-
-    </span>{' '}
-    nothing is real{' '}
-    <span class="text-green-600" aria-hidden="true">
-      -+-
-    </span>
-  </p>
-  <p class="sr-only">
-    <small>&copy; Thomas Yuill</small>
+  <p class="text-right">
+    <small>&copy; Thomas Yuill {year}</small>
   </p>
 </Section>

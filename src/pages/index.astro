@@ -10,7 +10,7 @@ import Welcome from '@/components/welcome/Welcome.astro'
 import Base from '@/layouts/Base.astro'
 import { blockArt } from '@/data/art'
 
-const { header, posts, experience, honors, footer } = blockArt
+const { header } = blockArt
 ---
 
 <Base
@@ -22,38 +22,26 @@ const { header, posts, experience, honors, footer } = blockArt
       <Section as="header" align="center">
         <h1 class="sr-only">Thom Yuill - UX developer and design engineer</h1>
         <ArtHtml art={header} />
+        <p class="font-medium ml-2">
+          <span aria-hidden># </span>20+ GLORIOUS YEARS OF PUSHING PIXELS
+        </p>
       </Section>
       <Nav />
       <main>
-        <Section id="welcome" labelledby="welcome-title" class="pt-20">
-          <h2 id="welcome-title" class="sr-only">
-            Welcome
-          </h2>
+        <Section id="welcome" labelledby="welcome-title">
           <Welcome />
         </Section>
         <Section id="posts" labelledby="posts-title" hidden>
-          <h2 id="posts-title" class="sr-only">
-            Posts
-          </h2>
-          <ArtHtml art={posts} />
           <PostsList />
         </Section>
         <Section id="experience" labelledby="experience-title">
-          <h2 id="experience-title" class="sr-only">
-            Jobs
-          </h2>
-          <ArtHtml art={experience} />
           <JobsList />
         </Section>
         <Section id="honors" labelledby="honors-title">
-          <h2 id="honors-title" class="sr-only">
-            Honors, awards &amp; certs
-          </h2>
-          <ArtHtml art={honors} />
           <HonorsList />
         </Section>
       </main>
-      <SiteFooter art={footer} />
+      <SiteFooter />
     </div>
   </div>
 </Base>

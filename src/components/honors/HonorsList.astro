@@ -1,6 +1,8 @@
 ---
 import { GAP } from '@/data/grid'
 import { honors } from '@/data/honors'
+import { blockArt } from '@/data/art'
+import ArtHtml from '@/components/ArtHtml.astro'
 
 /** Measures are named here, not in the data, so Tailwind still sees them. */
 const measures = {
@@ -9,6 +11,12 @@ const measures = {
   56: 'max-w-[56ch]',
 } as const
 ---
+
+<h2 id="honors-title" class="sr-only">
+  Honors, awards &amp; certs
+</h2>
+
+<ArtHtml art={blockArt.honors} />
 
 <ol class="mt-3 [&>li+li]:mt-2">
   {honors.map((honor) => (

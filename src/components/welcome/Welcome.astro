@@ -9,8 +9,24 @@ import { blockArt } from '@/data/art'
  */
 ---
 
+<h2 id="welcome-title" class="sr-only">
+  Welcome
+</h2>
+
+<ArtHtml art={blockArt.footer} />
+
+<p class="ml-[24ch] font-black">
+  <span class="text-green-600" aria-hidden="true">
+    -+-
+  </span>{' '}
+  nothing is real{' '}
+  <span class="text-green-600" aria-hidden="true">
+    -+-
+  </span>
+</p>
+
 <div>
-  <p class="mt-3">
+  <p class="mt-12">
     Hi,
     <br />
     <br />
@@ -69,4 +85,5 @@ import { blockArt } from '@/data/art'
     </ul>
   </div>
 </div>
+
 <ArtHtml art={blockArt.welcome} class="mt-2" />
