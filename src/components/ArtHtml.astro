@@ -20,7 +20,7 @@ interface Props {
 const { art, class: className } = Astro.props
 const dev = import.meta.env.DEV
 const fragment = renderFragment(
-  `class="leading-none text-green-600 ${className ?? ''}" aria-hidden="true`.trimEnd(),
+  `class="leading-none text-green-600 ${className ?? ''}" aria-hidden="true"`.trimEnd(),
   art,
 )
 ---
