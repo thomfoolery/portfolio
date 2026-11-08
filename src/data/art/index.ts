@@ -5,6 +5,7 @@ import blockFooter from './footer.json'
 import blockHeader from './header.json'
 import blockHonors from './honors.json'
 import blockPosts from './posts.json'
+import blockWelcome from './welcome.json'
 
 /** One block: its two arrays, how it is drawn, and where it is stored. */
 export type SectionArtItem = Art & {
@@ -15,6 +16,7 @@ export type SectionArtItem = Art & {
 /** One block per section of the résumé. */
 export type SectionArt = {
   header: SectionArtItem
+  welcome: SectionArtItem
   posts: SectionArtItem
   experience: SectionArtItem
   honors: SectionArtItem
@@ -41,6 +43,7 @@ const block = (source: unknown, path: string): SectionArtItem => {
  */
 export const blockArt: SectionArt = {
   header: block(blockHeader, 'src/data/art/header.json'),
+  welcome: block(blockWelcome, 'src/data/art/welcome.json'),
   posts: block(blockPosts, 'src/data/art/posts.json'),
   experience: block(blockExperience, 'src/data/art/experience.json'),
   honors: block(blockHonors, 'src/data/art/honors.json'),

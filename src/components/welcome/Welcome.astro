@@ -1,10 +1,15 @@
 ---
+import ArtHtml from '@/components/ArtHtml.astro'
+import { blockArt } from '@/data/art'
+
 /**
- * The introduction: the greeting, and the two columns of ways to get in touch or
- * skip ahead. It takes no data — the copy is the content — so it renders itself.
+ * The introduction: the prism, the greeting, and the two columns of ways to get
+ * in touch or skip ahead. The art is data, like every other block; the copy is
+ * the rest of the content.
  */
 ---
 
+<ArtHtml art={blockArt.welcome} />
 <div>
   <p class="mt-3">
     Hi,
