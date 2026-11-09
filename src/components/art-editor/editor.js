@@ -75,6 +75,22 @@ const DENSITIES = [
 ]
 /** `null` keeps the cell on the `<pre>`'s own weight, like `pre` does for colour. */
 const WEIGHT_STEPS = [null, ...WEIGHTS]
+/**
+ * Colour operations: one step up or down the phosphor ramp, rather than a colour
+ * picked outright. A cell with no colour of its own inherits the `<pre>`'s, which
+ * is green-600, so that is where a step starts from.
+ */
+const COLOR_OPS = [
+  { label: 'dodge', step: 1, title: 'dodge: one shade lighter' },
+  { label: 'burn', step: -1, title: 'burn: one shade darker' },
+]
+const INHERITED_COLOR = 'green-600'
+
+/** One step along the ramp, stopping at either end. */
+const stepColor = (current, step) => {
+  const at = COLORS.indexOf(current ?? INHERITED_COLOR)
+  return COLORS[clamp(at + step, 0, COLORS.length - 1)]
+}
 /** How many strokes back `cmd+z` reaches. */
 const UNDO_LIMIT = 12
 
@@ -166,6 +182,10 @@ function open(frame) {
   let tool = 'draw'
   let glyph = GLYPHS[0]
   let color = DEFAULT_COLOR
+  /** Set when painting a shade shift rather than a colour. */
+  let colorOp = null
+  /** Cells this stroke has already shifted, so a drag crosses each cell once. */
+  let touched = new Set()
   let size = SIZES[0]
   let density = DENSITIES[0]
   /** Which phase of the pattern's cycle is showing; shift steps it. */
@@ -703,6 +723,20 @@ function open(frame) {
   )
   $('[data-weights]').append(...weightButtons)
 
+  const opButtons = COLOR_OPS.map((op) =>
+    swatch(
+      op.label,
+      op.title,
+      () => {
+        colorOp = op
+        drawing.colour = true
+        setTool('draw')
+        syncPalette()
+      },
+      'var(--color-green-600)',
+    ),
+  )
+
   const colorButtons = STEPS.map((step, index) =>
     swatch(
       String(index),
@@ -711,7 +745,7 @@ function open(frame) {
       colorVar(step) || 'var(--color-green-600)',
     ),
   )
-  $('[data-colors]').append(...colorButtons)
+  $('[data-colors]').append(...colorButtons, ...opButtons)
 
   /** Leaving the select tool puts the box away: nothing else knows what to do with it. */
   function setTool(name) {
@@ -748,6 +782,7 @@ function open(frame) {
 
   function pickColor(index) {
     color = STEPS[index] ?? null
+    colorOp = null
     drawing.colour = true
     setTool(tool === 'text' ? 'text' : 'draw') // typing wants its ink changed, not its tool
   }
@@ -770,7 +805,11 @@ function open(frame) {
       button.setAttribute('aria-pressed', String(stamp == null && GLYPHS[i] === glyph))
     })
     colorButtons.forEach((button, i) => {
-      button.setAttribute('aria-pressed', String(STEPS[i] === color))
+      // An operation is not a colour, so no swatch is lit while one is armed.
+      button.setAttribute('aria-pressed', String(colorOp == null && STEPS[i] === color))
+    })
+    opButtons.forEach((button, i) => {
+      button.setAttribute('aria-pressed', String(COLOR_OPS[i] === colorOp))
     })
     sizeButtons.forEach((button, i) => {
       button.setAttribute('aria-pressed', String(SIZES[i] === size))
@@ -820,7 +859,10 @@ function open(frame) {
         glyph = char // a blank cell holds no glyph
         setStamp(null)
       }
-      if (drawing.colour) color = art.colors[row]?.[col] ?? null
+      if (drawing.colour) {
+        color = art.colors[row]?.[col] ?? null
+        colorOp = null // a sampled colour is a colour, not a shade shift
+      }
       tool = 'draw'
       painting = false
       syncPalette()
@@ -868,7 +910,24 @@ function open(frame) {
       if (drawing.brush) setChar(art, at.row, at.col, glyph)
       // Colour on its own only touches glyphs that are already there; alongside
       // the brush it is a whole cell being stamped.
-      if (drawing.colour && (drawing.brush || under !== ' ')) setColor(art, at.row, at.col, color)
+      if (drawing.colour && (drawing.brush || under !== ' ')) {
+        if (colorOp) {
+          // One step per cell per stroke: crossing a cell twice should not walk
+          // it two shades along the ramp.
+          const key = `${at.row},${at.col}`
+          if (!touched.has(key)) {
+            touched.add(key)
+            setColor(
+              art,
+              at.row,
+              at.col,
+              stepColor(art.colors[at.row]?.[at.col] ?? null, colorOp.step),
+            )
+          }
+        } else {
+          setColor(art, at.row, at.col, color)
+        }
+      }
     }
     repaintBox(box)
   }
@@ -995,6 +1054,7 @@ function open(frame) {
     // A stroke is the unit of history. The eyedropper changes the brush, not the
     // art, so it has nothing to remember.
     if (tool === 'delete' || (tool === 'draw' && (drawing.brush || drawing.colour))) remember()
+    touched = new Set()
     painting = true
     applyAt(hit.cell)
   })
