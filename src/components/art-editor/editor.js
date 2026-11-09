@@ -58,10 +58,20 @@ const SIZES = [
  * entirely — it never writes a blank, so what is underneath survives.
  */
 const DENSITIES = [
-  { label: 'full', hit: () => true },
-  { label: 'fine', hit: (row, col) => (row + col) % 2 === 0 },
-  { label: 'coarse', hit: (row, col) => row % 2 === 0 && col % 2 === 0 },
-  { label: 'extra coarse', hit: (row, col) => row % 3 === 0 && col % 3 === 0 },
+  { label: 'full', phases: 1, hit: () => true },
+  { label: 'fine', phases: 2, hit: (row, col, phase) => (row + col + phase) % 2 === 0 },
+  {
+    label: 'coarse',
+    phases: 4,
+    hit: (row, col, phase) =>
+      (row + Math.floor(phase / 2)) % 2 === 0 && (col + (phase % 2)) % 2 === 0,
+  },
+  {
+    label: 'extra coarse',
+    phases: 9,
+    hit: (row, col, phase) =>
+      (row + Math.floor(phase / 3)) % 3 === 0 && (col + (phase % 3)) % 3 === 0,
+  },
 ]
 /** `null` keeps the cell on the `<pre>`'s own weight, like `pre` does for colour. */
 const WEIGHT_STEPS = [null, ...WEIGHTS]
@@ -96,7 +106,7 @@ const CHROME = `
       <div class="ae-swatches" data-colors></div>
       <h2>brush size</h2>
       <div class="ae-tools" data-sizes></div>
-      <h2>density <span class="ae-hint">size &gt; 1</span></h2>
+      <h2>density <span class="ae-hint" data-shift>shift</span></h2>
       <div class="ae-tools" data-densities></div>
       <h2>weight <span class="ae-hint">text</span></h2>
       <div class="ae-swatches" data-weights></div>
@@ -158,6 +168,8 @@ function open(frame) {
   let color = DEFAULT_COLOR
   let size = SIZES[0]
   let density = DENSITIES[0]
+  /** Which phase of the pattern's cycle is showing; shift steps it. */
+  let patternShift = 0
   let weight = WEIGHT_STEPS[0]
   let painting = false
   /** Set by the first edit, and cleared only by a save. */
@@ -196,6 +208,7 @@ function open(frame) {
   const status = $('[data-status]')
   const colsInput = $('[data-cols]')
   const rowsInput = $('[data-rows]')
+  const shiftHint = $('[data-shift]')
   $('[data-path]').textContent = path
 
   const inSelection = (row, col) =>
@@ -273,7 +286,7 @@ function open(frame) {
     const cells = []
     for (const at of brushBox(row, col, size)) {
       if (size.cols > 1 || size.rows > 1) {
-        if (!density.hit(at.row, at.col)) continue
+        if (!density.hit(at.row, at.col, patternShift)) continue
       }
       cells.push(at)
     }
@@ -669,6 +682,7 @@ function open(frame) {
       `density: ${value.label}`,
       () => {
         density = value
+        patternShift = 0 // a different pattern starts at its own origin
         setTool('draw')
       },
       'var(--color-green-900)',
@@ -768,7 +782,11 @@ function open(frame) {
       button.setAttribute('aria-pressed', String(WEIGHT_STEPS[i] === weight))
     })
     // Density only means anything once the brush covers more than one cell.
-    for (const button of densityButtons) button.disabled = size.cols === 1 && size.rows === 1
+    const patternful = size.cols > 1 || size.rows > 1
+    for (const button of densityButtons) button.disabled = !patternful
+    // The phase only exists for a pattern, and only drawing uses one.
+    const stepping = tool === 'draw' && patternful && density.phases > 1
+    shiftHint.textContent = stepping ? `shift ${patternShift + 1}/${density.phases}` : 'shift'
     for (const button of weightButtons) button.hidden = tool !== 'text'
     cropButton.disabled = selection == null
     cropButton.title = selection
@@ -845,7 +863,7 @@ function open(frame) {
     for (const at of box) {
       // A hole in the pattern is not a blank: it leaves the cell alone, so what
       // was there survives.
-      if ((size.cols > 1 || size.rows > 1) && !density.hit(at.row, at.col)) continue
+      if ((size.cols > 1 || size.rows > 1) && !density.hit(at.row, at.col, patternShift)) continue
       const under = art.chars[at.row]?.[at.col] ?? ' '
       if (drawing.brush) setChar(art, at.row, at.col, glyph)
       // Colour on its own only touches glyphs that are already there; alongside
@@ -1045,6 +1063,19 @@ function open(frame) {
     if (key === 'tab') {
       claim()
       cycleDraw(event.shiftKey ? -1 : 1)
+      return
+    }
+
+    // Shift steps the pattern's phase. Left alone everywhere else, where it is
+    // just the modifier for capitals and the reverse of the tab cycle.
+    if (event.key === 'Shift') {
+      const stepping = tool === 'draw' && density.phases > 1 && (size.cols > 1 || size.rows > 1)
+      if (stepping && !event.repeat) {
+        claim()
+        patternShift = (patternShift + 1) % density.phases
+        syncPalette()
+        if (footprint && lastHit) showFootprint(lastHit.row, lastHit.col)
+      }
       return
     }
 
