@@ -51,6 +51,9 @@
 .ae-status {
   margin-left: auto;
 }
+.ae-bar [data-save] {
+  margin-left: 1ch;
+}
 .ae-status[data-error] {
   color: var(--color-green-900);
 }
@@ -110,6 +113,13 @@
 .ae-cell.ae-cur {
   background-color: color-mix(in srgb, var(--color-green-900) 70%, transparent);
 }
+/* The brush's footprint: exactly the cells a stroke would touch right now. The
+   density's holes are left out, so the pattern is visible before it lands. */
+.ae-cell.ae-foot {
+  background-color: color-mix(in srgb, var(--color-green-600) 30%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--color-green-600) 50%, transparent);
+  outline-offset: -1px;
+}
 /* The area brush's landing place: the block itself, dimmed, over the art. */
 .ae-cell.ae-ghost {
   background-color: color-mix(in srgb, var(--color-green-900) 25%, transparent);
@@ -132,7 +142,6 @@
 }
 .ae-tools,
 .ae-swatches,
-.ae-actions,
 .ae-size {
   display: flex;
   flex-wrap: wrap;
@@ -163,9 +172,6 @@
   background: var(--color-black);
   color: var(--color-green-900);
   font: inherit;
-}
-.ae-actions {
-  margin-top: 3ch;
 }
 .ae-button {
   padding: 0.25ch 1ch;

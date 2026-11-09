@@ -42,7 +42,15 @@ const TOOLS = ['eyedropper', 'delete', 'select', 'text']
 const ENDPOINT = '/__art-editor/save'
 const DEFAULT_COLOR = COLORS[3]
 /** Sizes a stroke can cover, centred on the pointer. */
-const SIZES = [1, 2, 3, 5, 7]
+const SIZES = [
+  { cols: 1, rows: 1 },
+  { cols: 2, rows: 2 },
+  { cols: 2, rows: 3 },
+  { cols: 3, rows: 3 },
+  { cols: 5, rows: 3 },
+  { cols: 5, rows: 5 },
+  { cols: 7, rows: 5 },
+]
 /**
  * How much of the brush's box a stroke touches. The mask is keyed on canvas
  * coordinates, not the brush box, so dragging lays down one continuous pattern
@@ -65,6 +73,7 @@ const CHROME = `
     <span class="ae-title" data-path></span>
     <span class="ae-dims" data-dims></span>
     <span class="ae-status" data-status></span>
+    <button class="ae-button" data-save type="button">Save</button>
     <button class="ae-button" data-close type="button" aria-label="Close">×</button>
   </header>
   <div class="ae-confirm" data-confirm>
@@ -95,10 +104,6 @@ const CHROME = `
       <div class="ae-size">
         <label>cols <input type="number" min="1" max="400" step="1" data-cols /></label>
         <label>rows <input type="number" min="1" max="200" step="1" data-rows /></label>
-      </div>
-      <div class="ae-actions">
-        <button class="ae-button" data-save type="button">Save</button>
-        <button class="ae-button" data-cancel type="button">Cancel</button>
       </div>
     </aside>
   </div>`
@@ -236,6 +241,7 @@ function open(frame) {
     cell.style.fontWeight = state.weight ? String(state.weight) : ''
     cell.classList.toggle('ae-sel', inSelection(row, col))
     cell.classList.toggle('ae-ghost', inGhost(row, col))
+    cell.classList.toggle('ae-foot', inFootprint(row, col))
     cell.classList.toggle(
       'ae-cur',
       tool === 'text' && cursor != null && cursor.row === row && cursor.col === col,
@@ -244,16 +250,63 @@ function open(frame) {
 
   /** The cells a stroke covers: `size` square, centred, clamped to the canvas. */
   const brushBox = (row, col, span) => {
-    const half = Math.floor((span - 1) / 2)
-    const top = clamp(row - half, 0, Math.max(0, grid.rows - 1))
-    const left = clamp(col - half, 0, Math.max(0, grid.cols - 1))
+    const top = clamp(row - Math.floor((span.rows - 1) / 2), 0, Math.max(0, grid.rows - 1))
+    const left = clamp(col - Math.floor((span.cols - 1) / 2), 0, Math.max(0, grid.cols - 1))
     const cells = []
-    for (let r = top; r <= Math.min(grid.rows - 1, top + span - 1); r += 1) {
-      for (let c = left; c <= Math.min(grid.cols - 1, left + span - 1); c += 1) {
+    for (let r = top; r <= Math.min(grid.rows - 1, top + span.rows - 1); r += 1) {
+      for (let c = left; c <= Math.min(grid.cols - 1, left + span.cols - 1); c += 1) {
         cells.push({ row: r, col: c })
       }
     }
     return cells
+  }
+
+  /**
+   * The footprint is what a stroke would touch under the pointer: the brush's
+   * box with the density's holes left out, so the pattern is visible before it
+   * is committed. Nothing is written — it is a highlight, like the area stamp's
+   * projection.
+   */
+  let footprint = null
+
+  const footprintBox = (row, col) => {
+    const cells = []
+    for (const at of brushBox(row, col, size)) {
+      if (size.cols > 1 || size.rows > 1) {
+        if (!density.hit(at.row, at.col)) continue
+      }
+      cells.push(at)
+    }
+    return cells
+  }
+
+  const inFootprint = (row, col) =>
+    footprint != null && footprint.some((at) => at.row === row && at.col === col)
+
+  const repaintFootprints = (was, next) => {
+    const all = [...(was ?? []), ...(next ?? [])]
+    for (const at of all) {
+      paintCell(canvas.children[at.row * grid.cols + at.col], at.row, at.col)
+    }
+  }
+
+  const showFootprint = (row, col) => {
+    const next = footprintBox(row, col)
+    const same =
+      footprint &&
+      next.length === footprint.length &&
+      next.every((at, i) => footprint[i].row === at.row && footprint[i].col === at.col)
+    if (same) return
+    const was = footprint
+    footprint = next
+    repaintFootprints(was, next)
+  }
+
+  const hideFootprint = () => {
+    if (!footprint) return
+    const was = footprint
+    footprint = null
+    repaintFootprints(was, null)
   }
 
   const repaintBox = (cells) => {
@@ -599,8 +652,8 @@ function open(frame) {
 
   const sizeButtons = SIZES.map((value) =>
     swatch(
-      `${value}x${value}`,
-      `brush size: ${value} wide`,
+      `${value.cols}x${value.rows}`,
+      `brush size: ${value.cols} wide, ${value.rows} tall`,
       () => {
         size = value
         setTool('draw')
@@ -651,7 +704,10 @@ function open(frame) {
     const was = tool
     tool = name
     if (name !== 'select') clearSelection()
-    if (name !== 'draw') hideGhost() // the projection belongs to drawing
+    if (name !== 'draw') {
+      hideGhost() // the projection belongs to drawing
+      hideFootprint()
+    }
     if (name === 'text' && !cursor) cursor = { row: 0, col: 0 }
     if (cursor && (was === 'text' || name === 'text')) {
       repaintRect(cursor.row, cursor.col, cursor.row, cursor.col)
@@ -712,7 +768,7 @@ function open(frame) {
       button.setAttribute('aria-pressed', String(WEIGHT_STEPS[i] === weight))
     })
     // Density only means anything once the brush covers more than one cell.
-    for (const button of densityButtons) button.disabled = size === 1
+    for (const button of densityButtons) button.disabled = size.cols === 1 && size.rows === 1
     for (const button of weightButtons) button.hidden = tool !== 'text'
     cropButton.disabled = selection == null
     cropButton.title = selection
@@ -789,7 +845,7 @@ function open(frame) {
     for (const at of box) {
       // A hole in the pattern is not a blank: it leaves the cell alone, so what
       // was there survives.
-      if (size > 1 && !density.hit(at.row, at.col)) continue
+      if ((size.cols > 1 || size.rows > 1) && !density.hit(at.row, at.col)) continue
       const under = art.chars[at.row]?.[at.col] ?? ' '
       if (drawing.brush) setChar(art, at.row, at.col, glyph)
       // Colour on its own only touches glyphs that are already there; alongside
@@ -914,7 +970,10 @@ function open(frame) {
       painting = true // a drag from here weights what it crosses
       return
     }
-    if (tool === 'draw') previewAt(hit)
+    if (tool === 'draw') {
+      previewAt(hit)
+      if (!stamp) showFootprint(hit.row, hit.col)
+    }
     // A stroke is the unit of history. The eyedropper changes the brush, not the
     // art, so it has nothing to remember.
     if (tool === 'delete' || (tool === 'draw' && (drawing.brush || drawing.colour))) remember()
@@ -933,12 +992,17 @@ function open(frame) {
       selectDrag(hit)
       return
     }
-    if (tool === 'draw') previewAt(hit)
+    if (tool === 'draw') {
+      previewAt(hit)
+      if (!stamp) showFootprint(hit.row, hit.col)
+      else hideFootprint()
+    }
     if (painting) applyAt(hit.cell)
   })
   canvas.addEventListener('pointerleave', () => {
     lastHit = null
     hideGhost()
+    hideFootprint()
   })
   window.addEventListener('pointerup', stopPainting)
 
@@ -1067,7 +1131,6 @@ function open(frame) {
   }
 
   $('[data-close]').addEventListener('click', requestClose)
-  $('[data-cancel]').addEventListener('click', close) // Cancel says what it does
   $('[data-save]').addEventListener('click', save)
   $('[data-keep]').addEventListener('click', hideConfirm)
   $('[data-discard]').addEventListener('click', close)
