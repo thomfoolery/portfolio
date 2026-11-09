@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type { AstroIntegration } from 'astro'
 
-import { COLORS, serialize } from '../lib/art'
+import { COLORS, WEIGHTS, serialize } from '../lib/art'
 import type { Art } from '../lib/art'
 
 /**
@@ -24,6 +24,10 @@ const isChar = (value: unknown) => typeof value === 'string' && [...value].lengt
 
 const isColor = (value: unknown) =>
   value === null || (COLORS as readonly string[]).includes(value as string)
+
+/** Weights are optional, but when present they have to be steps the face has. */
+const isWeight = (value: unknown) =>
+  value === null || (WEIGHTS as readonly number[]).includes(value as number)
 
 export function artEditor(): AstroIntegration {
   return {
@@ -57,7 +61,7 @@ export function artEditor(): AstroIntegration {
               return
             }
 
-            const { path: blockPath, chars, colors } = body as Record<string, unknown>
+            const { path: blockPath, chars, colors, weights } = body as Record<string, unknown>
             if (typeof blockPath !== 'string' || !TARGET.test(blockPath)) {
               fail(400, `not an art block: ${String(blockPath)}`)
               return
@@ -73,6 +77,19 @@ export function artEditor(): AstroIntegration {
               fail(400, 'chars and colors must be the same shape')
               return
             }
+            if (weights != null) {
+              if (!isGrid(weights, isWeight)) {
+                fail(400, 'expected weights to be (number | null)[][]')
+                return
+              }
+              if (
+                weights.length !== chars.length ||
+                weights.some((row, i) => row.length !== chars[i]?.length)
+              ) {
+                fail(400, 'weights must be the same shape as chars')
+                return
+              }
+            }
 
             const file = path.join(process.cwd(), blockPath)
             if (!existsSync(file)) {
@@ -80,7 +97,11 @@ export function artEditor(): AstroIntegration {
               return
             }
 
-            const art: Art = { chars: chars as string[][], colors: colors as Art['colors'] }
+            const art: Art = {
+              chars: chars as string[][],
+              colors: colors as Art['colors'],
+              ...(weights != null ? { weights: weights as Art['weights'] } : {}),
+            }
             writeFile(file, serialize(art), 'utf8').then(
               () => {
                 server.ws.send({ type: 'full-reload' })

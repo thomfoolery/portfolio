@@ -149,6 +149,10 @@
   background: var(--color-black);
   cursor: pointer;
 }
+.ae-swatch:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 .ae-swatch[aria-pressed='true'] {
   outline: 2px solid var(--color-green-900);
   outline-offset: 1px;

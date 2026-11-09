@@ -25,7 +25,7 @@
  * It is loaded from Base.astro behind `import.meta.env.DEV`, so it never reaches
  * a build and nothing here ships.
  */
-import { COLORS, bounds, parse, resize } from '@/lib/art'
+import { COLORS, WEIGHTS, bounds, parse, resize } from '@/lib/art'
 import './editor.css'
 
 const GLYPHS = ['░', '▒', '▓', '█', '▀', '▄', '▌', '▐', '·']
@@ -41,6 +41,22 @@ const FACET_CYCLE = [
 const TOOLS = ['eyedropper', 'delete', 'select', 'text']
 const ENDPOINT = '/__art-editor/save'
 const DEFAULT_COLOR = COLORS[3]
+/** Sizes a stroke can cover, centred on the pointer. */
+const SIZES = [1, 2, 3, 5, 7]
+/**
+ * How much of the brush's box a stroke touches. The mask is keyed on canvas
+ * coordinates, not the brush box, so dragging lays down one continuous pattern
+ * instead of re-spacing at every pointer position. A hole skips the cell
+ * entirely — it never writes a blank, so what is underneath survives.
+ */
+const DENSITIES = [
+  { label: 'full', hit: () => true },
+  { label: 'fine', hit: (row, col) => (row + col) % 2 === 0 },
+  { label: 'coarse', hit: (row, col) => row % 2 === 0 && col % 2 === 0 },
+  { label: 'extra coarse', hit: (row, col) => row % 3 === 0 && col % 3 === 0 },
+]
+/** `null` keeps the cell on the `<pre>`'s own weight, like `pre` does for colour. */
+const WEIGHT_STEPS = [null, ...WEIGHTS]
 /** How many strokes back `cmd+z` reaches. */
 const UNDO_LIMIT = 12
 
@@ -69,7 +85,13 @@ const CHROME = `
       <div class="ae-swatches" data-brush></div>
       <h2>colour <span class="ae-hint">0-9</span></h2>
       <div class="ae-swatches" data-colors></div>
-      <h2>size</h2>
+      <h2>brush size</h2>
+      <div class="ae-tools" data-sizes></div>
+      <h2>density <span class="ae-hint">size &gt; 1</span></h2>
+      <div class="ae-tools" data-densities></div>
+      <h2>weight <span class="ae-hint">text</span></h2>
+      <div class="ae-swatches" data-weights></div>
+      <h2>canvas</h2>
       <div class="ae-size">
         <label>cols <input type="number" min="1" max="400" step="1" data-cols /></label>
         <label>rows <input type="number" min="1" max="200" step="1" data-rows /></label>
@@ -84,22 +106,38 @@ const CHROME = `
 const colorVar = (color) => (color ? `var(--color-${color})` : '')
 const clamp = (value, low, high) => Math.min(high, Math.max(low, value))
 
-/** Write a character, growing a ragged row rather than leaving holes in it. */
-function setChar(art, row, col, char) {
+/** Cells are created on demand, so a ragged row grows rather than gaining holes. */
+function grow(art, row, col) {
   const chars = art.chars[row]
   const colors = art.colors[row]
-  while (chars.length < col) {
+  const weights = art.weights ? (art.weights[row] ?? (art.weights[row] = [])) : null
+  while (chars.length <= col) {
     chars.push(' ')
     colors.push(null)
   }
-  chars[col] = char
-  if (colors.length <= col) colors[col] = null
+  if (weights) while (weights.length <= col) weights.push(null)
+}
+
+/** The weights array only exists once a cell has a weight of its own. */
+function ensureWeights(art) {
+  if (!art.weights) art.weights = art.chars.map((row) => row.map(() => null))
+  return art.weights
+}
+
+function setChar(art, row, col, char) {
+  grow(art, row, col)
+  art.chars[row][col] = char
 }
 
 function setColor(art, row, col, color) {
-  const colors = art.colors[row]
-  while (colors.length <= col) colors.push(null)
-  colors[col] = color
+  grow(art, row, col)
+  art.colors[row][col] = color
+}
+
+function setWeight(art, row, col, weight) {
+  ensureWeights(art)
+  grow(art, row, col)
+  art.weights[row][col] = weight
 }
 
 function open(frame) {
@@ -113,6 +151,9 @@ function open(frame) {
   let tool = 'draw'
   let glyph = GLYPHS[0]
   let color = DEFAULT_COLOR
+  let size = SIZES[0]
+  let density = DENSITIES[0]
+  let weight = WEIGHT_STEPS[0]
   let painting = false
   /** Set by the first edit, and cleared only by a save. */
   let dirty = false
@@ -172,24 +213,53 @@ function open(frame) {
       const r = row - block.row
       const c = col - block.col
       if (r < 0 || r >= block.rows || c < 0 || c >= block.cols) return null
-      return { char: block.chars[r][c], color: block.colors[r][c] }
+      return {
+        char: block.chars[r][c],
+        color: block.colors[r][c],
+        weight: block.weights?.[r]?.[c] ?? null,
+      }
     }
     // The projection covers the art, and a carried block covers both.
     const state = (ghost && from(ghost)) || (floating && from(floating))
     if (state) return state
-    return { char: art.chars[row]?.[col] ?? ' ', color: art.colors[row]?.[col] ?? null }
+    return {
+      char: art.chars[row]?.[col] ?? ' ',
+      color: art.colors[row]?.[col] ?? null,
+      weight: art.weights?.[row]?.[col] ?? null,
+    }
   }
 
   const paintCell = (cell, row, col) => {
     const state = cellState(row, col)
     cell.textContent = state.char
     cell.style.color = colorVar(state.color)
+    cell.style.fontWeight = state.weight ? String(state.weight) : ''
     cell.classList.toggle('ae-sel', inSelection(row, col))
     cell.classList.toggle('ae-ghost', inGhost(row, col))
     cell.classList.toggle(
       'ae-cur',
       tool === 'text' && cursor != null && cursor.row === row && cursor.col === col,
     )
+  }
+
+  /** The cells a stroke covers: `size` square, centred, clamped to the canvas. */
+  const brushBox = (row, col, span) => {
+    const half = Math.floor((span - 1) / 2)
+    const top = clamp(row - half, 0, Math.max(0, grid.rows - 1))
+    const left = clamp(col - half, 0, Math.max(0, grid.cols - 1))
+    const cells = []
+    for (let r = top; r <= Math.min(grid.rows - 1, top + span - 1); r += 1) {
+      for (let c = left; c <= Math.min(grid.cols - 1, left + span - 1); c += 1) {
+        cells.push({ row: r, col: c })
+      }
+    }
+    return cells
+  }
+
+  const repaintBox = (cells) => {
+    for (const at of cells) {
+      paintCell(canvas.children[at.row * grid.cols + at.col], at.row, at.col)
+    }
   }
 
   /** Repaint a rectangle of the grid. Only a move, a stamp or the cursor needs one. */
@@ -281,10 +351,14 @@ function open(frame) {
   // One entry per stroke rather than per cell, and past the limit the oldest
   // falls off. Snapshots are copied on the way in and on the way out, so what a
   // stack holds is never the array the editor is drawing on.
-  const snapshot = (source) => ({
-    chars: source.chars.map((row) => [...row]),
-    colors: source.colors.map((row) => [...row]),
-  })
+  const snapshot = (source) => {
+    const copy = {
+      chars: source.chars.map((row) => [...row]),
+      colors: source.colors.map((row) => [...row]),
+    }
+    if (source.weights) copy.weights = source.weights.map((row) => [...row])
+    return copy
+  }
   const undoStack = []
   const redoStack = []
 
@@ -322,17 +396,23 @@ function open(frame) {
   const readBlock = (top, left, bottom, right) => {
     const chars = []
     const colors = []
+    const weights = []
     for (let row = top; row <= bottom; row += 1) {
       const lineChars = []
       const lineColors = []
+      const lineWeights = []
       for (let col = left; col <= right; col += 1) {
         lineChars.push(art.chars[row]?.[col] ?? ' ')
         lineColors.push(art.colors[row]?.[col] ?? null)
+        lineWeights.push(art.weights?.[row]?.[col] ?? null)
       }
       chars.push(lineChars)
       colors.push(lineColors)
+      weights.push(lineWeights)
     }
-    return { chars, colors, rows: chars.length, cols: chars[0].length }
+    const block = { chars, colors, rows: chars.length, cols: chars[0].length }
+    if (art.weights) block.weights = weights
+    return block
   }
 
   /** Lift the selected cells out of the art, leaving blank the cells behind them. */
@@ -342,6 +422,7 @@ function open(frame) {
       for (let col = selection.left; col <= selection.right; col += 1) {
         setChar(art, row, col, ' ')
         setColor(art, row, col, null)
+        if (art.weights) setWeight(art, row, col, null)
       }
     }
     floating = { ...block, row: selection.top, col: selection.left }
@@ -354,6 +435,8 @@ function open(frame) {
       line.forEach((char, c) => {
         setChar(art, floating.row + r, floating.col + c, char)
         setColor(art, floating.row + r, floating.col + c, floating.colors[r][c])
+        if (floating.weights)
+          setWeight(art, floating.row + r, floating.col + c, floating.weights[r][c])
       })
     })
     floating = null
@@ -409,6 +492,7 @@ function open(frame) {
     remember()
     setChar(art, cursor.row, cursor.col, char)
     setColor(art, cursor.row, cursor.col, color)
+    if (weight != null) setWeight(art, cursor.row, cursor.col, weight)
     const was = cursor
     // Step on, wrapping to the next row, and stay put at the end of the art.
     if (cursor.col + 1 < grid.cols) cursor = { row: cursor.row, col: cursor.col + 1 }
@@ -425,6 +509,7 @@ function open(frame) {
     remember()
     setChar(art, cursor.row, cursor.col, ' ')
     setColor(art, cursor.row, cursor.col, null)
+    if (art.weights) setWeight(art, cursor.row, cursor.col, null)
     refreshCursor(was)
   }
 
@@ -512,6 +597,45 @@ function open(frame) {
   )
   $('[data-brush]').append(...glyphButtons)
 
+  const sizeButtons = SIZES.map((value) =>
+    swatch(
+      `${value}x${value}`,
+      `brush size: ${value} wide`,
+      () => {
+        size = value
+        setTool('draw')
+      },
+      'var(--color-green-900)',
+    ),
+  )
+  $('[data-sizes]').append(...sizeButtons)
+
+  const densityButtons = DENSITIES.map((value) =>
+    swatch(
+      value.label,
+      `density: ${value.label}`,
+      () => {
+        density = value
+        setTool('draw')
+      },
+      'var(--color-green-900)',
+    ),
+  )
+  $('[data-densities]').append(...densityButtons)
+
+  const weightButtons = WEIGHT_STEPS.map((value) =>
+    swatch(
+      value == null ? 'pre' : String(value),
+      value == null ? 'weight: the pre\u2019s own' : `weight: ${value}`,
+      () => {
+        weight = value
+        syncPalette()
+      },
+      'var(--color-green-900)',
+    ),
+  )
+  $('[data-weights]').append(...weightButtons)
+
   const colorButtons = STEPS.map((step, index) =>
     swatch(
       String(index),
@@ -578,6 +702,18 @@ function open(frame) {
     colorButtons.forEach((button, i) => {
       button.setAttribute('aria-pressed', String(STEPS[i] === color))
     })
+    sizeButtons.forEach((button, i) => {
+      button.setAttribute('aria-pressed', String(SIZES[i] === size))
+    })
+    densityButtons.forEach((button, i) => {
+      button.setAttribute('aria-pressed', String(DENSITIES[i] === density))
+    })
+    weightButtons.forEach((button, i) => {
+      button.setAttribute('aria-pressed', String(WEIGHT_STEPS[i] === weight))
+    })
+    // Density only means anything once the brush covers more than one cell.
+    for (const button of densityButtons) button.disabled = size === 1
+    for (const button of weightButtons) button.hidden = tool !== 'text'
     cropButton.disabled = selection == null
     cropButton.title = selection
       ? `crop to ${selection.right - selection.left + 1} x ${selection.bottom - selection.top + 1} (x)`
@@ -618,9 +754,12 @@ function open(frame) {
     }
 
     if (tool === 'delete') {
-      setChar(art, row, col, ' ')
-      setColor(art, row, col, null)
-      paintCell(cell, row, col)
+      for (const at of brushBox(row, col, size)) {
+        setChar(art, at.row, at.col, ' ')
+        setColor(art, at.row, at.col, null)
+        if (art.weights) setWeight(art, at.row, at.col, null)
+      }
+      repaintBox(brushBox(row, col, size))
       return
     }
 
@@ -646,11 +785,18 @@ function open(frame) {
       return
     }
 
-    if (drawing.brush) setChar(art, row, col, glyph)
-    // Colour on its own only touches glyphs that are already there; alongside the
-    // brush it is a whole cell being stamped.
-    if (drawing.colour && (drawing.brush || char !== ' ')) setColor(art, row, col, color)
-    paintCell(cell, row, col)
+    const box = brushBox(row, col, size)
+    for (const at of box) {
+      // A hole in the pattern is not a blank: it leaves the cell alone, so what
+      // was there survives.
+      if (size > 1 && !density.hit(at.row, at.col)) continue
+      const under = art.chars[at.row]?.[at.col] ?? ' '
+      if (drawing.brush) setChar(art, at.row, at.col, glyph)
+      // Colour on its own only touches glyphs that are already there; alongside
+      // the brush it is a whole cell being stamped.
+      if (drawing.colour && (drawing.brush || under !== ' ')) setColor(art, at.row, at.col, color)
+    }
+    repaintBox(box)
   }
 
   const hitAt = (event) => {
@@ -729,8 +875,26 @@ function open(frame) {
     syncPalette()
   }
 
+  /**
+   * Dragging in text mode paints the chosen weight over glyphs that are already
+   * there. A plain click only moves the caret: repositioning it should not
+   * quietly restyle the cell it lands on.
+   */
+  let weightStroke = false
+  const paintWeight = (hit) => {
+    const char = art.chars[hit.row]?.[hit.col] ?? ' '
+    if (char === ' ') return // nothing to weight
+    if (!weightStroke) {
+      remember()
+      weightStroke = true
+    }
+    setWeight(art, hit.row, hit.col, weight)
+    paintCell(hit.cell, hit.row, hit.col)
+  }
+
   const stopPainting = () => {
     painting = false
+    weightStroke = false
     selectUp()
   }
 
@@ -747,6 +911,7 @@ function open(frame) {
       const was = cursor
       cursor = { row: hit.row, col: hit.col }
       refreshCursor(was)
+      painting = true // a drag from here weights what it crosses
       return
     }
     if (tool === 'draw') previewAt(hit)
@@ -757,10 +922,13 @@ function open(frame) {
     applyAt(hit.cell)
   })
   canvas.addEventListener('pointermove', (event) => {
-    if (tool === 'text') return
     const hit = hitAt(event)
     if (!hit) return
     lastHit = hit
+    if (tool === 'text') {
+      if (painting) paintWeight(hit)
+      return
+    }
     if (tool === 'select') {
       selectDrag(hit)
       return
@@ -886,7 +1054,7 @@ function open(frame) {
       const response = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ path, chars: art.chars, colors: art.colors }),
+        body: JSON.stringify({ path, chars: art.chars, colors: art.colors, weights: art.weights }),
       })
       const body = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(body.error ?? response.statusText)
