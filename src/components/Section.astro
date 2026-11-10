@@ -1,4 +1,6 @@
 ---
+import { cn } from '@/lib/utils'
+
 /**
  * One panel of the page: a full viewport tall with its content centred in it.
  *
@@ -47,7 +49,7 @@ const perElement = {
   id={id}
   aria-labelledby={labelledby}
   hidden={hidden || undefined}
-  class:list={['min-h-dvh pt-2', perElement, className]}
+  class={cn(['min-h-dvh pt-2', perElement, className])}
 >
   <slot />
 </Tag>
