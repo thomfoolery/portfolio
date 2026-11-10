@@ -1,13 +1,17 @@
 ---
 import Section from './Section.astro'
+import ArtHtml from '@/components/ArtHtml.astro'
+import { blockArt } from '@/data/art'
 
 interface Props {}
 
 const year = new Date().getFullYear()
 ---
 
-<Section as="footer" align="bottom">
+<Section as="footer" align="bottom" class="pb-0">
   <p class="text-right">
     <small>&copy; Thomas Yuill {year}</small>
   </p>
+
+  <ArtHtml art={blockArt.footer} />
 </Section>

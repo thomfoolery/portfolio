@@ -1,11 +1,12 @@
 import type { Art } from '@/lib/art'
 
 import blockExperience from './experience.json'
-import blockFooter from './footer.json'
+import blockEyes from './eyes.json'
 import blockHeader from './header.json'
 import blockHonors from './honors.json'
 import blockPosts from './posts.json'
-import blockWelcome from './welcome.json'
+import blockPrism from './prism.json'
+import blockFooter from './footer.json'
 
 /** One block: its two arrays, how it is drawn, and where it is stored. */
 export type SectionArtItem = Art & {
@@ -16,10 +17,11 @@ export type SectionArtItem = Art & {
 /** One block per section of the résumé. */
 export type SectionArt = {
   header: SectionArtItem
-  welcome: SectionArtItem
+  prism: SectionArtItem
   posts: SectionArtItem
   experience: SectionArtItem
   honors: SectionArtItem
+  eyes: SectionArtItem
   footer: SectionArtItem
 }
 
@@ -43,9 +45,10 @@ const block = (source: unknown, path: string): SectionArtItem => {
  */
 export const blockArt: SectionArt = {
   header: block(blockHeader, 'src/data/art/header.json'),
-  welcome: block(blockWelcome, 'src/data/art/welcome.json'),
+  prism: block(blockPrism, 'src/data/art/prism.json'),
   posts: block(blockPosts, 'src/data/art/posts.json'),
   experience: block(blockExperience, 'src/data/art/experience.json'),
   honors: block(blockHonors, 'src/data/art/honors.json'),
+  eyes: block(blockEyes, 'src/data/art/eyes.json'),
   footer: block(blockFooter, 'src/data/art/footer.json'),
 }
