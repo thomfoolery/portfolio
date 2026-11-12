@@ -1,0 +1,12 @@
+---
+import Section from './Section.astro'
+import ArtHtml from '@/components/ArtHtml.astro'
+import { blockArt } from '@/data/art'
+
+interface Props {}
+---
+
+<Section as="header" align="center">
+  <h1 class="sr-only">Thom Yuill - UX developer and design engineer</h1>
+  <ArtHtml art={blockArt.header} />
+</Section>

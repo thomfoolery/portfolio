@@ -1,16 +1,12 @@
 ---
-import ArtHtml from '@/components/ArtHtml.astro'
 import HonorsList from '@/components/honors/HonorsList.astro'
 import JobsList from '@/components/jobs/JobsList.astro'
 import Nav from '@/components/Nav.astro'
-import PostsList from '@/components/posts/PostsList.astro'
-import Section from '@/components/Section.astro'
-import SiteFooter from '@/components/SiteFooter.astro'
-import Welcome from '@/components/welcome/Welcome.astro'
+// import PostsList from '@/components/posts/PostsList.astro'
+import Footer from '@/components/Footer.astro'
+import Welcome from '@/components/Welcome.astro'
+import Header from '@/components/Header.astro'
 import Base from '@/layouts/Base.astro'
-import { blockArt } from '@/data/art'
-
-const { header } = blockArt
 ---
 
 <Base
@@ -18,30 +14,17 @@ const { header } = blockArt
   description="Thom Yuill - web developer and UX designer based out of Waterloo, Canada."
 >
   <div class="w-[72ch] mx-auto">
-    <div class="overflow-x-clip">
-      <Section as="header" align="center">
-        <h1 class="sr-only">Thom Yuill - UX developer and design engineer</h1>
-        <ArtHtml art={header} />
-        <p class="font-medium ml-2">
-          <span aria-hidden># </span>20+ GLORIOUS YEARS OF PUSHING PIXELS
-        </p>
-      </Section>
-      <Nav />
-      <main>
-        <Section id="welcome" labelledby="welcome-title">
-          <Welcome />
-        </Section>
-        <Section id="posts" labelledby="posts-title" hidden>
-          <PostsList />
-        </Section>
-        <Section id="experience" labelledby="experience-title">
-          <JobsList />
-        </Section>
-        <Section id="honors" labelledby="honors-title">
-          <HonorsList />
-        </Section>
-      </main>
-      <SiteFooter />
-    </div>
+    <Header />
+
+    <Nav />
+
+    <main>
+      <Welcome />
+      <!-- <PostsList /> -->
+      <JobsList />
+      <HonorsList />
+    </main>
+
+    <Footer />
   </div>
 </Base>

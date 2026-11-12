@@ -1,0 +1,120 @@
+---
+import Section from '@/components/Section.astro'
+import ArtHtml from '@/components/ArtHtml.astro'
+
+import { blockArt } from '@/data/art'
+---
+
+<style>
+  .scroll-animation {
+    animation-fill-mode: both;
+    animation-name: reveal;
+    animation-timing-function: step(72, end);
+    animation-timeline: view(0% 20%);
+    word-break: break-all;
+    overflow: clip;
+    height: 1.8em;
+  }
+
+  @keyframes reveal {
+    0% {
+      width: 0;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide {
+    0% {
+      transform: translateX(10%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+<ArtHtml art={blockArt.prism} class="mt-8" />
+
+<Section id="welcome" labelledby="welcome-title" class="overflow-clip">
+  <div>
+    <p class="mt-8">
+      <div class="scroll-animation">Hi,</div>
+      <div class="scroll-animation mt-1" style="animation-timeline:view(50% 20%)">
+        My name is <span class="text-green-900">Thom Yuill</span>.
+      </div>
+    </p>
+    <p class="mt-1">
+      <div class="scroll-animation" style="animation-timeline:view(50% 30%)">
+        I am a <span class="text-green-900">designer</span> and{' '}
+        <span class="text-green-900">engineer</span> and I currently work at{' '}
+        <a href="https://livekit.com/" title="Day job!!" target="_blank">
+          LiveKit ➚
+        </a>
+        .
+      </div>
+    </p>
+    <p class="mt-1 mx-auto">
+      <div class="scroll-animation" style="animation-timeline:view(50% 35%)">
+        I enjoy building dynamic, interactive, accessible,
+      </div>
+      <div class="scroll-animation" style="animation-timeline:view(50% 40%)">
+        and aesthetic web experiences powered with
+      </div>
+      <div class="scroll-animation" style="animation-timeline:view(20% 40%)">
+        real-time data/media.
+      </div>
+    </p>
+  </div>
+
+  <div class="flex mt-3 gap-6 ml-2">
+    <div class="flex-1">
+      <p class="mb-1 scroll-animation">Shoot me a line on</p>
+      <ul class="ml-[1ch]">
+        <li class="text-green-300 scroll-animation">
+          [g]{' '}
+          <a href="https://github.com/thomfoolery" title="Read the source, Luke" target="_blank">
+            github ➚
+          </a>
+        </li>
+        <li class="text-green-300 scroll-animation">
+          [l]{' '}
+          <a
+            href="https://www.linkedin.com/in/thomasyuill/"
+            title="Very professional"
+            target="_blank"
+          >
+            linkedin ➚
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="flex-1">
+      <p class="mb-1 scroll-animation">While you're at it</p>
+      <ul class="ml-[1ch]">
+        <li class="scroll-animation">
+          [2]{' '}
+          <a href="#experience" title="Where I've been">
+            browse past jobs
+          </a>
+        </li>
+        <li class="scroll-animation">
+          [3]{' '}
+          <a href="#honors" title="Shiny things">
+            gaze upon my honors
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</Section>

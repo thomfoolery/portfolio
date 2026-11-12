@@ -1,0 +1,78 @@
+---
+import Section from './Section.astro'
+import ArtHtml from '@/components/ArtHtml.astro'
+import { blockArt } from '@/data/art'
+
+interface Props {}
+
+const year = new Date().getFullYear()
+---
+
+<style>
+  .scroll-animation {
+    animation-fill-mode: both;
+    animation-name: reveal;
+    animation-timing-function: step(72, end);
+    animation-timeline: view(0% 20%);
+    word-break: break-all;
+    overflow: clip;
+    height: 1.8em;
+  }
+
+  @keyframes reveal {
+    0% {
+      width: 0;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide {
+    0% {
+      transform: translateX(10%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+<Section class="overflow-clip">
+  <h2 id="welcome-title" class="sr-only">
+    Welcome
+  </h2>
+
+  <ArtHtml art={blockArt.eyes} />
+
+  <p class="font-medium mt-2">
+    <div class="scroll-animation ml-5" style="animation-timeline:view(30% 20%)">
+      20+ glorious years pushing pixels and...
+    </div>
+  </p>
+
+  <p class="font-black mt-1">
+    <div class="scroll-animation ml-16 text-green-900" style="animation-timeline:view(20% 40%)">
+      NOTHING IS REAL
+    </div>
+  </p>
+</Section>
+
+<Section as="footer" align="bottom" class="pb-0">
+  <ArtHtml art={blockArt.footer} hoverReveal class="ml-4" />
+
+  <p class="text-right my-1">
+    <small class="bg-clip-text text-transparent bg-linear-to-r from-green-100 via-green-900 to-green-100">
+      &copy; Thomas Yuill {year}
+    </small>
+  </p>
+</Section>

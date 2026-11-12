@@ -14,10 +14,11 @@ import type { SectionArtItem } from '@/data/art'
  */
 interface Props {
   art: SectionArtItem
+  hoverReveal?: boolean
   class?: string
 }
 
-const { art, class: className } = Astro.props
+const { art, hoverReveal = false, class: className } = Astro.props
 const dev = import.meta.env.DEV
 const fragment = renderFragment(
   `class="leading-none text-green-600 ${className ?? ''}" aria-hidden="true"`.trimEnd(),
@@ -25,9 +26,33 @@ const fragment = renderFragment(
 )
 ---
 
+<style>
+  .scroll-animation-fade {
+    animation-fill-mode: both;
+    animation-name: fadeIn;
+    animation-timing-function: linear;
+    animation-timeline: view(20% 30%);
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+</style>
+
 {/* eslint-disable astro/no-set-html-directive -- art is constant, generated from src/data/art */}
 <div
-  class={dev ? undefined : 'contents'}
+  class:list={[
+    'scroll-animation-fade',
+    dev ? undefined : 'contents',
+    hoverReveal
+      ? 'hover:opacity-100! transition-200 transition-opacity animation-none!'
+      : undefined,
+  ]}
   style={dev ? 'position:relative;width:fit-content' : undefined}
   data-art-frame={dev ? '' : undefined}
   data-art-path={dev ? art.path : undefined}

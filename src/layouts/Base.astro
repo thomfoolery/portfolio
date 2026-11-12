@@ -23,8 +23,7 @@ const dev = import.meta.env.DEV
     <!-- super-low bandwidth tribute to cultdeadcow.com -->
   </head>
   <body>
-    {' '}
-    <slot />{' '}
+    <slot />
     {dev && <script type="module" is:inline src="/src/components/art-editor/editor.js"></script>}
   </body>
 </html>

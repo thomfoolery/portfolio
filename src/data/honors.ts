@@ -22,7 +22,7 @@ export const honors: Honor[] = [
     date: '2023.01',
     title: 'THREE.JS JOURNEY CERTIFICATE',
     href: 'https://threejs-journey.com/certificate/view/2640',
-    blurb: 'The most complete, yet accessible way to learn 3D on the web.',
+    blurb: 'Industry leading three.js course, produced by the award winning Bruno Simon',
     measure: 48,
   },
   {
