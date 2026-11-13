@@ -1,6 +1,7 @@
 ---
 import '@/styles/main.css'
 import fontUrl from '@/fonts/commit-mono-subset.woff2?url'
+import showMore from '@/scripts/show-more.js?raw'
 
 interface Props {
   title: string
@@ -12,7 +13,10 @@ const dev = import.meta.env.DEV
 ---
 
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<!-- color-scheme, the scrollbar and `interpolate-size` are document-wide, so they
+     sit on the root rather than in main.css. `allow-keywords` is what lets the
+     disclosure animate block-size to `auto`. -->
+<html lang="en" class="scroll-smooth bg-black scheme-dark">
   <head>
     <title>{title}</title>
     <meta charset="utf-8" />
@@ -22,8 +26,13 @@ const dev = import.meta.env.DEV
     <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
     <!-- super-low bandwidth tribute to cultdeadcow.com -->
   </head>
-  <body>
+  <!-- The 12px gutter lives here, not on the 72ch frame: preflight makes
+       everything border-box, so a padded frame would come out 24px narrow. -->
+  <body class="px-[12px] font-light leading-1 text-green-500 selection:bg-green-600 selection:text-black">
     <slot />
+    {/* after the slot, so the lists the button collapses are already parsed */}
+    {/* eslint-disable-next-line astro/no-set-html-directive -- this is our own script text */}
+    <script is:inline set:html={showMore} />
     {dev && <script type="module" is:inline src="/src/components/art-editor/editor.js"></script>}
   </body>
 </html>

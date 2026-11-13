@@ -1,0 +1,16 @@
+---
+import { cn } from '@/lib/utils'
+
+/**
+ * A nav hotkey hint. Hidden where there is no keyboard to press it on.
+ */
+interface Props {
+  class?: string
+}
+
+const { class: className } = Astro.props
+---
+
+<span class={cn('text-green-300 pointer-coarse:hidden', className)} aria-hidden="true">
+  <slot />
+</span>

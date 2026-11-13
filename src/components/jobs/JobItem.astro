@@ -1,58 +1,22 @@
 ---
 import JobHeading from './JobHeading.astro'
 import JobRoles from './JobRoles.astro'
+import Disclosure from '@/components/ui/Disclosure.astro'
 import type { Job } from '@/data/jobs'
 
 interface Props {
   job: Job
+  /** folded away behind the section's "show more" until it is clicked */
+  more?: boolean
   class?: string
 }
 
-const { job, class: className } = Astro.props
+const { job, more = false, class: className } = Astro.props
 ---
 
-<style>
-  .scroll-animation {
-    animation-fill-mode: both;
-    animation-name: reveal;
-    animation-timing-function: step(72);
-    animation-timeline: view(50% 10%);
-    overflow: clip;
-  }
-
-  @keyframes reveal {
-    0% {
-      width: 0;
-    }
-    100% {
-      width: 100%;
-    }
-  }
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideInLeft {
-    0% {
-      transform: translateX(10%);
-    }
-    100% {
-      transform: translateX(0);
-    }
-  }
-</style>
-
-<li class:list={['scroll-animation mt-1', className]}>
-  <details>
-    <summary>
-      <JobHeading job={job} />
-    </summary>
+<li class:list={['mt-1', className]} data-more={more ? '' : undefined}>
+  <Disclosure>
+    <JobHeading slot="summary" job={job} />
     <JobRoles job={job} />
-  </details>
+  </Disclosure>
 </li>

@@ -1,0 +1,50 @@
+---
+/**
+ * A <details> disclosure that eases open and whose contents fade with it.
+ *
+ * The summary carries `list-none` and hides WebKit's own marker, since the
+ * marker is Toggle.astro. Everything the open/close animation needs is beyond
+ * what a utility can say: `overflow: hidden` does two jobs — it clips the
+ * collapsing box, and it contains the content's top margin, so a closed job
+ * leaves no stray gap behind — and `allow-discrete` keeps the content rendered
+ * until the close has finished, rather than the UA hiding it the moment the
+ * attribute goes. `interpolate-size: allow-keywords`, on the root in Base.astro,
+ * is what lets block-size animate to `auto`.
+ *
+ * Pass the summary row through the `summary` slot; everything else is content.
+ */
+interface Props {
+  class?: string
+}
+
+const { class: className } = Astro.props
+---
+
+<style>
+  details::details-content {
+    block-size: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      block-size 280ms var(--ease-disclosure),
+      opacity 280ms var(--ease-disclosure),
+      content-visibility 280ms var(--ease-disclosure);
+    transition-behavior: allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    details::details-content {
+      transition: none;
+    }
+  }
+</style>
+
+<details class={className}>
+  <summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-900">
+    <slot name="summary" />
+  </summary>
+  <slot />
+</details>

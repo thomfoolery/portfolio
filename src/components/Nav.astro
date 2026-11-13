@@ -1,31 +1,29 @@
 ---
-import hotkeys from './hotkeys.js?raw'
+import hotkeys from '@/scripts/hotkeys.js?raw'
+import Hint from './ui/Hint.astro'
+import Link from './ui/Link.astro'
 import { navItems } from '@/data/nav'
 ---
 
 <nav aria-label="Main" class="sticky top-0 bg-black pt-[1rem] shadow-black z-100">
-  <ul class="flex flex-wrap gap-x-[2ch]">
+  <ul class="flex flex-wrap gap-x-[2ch] font-extralight">
     {navItems.map((item) => (
       <li class={item.right ? 'ml-auto' : undefined}>
-        {item.key && (
-          <span class="hint" aria-hidden="true">
-            [{item.key}]
-          </span>
-        )}
-        <a
-          class="no-underline py-[3px] px-[1ch]"
+        {item.key && <Hint>[{item.key}]</Hint>}
+        <Link
+          class="no-underline py-[3px] px-[1ch] font-semibold"
           href={item.href}
           title={item.title}
-          target={item.external ? '_blank' : undefined}
+          external={item.external}
           data-key={item.key}
           aria-keyshortcuts={item.key}
         >
           {item.label}
-        </a>
+        </Link>
       </li>
     ))}
   </ul>
 </nav>
-<!-- The nav's hotkeys are the page's only client script. Inlined, so no request. -->
+<!-- The nav's hotkeys are the page's first client script. Inlined, so no request. -->
 {/* eslint-disable-next-line astro/no-set-html-directive -- this is our own script text */}
 <script is:inline set:html={hotkeys} />

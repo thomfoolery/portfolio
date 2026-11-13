@@ -1,120 +1,95 @@
 ---
 import Section from '@/components/Section.astro'
 import ArtHtml from '@/components/ArtHtml.astro'
+import Link from '@/components/ui/Link.astro'
 
 import { blockArt } from '@/data/art'
 ---
 
 <style>
-  .scroll-animation {
-    animation-fill-mode: both;
-    animation-name: reveal;
-    animation-timing-function: step(72, end);
-    animation-timeline: view(0% 20%);
-    word-break: break-all;
-    overflow: clip;
+  /* The reveal: reveal.ts scrubs a width animation on these, so the box grows
+     into the line while break-all reflows the text. Without the script the
+     element keeps its natural width and the whole line reads. */
+  [data-reveal] {
     height: 1.8em;
-  }
-
-  @keyframes reveal {
-    0% {
-      width: 0;
-    }
-    100% {
-      width: 100%;
-    }
-  }
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slide {
-    0% {
-      transform: translateX(10%);
-    }
-    100% {
-      transform: translateX(0);
-    }
+    overflow: clip;
+    word-break: break-all;
   }
 </style>
 
-<ArtHtml art={blockArt.prism} class="mt-8" />
+<ArtHtml art={blockArt.prism} scrollReveal class="mt-8" />
 
-<Section id="welcome" labelledby="welcome-title" class="overflow-clip">
-  <div>
-    <p class="mt-8">
-      <div class="scroll-animation">Hi,</div>
-      <div class="scroll-animation mt-1" style="animation-timeline:view(50% 20%)">
-        My name is <span class="text-green-900">Thom Yuill</span>.
-      </div>
-    </p>
-    <p class="mt-1">
-      <div class="scroll-animation" style="animation-timeline:view(50% 30%)">
-        I am a <span class="text-green-900">designer</span> and{' '}
-        <span class="text-green-900">engineer</span> and I currently work at{' '}
-        <a href="https://livekit.com/" title="Day job!!" target="_blank">
-          LiveKit ➚
-        </a>
-        .
-      </div>
-    </p>
-    <p class="mt-1 mx-auto">
-      <div class="scroll-animation" style="animation-timeline:view(50% 35%)">
-        I enjoy building dynamic, interactive, accessible,
-      </div>
-      <div class="scroll-animation" style="animation-timeline:view(50% 40%)">
-        and aesthetic web experiences powered with
-      </div>
-      <div class="scroll-animation" style="animation-timeline:view(20% 40%)">
-        real-time data/media.
-      </div>
-    </p>
-  </div>
+<Section id="welcome" labelledby="welcome-title" class="overflow-clip mt-8 scroll-mt-2">
+  <p class="font-extralight leading-loose">
+    <div data-reveal>Hi,</div>
+    <div class="mt-1" data-reveal data-reveal-range="50% 20%">
+      My name is <span class="text-green-900">Thom Yuill</span>.
+    </div>
+  </p>
+  <p class="mt-1 font-extralight leading-loose">
+    <div data-reveal data-reveal-range="50% 30%">
+      I am a <span class="text-green-900">designer</span> and{' '}
+      <span class="text-green-900">engineer</span> and I currently work at{' '}
+      <Link href="https://livekit.com/" title="Day job!!" external>
+        LiveKit ➚
+      </Link>
+      .
+    </div>
+  </p>
+  <p class="mt-1 mx-auto font-extralight leading-loose">
+    <div data-reveal data-reveal-range="50% 35%">
+      I enjoy building dynamic, interactive, accessible,
+    </div>
+    <div data-reveal data-reveal-range="50% 40%">
+      and aesthetic web experiences powered with
+    </div>
+    <div data-reveal data-reveal-range="20% 45%">
+      real-time data/media.
+    </div>
+  </p>
 
   <div class="flex mt-3 gap-6 ml-2">
     <div class="flex-1">
-      <p class="mb-1 scroll-animation">Shoot me a line on</p>
-      <ul class="ml-[1ch]">
-        <li class="text-green-300 scroll-animation">
+      <p class="mb-1 font-extralight leading-loose" data-reveal data-reveal-range="40% 35%">
+        Shoot me a line on
+      </p>
+      <ul class="ml-[1ch] font-extralight">
+        <li class="text-green-300" data-reveal data-reveal-range="50% 30%">
           [g]{' '}
-          <a href="https://github.com/thomfoolery" title="Read the source, Luke" target="_blank">
+          <Link href="https://github.com/thomfoolery" title="Read the source, Luke" external>
             github ➚
-          </a>
+          </Link>
         </li>
-        <li class="text-green-300 scroll-animation">
+        <li class="text-green-300" data-reveal data-reveal-range="50% 30%">
           [l]{' '}
-          <a
-            href="https://www.linkedin.com/in/thomasyuill/"
-            title="Very professional"
-            target="_blank"
-          >
+          <Link href="https://www.linkedin.com/in/thomasyuill/" title="Very professional" external>
             linkedin ➚
-          </a>
+          </Link>
         </li>
       </ul>
     </div>
     <div class="flex-1">
-      <p class="mb-1 scroll-animation">While you're at it</p>
-      <ul class="ml-[1ch]">
-        <li class="scroll-animation">
+      <p class="mb-1 font-extralight leading-loose" data-reveal data-reveal-range="40% 35%">
+        While you're at it
+      </p>
+      <ul class="ml-[1ch] font-extralight">
+        <li data-reveal data-reveal-range="50% 30%">
           [2]{' '}
-          <a href="#experience" title="Where I've been">
+          <Link href="#experience" title="Where I've been">
             browse past jobs
-          </a>
+          </Link>
         </li>
-        <li class="scroll-animation">
+        <li data-reveal data-reveal-range="50% 30%">
           [3]{' '}
-          <a href="#honors" title="Shiny things">
+          <Link href="#honors" title="Shiny things">
             gaze upon my honors
-          </a>
+          </Link>
         </li>
       </ul>
     </div>
   </div>
 </Section>
+
+<script>
+  import '@/scripts/scroll-reveal'
+</script>

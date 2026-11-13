@@ -1,0 +1,28 @@
+---
+/**
+ * The [+] / [-] marker on a <details> summary. It is decoration — the summary
+ * carries the open state for assistive tech — so it stays aria-hidden.
+ *
+ * Tailwind cannot express generated content, so the marker is hand-written here.
+ * The open and hover rules reach out to the summary that holds the marker, which
+ * belongs to Disclosure.astro, hence `:global`.
+ */
+---
+
+<style>
+  .toggle::before {
+    content: '[+]';
+    color: var(--color-green-200);
+    margin-right: 1ch;
+  }
+  :global(details[open] > summary) .toggle::before {
+    content: '[-]';
+    color: var(--color-green-900);
+  }
+  :global(summary:hover) .toggle::before,
+  :global(summary:focus-visible) .toggle::before {
+    color: var(--color-green-900);
+  }
+</style>
+
+<span class="toggle" aria-hidden="true" />

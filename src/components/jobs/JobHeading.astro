@@ -1,16 +1,55 @@
 ---
+import Toggle from '@/components/ui/Toggle.astro'
 import { RULE, SPACE } from '@/data/grid'
 import type { Job } from '@/data/jobs'
 
 interface Props {
   job: Job
+  class?: string
 }
 
-const { job } = Astro.props
+const { job, class: className } = Astro.props
 ---
 
-<h3 class="flex">
-  <span class="toggle" aria-hidden="true" />
+<style>
+  .scroll-animation {
+    animation-fill-mode: both;
+    animation-name: reveal;
+    animation-timing-function: step(72);
+    animation-timeline: view(50% 10%);
+    overflow: clip;
+  }
+
+  @keyframes reveal {
+    0% {
+      width: 0;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInLeft {
+    0% {
+      transform: translateX(10%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+<h3 class:list={['flex scroll-animation font-bold', className]}>
+  <Toggle />
   <span class="whitespace-pre">
     <time datetime={job.from.datetime} class="text-green-900">
       {job.from.label}

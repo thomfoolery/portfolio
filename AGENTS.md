@@ -24,7 +24,7 @@ Every length is a character cell or a terminal line.
 - `--spacing` is one line (1.6em), so `mt-3` is three lines, `gap-6` is six.
   Widths are `w-[72ch]` and indents `ml-[11ch]`.
 - Body text is 16px, clamped down so 72 columns still fit a narrow viewport.
-  `<p>` carries its own 1.7 line-height; everything else inherits the terminal
+  `<p>` states `leading-[2]` of its own; everything else inherits the terminal
   line (1.6em).
 - Every panel is one viewport tall with its content centred. `Section.astro`
   renders the element it is given via `as`, so the header, the sections and the
@@ -32,8 +32,10 @@ Every length is a character cell or a terminal line.
 - Do not snap these to Tailwind's rem scale. If a value is in `px` or `rem`,
   say why in a comment. The 12px page gutter and the nav's 1rem lift are the
   deliberate ones.
-- `src/styles/main.css` is the theme, base and components. Keep the `[+]/[-]`
-  markers hand-written — Tailwind cannot express them.
+- `src/styles/main.css` is the theme, plus the one body rule a utility cannot
+  state. Everything else is a utility on the element, or scoped CSS in the
+  component that needs it (`ui/Link`, `ui/Hint`, `ui/Disclosure`, `ui/Toggle`).
+  Keep the `[+]/[-]` markers hand-written — Tailwind cannot express them.
 
 ## Three traps that have already bitten
 
@@ -46,14 +48,13 @@ Every length is a character cell or a terminal line.
    and the art gets clipped. The gutter lives on `body`, not on the frame.
 3. **Prettier would reflow the grid.** Its Astro printer breaks inline runs onto
    separate lines, which turns those significant spaces into newlines for the
-   compiler to drop. Seven elements therefore carry a `prettier-ignore`, with the
+   compiler to drop. Such a row carries a `prettier-ignore`, with the
    reason in the comment above. Write the directive alone in its comment: Prettier
    matches the text exactly, so `prettier-ignore: why` is silently ignored and the
    row is reflowed anyway. After any `pnpm format`, the guards are what keep the
    design still — check them before trusting it.
    Use the JSX form, `{/* prettier-ignore */}`. The HTML form works for Prettier
-   too, but Astro emits it into the page, so it ships a comment per use — six of
-   the seven currently do.
+   too, but Astro emits it into the page, so it ships a comment per use.
 
 ## Verify against the previous output, do not eyeball it
 

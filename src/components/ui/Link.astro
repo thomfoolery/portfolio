@@ -1,0 +1,36 @@
+---
+import { cn } from '@/lib/utils'
+
+/**
+ * The page's one link: phosphor green, underlined, and a BBS lightbar — an
+ * inverted cell — on hover, focus and press. Preflight sets
+ * `text-decoration: inherit`, so the underline is stated here rather than left
+ * to the UA. `outline: 2px solid transparent` keeps the lightbar visible in
+ * forced-colors mode, where the background is dropped.
+ */
+interface Props {
+  href: string
+  /** opens in a new tab, and says so to the screen reader via the title */
+  external?: boolean
+  class?: string
+  title?: string
+  [key: string]: unknown
+}
+
+const { href, external = false, class: className, ...rest } = Astro.props
+---
+
+<a
+  href={href}
+  target={external ? '_blank' : undefined}
+  class={cn(
+    'text-green-900 underline underline-offset-[0.2em]',
+    'hover:bg-green-900 hover:text-black hover:no-underline hover:outline-2 hover:outline-transparent',
+    'focus-visible:bg-green-900 focus-visible:text-black focus-visible:no-underline focus-visible:outline-2 focus-visible:outline-transparent',
+    'active:bg-green-900 active:text-black',
+    className,
+  )}
+  {...rest}
+>
+  <slot />
+</a>

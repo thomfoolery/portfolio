@@ -3,30 +3,33 @@
 A résumé, served as a terminal session on a 72-column grid.
 
 Astro and Tailwind are build-time tools here. The page is prerendered to static
-HTML. The only JavaScript it ships is the inlined nav hotkey handler, about 560
-bytes.
+HTML. The JavaScript it ships is two handlers inlined at build time, about 1.2 KB
+between them — the nav hotkeys and the "show more" buttons — plus one module:
+Motion's `scroll()`, about 4 KB gzipped, which scrubs the introduction's reveal.
 
 ## Commands
 
-| command          | what it does                                    |
-| ---------------- | ----------------------------------------------- |
-| `pnpm dev`       | dev server on 4321, the page rendered on demand |
-| `pnpm build`     | prerenders the page into `dist/`                |
-| `pnpm typecheck` | `astro check`                                   |
-| `pnpm lint`      | ESLint, type-aware, with eslint-plugin-astro    |
-| `pnpm format`    | Prettier, in place. `format:check` verifies     |
-| `pnpm preview`   | serves `dist/` on 4321                          |
+| command                 | what it does                                       |
+| ----------------------- | -------------------------------------------------- |
+| `pnpm dev`              | dev server on 4321, the page rendered on demand    |
+| `pnpm dev-localnetwork` | same, backgrounded, host `zerocool` on the tailnet |
+| `pnpm build`            | prerenders the page into `dist/`                   |
+| `pnpm typecheck`        | `astro check`                                      |
+| `pnpm lint`             | ESLint, type-aware, with eslint-plugin-astro       |
+| `pnpm format`           | Prettier, in place. `format:check` verifies        |
+| `pnpm preview`          | serves `dist/` on 4321                             |
 
 `pnpm build` is the whole build: Astro renders the page and writes `dist/index.html`
 with its hashed stylesheet.
 
 ## Deploy
 
-Serve `dist/`. It is flat HTML plus one hashed stylesheet:
+Serve `dist/`. It is flat HTML plus its hashed assets:
 
 ```
 dist/index.html                 the résumé, block art, job entries collapsible
 dist/_astro/*.css               the hashed stylesheet
+dist/_astro/*.js                the reveal, the page's only script request
 dist/_astro/*.woff2             the hashed Commit Mono subset
 ```
 
@@ -36,20 +39,25 @@ Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
 
 ```
 eslint.config.ts    type-aware lint; formatting is left to Prettier
+astro.config.mjs    the build, plus the dev-only art-editor integration
 .prettierrc.json    single quotes, no semicolons, 100 columns
 src/
-  components/       the shell: Section, Nav, SiteFooter, ArtHtml
-    jobs/           JobsList and the job rows
-    posts/          PostsList and posts.ts
+  components/       the shell: Section, Nav, Header, Footer, ArtHtml
     honors/         HonorsList
-    welcome/        Welcome, the introduction
-    hotkeys.js      the nav's script, inlined into the page at build time
-  data/             nav.ts, jobs.ts, honors.ts, grid.ts and the art
+    jobs/           JobsList and the job rows
+    ui/             Link, Hint, Disclosure, Toggle — what the theme used to style
+    Welcome.astro   the introduction
+    Posts.astro     the posts list, not yet on the page
+  data/             nav.ts, jobs.ts, honors.ts, posts.ts, grid.ts
     art/            the ASCII art, as character and colour arrays
+  dev/              art-editor.ts, which writes art back under `astro dev`
   fonts/            the Commit Mono subset, with its OFL licence
   layouts/          Base.astro, the document shell
+  lib/              art.ts, utils.ts (`cn`)
   pages/            index.astro, the one page
-  styles/           main.css (Tailwind theme, base and components)
+  scripts/          hotkeys.js and show-more.js, inlined at build time;
+                    scroll-reveal.ts, the one module that ships
+  styles/           main.css: the theme, and the one rule a utility cannot state
 ```
 
 ## Typography
@@ -86,15 +94,31 @@ ramp, and sets `--spacing` to one terminal line so `mt-3` is three lines rather
 than three-quarters of a rem. Lengths in this layout are character cells and
 lines, so `w-[72ch]` and `ml-[11ch]` are written out as arbitrary values rather
 than snapped to a pixel scale. Body text is 16px, clamped down so 72 columns
-still fit a narrow viewport, and `<p>` runs at a 1.7 line-height.
+still fit a narrow viewport, and `<p>` takes `leading-[2]`, a step looser than
+the terminal line.
+
+**Everything else is markup.** The weights, the link lightbar and the prose
+rhythm are utilities on the elements that want them, so `main.css` holds the
+theme, the face, and the body font-size — the one rule that cannot be a utility,
+because the type scale is the column count. What genuinely needs CSS lives with
+the component that needs it: `ui/Link.astro`, `ui/Hint.astro`,
+`ui/Disclosure.astro` and `ui/Toggle.astro`.
+
+**The one dependency with a client.** `motion` is imported only by
+`scripts/scroll-reveal.ts`, and only for `scroll()`: it reports how far each
+line has travelled, and `reveal.ts` scrubs a paused width animation with
+`currentTime`. Animating width and interpolating are still the browser's work,
+so no easing is reimplemented and the bundle stays under 4 KB gzipped. That
+request is the page's only one besides the stylesheet and the font.
 
 **The page is a stack of panels.** `Section.astro` wraps the header, each
 section and the footer: each panel is at least one viewport tall and centres its
 content, except the footer, which aligns to the end. It renders the element it
 is asked for, so the header stays a `<header>` and the footer a `<footer>`.
 
-**One thing stays hand-written.** The `[+]/[-]` disclosure markers are in plain
-CSS, because Tailwind cannot express them and should not try.
+**One thing stays hand-written.** The `[+]/[-]` disclosure markers are a rule in
+`ui/Toggle.astro`, because Tailwind cannot express generated content and should
+not try.
 
 **The art is content.** Each block in `src/data/art/` is two arrays — characters
 and colours — rendered to markup at build time and injected through a
@@ -106,15 +130,14 @@ whitespace and drops leading or trailing whitespace inside an element, and this
 layout is a character grid. Significant spaces are interpolated from `GAP` and
 `SPACE` in `src/data/grid.ts`, and the job heading row is kept on one line.
 
-Seven elements also carry a `prettier-ignore` for the same reason: Prettier's Astro
+One element also carries a `prettier-ignore` for the same reason: Prettier's Astro
 printer reflows inline runs onto separate lines, which turns those spaces into
 newlines for the compiler to drop. Write the directive alone in its comment —
 Prettier matches the text exactly, so `prettier-ignore: why` is silently ignored and
 the row is reflowed anyway.
 
 Use the JSX form, `{/* prettier-ignore */}`. The HTML form works for Prettier too,
-but Astro emits it into the page: six of the seven guards currently ship as
-comments.
+but Astro emits it into the page as a comment.
 
 **The art goes through one component.** `ArtHtml` injects the `src/data/art`
 fragments and holds the single exemption from `astro/no-set-html-directive`, with its reason. The

@@ -31,22 +31,22 @@ const projectList = (role: Role) => {
 }
 ---
 
-<ul class="mt-1 [&>li+li]:mt-1">
+<ul class="mt-1 [&>li+li]:mt-1 font-extralight">
   {job.roles.map((role) => (
     <li>
       {roleHasLeader(role) ? (
         <LeaderRow label={role.label} value={role.value} class={roleIndent} />
       ) : role.value ? (
-        <p class:list={['flex', roleIndent]}>
+        <p class:list={['flex font-extralight leading-[2]', roleIndent]}>
           <span>{role.label}</span>
           <span class="ml-[2ch]">{role.value}</span>
         </p>
       ) : (
-        <p class={roleIndent}>{role.label}</p>
+        <p class:list={['font-extralight leading-[2]', roleIndent]}>{role.label}</p>
       )}
 
       {role.projects && (
-        <ul class:list={[projectIndent, projectList(role)]}>
+        <ul class:list={['font-extralight', projectIndent, projectList(role)]}>
           {role.projects.map((project) => (
             <li>
               {typeof project === 'string' ? (

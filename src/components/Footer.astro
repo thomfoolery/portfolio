@@ -48,19 +48,15 @@ const year = new Date().getFullYear()
 </style>
 
 <Section class="overflow-clip">
-  <h2 id="welcome-title" class="sr-only">
-    Welcome
-  </h2>
+  <ArtHtml art={blockArt.eyes} scrollReveal />
 
-  <ArtHtml art={blockArt.eyes} />
-
-  <p class="font-medium mt-2">
+  <p class="font-medium mt-2 leading-[2]">
     <div class="scroll-animation ml-5" style="animation-timeline:view(30% 20%)">
       20+ glorious years pushing pixels and...
     </div>
   </p>
 
-  <p class="font-black mt-1">
+  <p class="font-black mt-1 leading-[2]">
     <div class="scroll-animation ml-16 text-green-900" style="animation-timeline:view(20% 40%)">
       NOTHING IS REAL
     </div>
@@ -68,10 +64,10 @@ const year = new Date().getFullYear()
 </Section>
 
 <Section as="footer" align="bottom" class="pb-0">
-  <ArtHtml art={blockArt.footer} hoverReveal class="ml-4" />
+  <ArtHtml art={blockArt.footer} hoverReveal class="peer ml-4" />
 
-  <p class="text-right my-1">
-    <small class="bg-clip-text text-transparent bg-linear-to-r from-green-100 via-green-900 to-green-100">
+  <p class="text-right my-1 font-extralight leading-[2] peer-hover:opacity-100 opacity-10 duration-200 peer-hover:duration-500 transition-opacity">
+    <small class="bg-clip-text text-transparent bg-linear-to-r from-green-100 via-green-900 to-green-100 font-extralight [font-size:inherit]">
       &copy; Thomas Yuill {year}
     </small>
   </p>
