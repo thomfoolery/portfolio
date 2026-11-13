@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "dev-localnetwork": "astro dev --background --host --allowed-hosts zerocool,zerocool.tail4e11e3.ts.net",
     "build": "astro build",
     "preview": "astro preview",
     "typecheck": "astro check",
@@ -31,6 +32,7 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "motion": "^14.12.0",
     "tailwind-merge": "^3.7.0"
   }
 }
