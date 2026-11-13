@@ -11,44 +11,11 @@ interface Props {
 const { job, class: className } = Astro.props
 ---
 
-<style>
-  .scroll-animation {
-    animation-fill-mode: both;
-    animation-name: reveal;
-    animation-timing-function: step(72);
-    animation-timeline: view(50% 10%);
-    overflow: clip;
-  }
-
-  @keyframes reveal {
-    0% {
-      width: 0;
-    }
-    100% {
-      width: 100%;
-    }
-  }
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideInLeft {
-    0% {
-      transform: translateX(10%);
-    }
-    100% {
-      transform: translateX(0);
-    }
-  }
-</style>
-
-<h3 class:list={['flex scroll-animation font-bold', className]}>
+<h3
+  class:list={['flex overflow-clip font-bold', className]}
+  data-reveal
+  data-reveal-range="50% 10%"
+>
   <Toggle />
   <span class="whitespace-pre">
     <time datetime={job.from.datetime} class="text-green-900">

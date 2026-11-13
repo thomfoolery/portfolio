@@ -6,28 +6,19 @@ import Link from '@/components/ui/Link.astro'
 import { blockArt } from '@/data/art'
 ---
 
-<style>
-  /* The reveal: reveal.ts scrubs a width animation on these, so the box grows
-     into the line while break-all reflows the text. Without the script the
-     element keeps its natural width and the whole line reads. */
-  [data-reveal] {
-    height: 1.8em;
-    overflow: clip;
-    word-break: break-all;
-  }
-</style>
-
 <ArtHtml art={blockArt.prism} scrollReveal class="mt-8" />
 
 <Section id="welcome" labelledby="welcome-title" class="overflow-clip mt-8 scroll-mt-2">
   <p class="font-extralight leading-loose">
-    <div data-reveal>Hi,</div>
-    <div class="mt-1" data-reveal data-reveal-range="50% 20%">
+    <div class="h-[1.8em] break-all overflow-clip" data-reveal>
+      Hi,
+    </div>
+    <div class="mt-1 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 20%">
       My name is <span class="text-green-900">Thom Yuill</span>.
     </div>
   </p>
   <p class="mt-1 font-extralight leading-loose">
-    <div data-reveal data-reveal-range="50% 30%">
+    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 30%">
       I am a <span class="text-green-900">designer</span> and{' '}
       <span class="text-green-900">engineer</span> and I currently work at{' '}
       <Link href="https://livekit.com/" title="Day job!!" external>
@@ -37,30 +28,42 @@ import { blockArt } from '@/data/art'
     </div>
   </p>
   <p class="mt-1 mx-auto font-extralight leading-loose">
-    <div data-reveal data-reveal-range="50% 35%">
+    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 35%">
       I enjoy building dynamic, interactive, accessible,
     </div>
-    <div data-reveal data-reveal-range="50% 40%">
+    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 40%">
       and aesthetic web experiences powered with
     </div>
-    <div data-reveal data-reveal-range="20% 45%">
+    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="20% 45%">
       real-time data/media.
     </div>
   </p>
 
   <div class="flex mt-3 gap-6 ml-2">
     <div class="flex-1">
-      <p class="mb-1 font-extralight leading-loose" data-reveal data-reveal-range="40% 35%">
+      <p
+        class="mb-1 font-extralight leading-loose h-[1.8em] break-all overflow-clip"
+        data-reveal
+        data-reveal-range="40% 35%"
+      >
         Shoot me a line on
       </p>
       <ul class="ml-[1ch] font-extralight">
-        <li class="text-green-300" data-reveal data-reveal-range="50% 30%">
+        <li
+          class="text-green-300 h-[1.8em] break-all overflow-clip"
+          data-reveal
+          data-reveal-range="50% 30%"
+        >
           [g]{' '}
           <Link href="https://github.com/thomfoolery" title="Read the source, Luke" external>
             github ➚
           </Link>
         </li>
-        <li class="text-green-300" data-reveal data-reveal-range="50% 30%">
+        <li
+          class="text-green-300 h-[1.8em] break-all overflow-clip"
+          data-reveal
+          data-reveal-range="50% 30%"
+        >
           [l]{' '}
           <Link href="https://www.linkedin.com/in/thomasyuill/" title="Very professional" external>
             linkedin ➚
@@ -69,17 +72,21 @@ import { blockArt } from '@/data/art'
       </ul>
     </div>
     <div class="flex-1">
-      <p class="mb-1 font-extralight leading-loose" data-reveal data-reveal-range="40% 35%">
+      <p
+        class="mb-1 font-extralight leading-loose h-[1.8em] break-all overflow-clip"
+        data-reveal
+        data-reveal-range="40% 35%"
+      >
         While you're at it
       </p>
       <ul class="ml-[1ch] font-extralight">
-        <li data-reveal data-reveal-range="50% 30%">
+        <li class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 30%">
           [2]{' '}
           <Link href="#experience" title="Where I've been">
             browse past jobs
           </Link>
         </li>
-        <li data-reveal data-reveal-range="50% 30%">
+        <li class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 30%">
           [3]{' '}
           <Link href="#honors" title="Shiny things">
             gaze upon my honors

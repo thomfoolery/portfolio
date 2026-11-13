@@ -8,56 +8,21 @@ interface Props {}
 const year = new Date().getFullYear()
 ---
 
-<style>
-  .scroll-animation {
-    animation-fill-mode: both;
-    animation-name: reveal;
-    animation-timing-function: step(72, end);
-    animation-timeline: view(0% 20%);
-    word-break: break-all;
-    overflow: clip;
-    height: 1.8em;
-  }
-
-  @keyframes reveal {
-    0% {
-      width: 0;
-    }
-    100% {
-      width: 100%;
-    }
-  }
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slide {
-    0% {
-      transform: translateX(10%);
-    }
-    100% {
-      transform: translateX(0);
-    }
-  }
-</style>
-
 <Section class="overflow-clip">
   <ArtHtml art={blockArt.eyes} scrollReveal />
 
   <p class="font-medium mt-2 leading-[2]">
-    <div class="scroll-animation ml-5" style="animation-timeline:view(30% 20%)">
+    <div class="ml-5 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="30% 20%">
       20+ glorious years pushing pixels and...
     </div>
   </p>
 
   <p class="font-black mt-1 leading-[2]">
-    <div class="scroll-animation ml-16 text-green-900" style="animation-timeline:view(20% 40%)">
+    <div
+      class="ml-16 h-[1.8em] break-all overflow-clip text-green-900"
+      data-reveal
+      data-reveal-range="20% 40%"
+    >
       NOTHING IS REAL
     </div>
   </p>

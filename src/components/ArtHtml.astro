@@ -11,6 +11,9 @@ import type { SectionArtItem } from '@/data/art'
  * `display: contents` keeps the wrapper out of the layout, so the art behaves as
  * a direct child of whatever section holds it. In dev the wrapper becomes a real
  * box instead: a `contents` box has no corner to hang the editor trigger on.
+ *
+ * `scrollReveal` marks the block for the page's one reveal script. A `contents`
+ * box has no opacity of its own, so the fade only shows in the editor's real box.
  */
 interface Props {
   art: SectionArtItem
@@ -27,33 +30,16 @@ const fragment = renderFragment(
 )
 ---
 
-<style>
-  .scroll-animation-fade {
-    animation-fill-mode: both;
-    animation-name: fadeIn;
-    animation-timing-function: linear;
-    animation-timeline: view(20% 30%);
-  }
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-</style>
-
 {/* eslint-disable astro/no-set-html-directive -- art is constant, generated from src/data/art */}
 <div
   class:list={[
     dev ? undefined : 'contents',
-    scrollReveal && 'scroll-animation-fade',
     hoverReveal &&
       'opacity-10 hover:opacity-100 duration-200 hover:duration-500 transition-opacity',
     className,
   ]}
+  data-reveal={scrollReveal ? 'fade' : undefined}
+  data-reveal-range={scrollReveal ? '20% 30%' : undefined}
   style={dev ? 'position:relative;width:fit-content' : undefined}
   data-art-frame={dev ? '' : undefined}
   data-art-path={dev ? art.path : undefined}

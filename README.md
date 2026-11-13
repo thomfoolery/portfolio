@@ -5,7 +5,7 @@ A résumé, served as a terminal session on a 72-column grid.
 Astro and Tailwind are build-time tools here. The page is prerendered to static
 HTML. The JavaScript it ships is two handlers inlined at build time, about 1.2 KB
 between them — the nav hotkeys and the "show more" buttons — plus one module:
-Motion's `scroll()`, about 4 KB gzipped, which scrubs the introduction's reveal.
+Motion's `scroll()`, about 4 KB gzipped, which scrubs every reveal on the page.
 
 ## Commands
 
@@ -29,7 +29,7 @@ Serve `dist/`. It is flat HTML plus its hashed assets:
 ```
 dist/index.html                 the résumé, block art, job entries collapsible
 dist/_astro/*.css               the hashed stylesheet
-dist/_astro/*.js                the reveal, the page's only script request
+dist/_astro/*.js                the scroll reveals, the only script request
 dist/_astro/*.woff2             the hashed Commit Mono subset
 ```
 
@@ -106,10 +106,17 @@ the component that needs it: `ui/Link.astro`, `ui/Hint.astro`,
 
 **The one dependency with a client.** `motion` is imported only by
 `scripts/scroll-reveal.ts`, and only for `scroll()`: it reports how far each
-line has travelled, and `reveal.ts` scrubs a paused width animation with
-`currentTime`. Animating width and interpolating are still the browser's work,
-so no easing is reimplemented and the bundle stays under 4 KB gzipped. That
-request is the page's only one besides the stylesheet and the font.
+element has travelled, and `scroll-reveal.ts` scrubs paused animations with
+`currentTime` — a width reveal, which types a line out, or a fade. Animating and
+interpolating are still the browser's work, so no easing is reimplemented and the
+bundle stays under 4 KB gzipped. That request is the page's only one besides the
+stylesheet and the font.
+
+**Markup carries the reveal.** An element opts in with `data-reveal`, and names
+its animation with `data-reveal="fade"` when it is not the default width reveal.
+`data-reveal-range="50% 20%"` takes the CSS `view()` range it used to be written
+with, so the scroll positions stayed the same when the timelines moved out of
+CSS.
 
 **The page is a stack of panels.** `Section.astro` wraps the header, each
 section and the footer: each panel is at least one viewport tall and centres its
