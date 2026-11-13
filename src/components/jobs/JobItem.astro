@@ -14,7 +14,11 @@ interface Props {
 const { job, more = false, class: className } = Astro.props
 ---
 
-<li class:list={['mt-1', className]} data-more={more ? '' : undefined}>
+<li
+  class:list={['mt-1', className]}
+  data-more={more ? '' : undefined}
+  data-folded={more ? '' : undefined}
+>
   <Disclosure>
     <JobHeading slot="summary" job={job} />
     <JobRoles job={job} />

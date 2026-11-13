@@ -13,6 +13,9 @@ import { scroll } from 'motion'
  */
 const DURATION = 1000
 
+/** Where the scroll is close enough to done that a row can be handed back to it. */
+const CAUGHT_UP = 0.99
+
 type Kind = 'width' | 'fade'
 
 /**
@@ -42,13 +45,16 @@ function toOffset(range: string): ScrollOffset {
   return edges as unknown as ScrollOffset
 }
 
-/** The scrubbed animations, so an entrance can borrow them. */
-const scrubbed = new Map<HTMLElement, Animation[]>()
+interface Reveal {
+  animations: Animation[]
+  /** stops the scroll binding; a rebind starts from scratch */
+  unsync: () => void
+  /** a row entering on a click holds still until the scroll catches up */
+  holding: boolean
+}
 
-/** Rows that entered on a click rather than on a scroll; the scroll leaves them be. */
-const entered = new Set<HTMLElement>()
-
-for (const element of document.querySelectorAll<HTMLElement>('[data-reveal]')) {
+/** Bind one element's animations to its scroll range. */
+function bind(element: HTMLElement, holding = false): Reveal {
   const kind = (element.dataset.reveal || 'width') as Kind
   const steps = KINDS[kind] ?? KINDS.width
   const offset = toOffset(element.dataset.revealRange ?? '0% 20%')
@@ -59,16 +65,34 @@ for (const element of document.querySelectorAll<HTMLElement>('[data-reveal]')) {
     animation.currentTime = 0
     return animation
   })
-  scrubbed.set(element, animations)
 
-  scroll(
+  const reveal: Reveal = {
+    animations,
+    holding,
+    unsync: () => {},
+  }
+
+  reveal.unsync = scroll(
     (progress) => {
-      if (entered.has(element)) return
+      // A row that entered on a click stays where it landed until the scroll has
+      // caught up. From there it is scrubbed like its neighbours, so scrolling
+      // back up runs its reveal in reverse again.
+      if (reveal.holding) {
+        if (progress < CAUGHT_UP) return
+        reveal.holding = false
+      }
       const time = Math.min(1, Math.max(0, progress)) * DURATION
       for (const animation of animations) animation.currentTime = time
     },
     { target: element, offset },
   )
+
+  return reveal
+}
+
+const reveals = new Map<HTMLElement, Reveal>()
+for (const element of document.querySelectorAll<HTMLElement>('[data-reveal]')) {
+  reveals.set(element, bind(element))
 }
 
 /**
@@ -76,7 +100,7 @@ for (const element of document.querySelectorAll<HTMLElement>('[data-reveal]')) {
  * that has already gone past it. The row fires `reveal:enter` with its place in
  * the stagger as the detail; every `[data-reveal]` it holds is rewound at once
  * and played when its turn comes, so the row does not sit half-drawn while it
- * waits. Having entered, the scroll stops scrubbing it: the row stays revealed.
+ * waits.
  */
 document.addEventListener('reveal:enter', (event) => {
   const row = event.target
@@ -89,13 +113,14 @@ document.addEventListener('reveal:enter', (event) => {
   ]
 
   for (const element of elements) {
-    const animations = scrubbed.get(element)
-    if (!animations) continue
+    // It was measured while folded away, so its range has to be taken again now
+    // that it has a size.
+    reveals.get(element)?.unsync()
+    const reveal = bind(element, true)
+    reveals.set(element, reveal)
 
-    entered.add(element)
-    for (const animation of animations) animation.currentTime = 0
     setTimeout(() => {
-      for (const animation of animations) animation.play()
+      for (const animation of reveal.animations) animation.play()
     }, delay)
   }
 })

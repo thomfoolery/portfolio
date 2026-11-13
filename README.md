@@ -118,11 +118,20 @@ its animation with `data-reveal="fade"` when it is not the default width reveal.
 with, so the scroll positions stayed the same when the timelines moved out of
 CSS.
 
+**Nothing flashes on the way in.** The state before the script arrives is CSS in
+`Base.astro`: a reveal starts at zero width or zero opacity, and the folded rows
+carry `data-folded`, which is a rule rather than the `hidden` attribute because
+preflight's `[hidden] { display: none !important }` sits in a layer and would win.
+A `<noscript>` in the same file undoes both, so a reader without scripts gets
+every line, every row, and no buttons. The same file listens for a script that
+fails to load and shows the page rather than a blank one.
+
 **Rows can enter on a click instead.** The "show more" rows were already past the
 scroll that would have revealed them, so each fires `reveal:enter` with its place
-in the stagger and this script plays it in turn, then stops scrubbing it — the
-row stays revealed when the page scrolls on. The two scripts do not import each
-other: one asks in an event, the other owns the animations.
+in the stagger and this script plays it in turn. The row holds at full until the
+scroll catches up with it, then it is scrubbed like its neighbours — scroll back
+and it runs in reverse again. The two scripts do not import each other: one asks
+in an event, the other owns the animations.
 
 **The page is a stack of panels.** `Section.astro` wraps the header, each
 section and the footer: each panel is at least one viewport tall and centres its

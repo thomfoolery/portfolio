@@ -25,6 +25,57 @@ const dev = import.meta.env.DEV
     <!-- The font draws the first viewport, so fetch it alongside the stylesheet. -->
     <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
     <!-- super-low bandwidth tribute to cultdeadcow.com -->
+    <!-- A reveal starts where its animation will: without this the whole line
+         paints and then collapses when scroll-reveal.ts takes over. Fades and
+         widths are the only kinds; see scripts/scroll-reveal.ts. -->
+    <style is:global>
+      [data-reveal]:not([data-reveal='fade']) {
+        width: 0;
+      }
+      [data-reveal='fade'] {
+        opacity: 0;
+      }
+      /* Folded rows: hidden by CSS rather than the hidden attribute, because
+         preflight's `[hidden] { display: none !important }` sits in a layer and
+         an important declaration in a layer beats one outside it. */
+      [data-folded] {
+        display: none;
+      }
+      /* The module failing would leave the page blank; show it unhidden instead. */
+      html[data-reveal-failed] [data-reveal] {
+        width: auto;
+        opacity: 1;
+      }
+    </style>
+    <script is:inline>
+      addEventListener(
+        'error',
+        (event) => {
+          if (event.target instanceof HTMLScriptElement)
+            document.documentElement.dataset.revealFailed = ''
+        },
+        true,
+      )
+    </script>
+    <!-- Without scripts nothing is folded and no reveal is scrubbed, so the page
+         shows itself whole and the buttons go away. -->
+    <noscript>
+      <style is:inline>
+        /* !important throughout: these undo Tailwind's preflight and the
+           before-the-script state above, both of which are !important or more
+           specific than a plain rule here. */
+        html [data-reveal] {
+          width: auto !important;
+          opacity: 1 !important;
+        }
+        html [data-folded] {
+          display: list-item;
+        }
+        html [data-show-more-row] {
+          display: none !important;
+        }
+      </style>
+    </noscript>
   </head>
   <!-- The 12px gutter lives here, not on the 72ch frame: preflight makes
        everything border-box, so a padded frame would come out 24px narrow. -->

@@ -28,6 +28,7 @@ const measures = {
         data-reveal="fade"
         data-reveal-range="80% 10%"
         data-more={index > 2 ? '' : undefined}
+        data-folded={index > 2 ? '' : undefined}
       >
         <h3 class="whitespace-pre font-bold">
           <time datetime={honor.datetime} class="text-green-900">
@@ -47,8 +48,9 @@ const measures = {
     ))}
   </ol>
 
-  <!-- hidden until show-more.js runs, so the full list is the no-JS state -->
-  <p class="text-center mt-2 font-extralight leading-[2]" hidden>
+  <!-- the folded rows ship hidden; Base.astro's noscript undoes that for a reader
+       without scripts, and hides this row instead -->
+  <p class="text-center mt-2 font-extralight leading-[2]" data-show-more-row>
     <button
       type="button"
       class="hover:text-green-900 cursor-pointer transition-color"

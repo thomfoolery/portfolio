@@ -21,8 +21,9 @@ import { blockArt } from '@/data/art'
     ))}
   </ol>
 
-  <!-- hidden until show-more.js runs, so the full list is the no-JS state -->
-  <p class="text-center mt-2 font-extralight leading-[2]" hidden>
+  <!-- the folded rows ship hidden; Base.astro's noscript undoes that for a reader
+       without scripts, and hides this row instead -->
+  <p class="text-center mt-2 font-extralight leading-[2]" data-show-more-row>
     <button
       type="button"
       class="hover:text-green-900 cursor-pointer transition-color"
