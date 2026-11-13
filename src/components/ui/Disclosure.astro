@@ -12,16 +12,22 @@
  * and it contains the content's top margin, so a closed job leaves no stray gap
  * behind.
  *
+ * `openOnHover` hands the row to the pointer: entering opens it, leaving closes
+ * it, and a click no longer toggles (Enter and Space still do). It only applies
+ * where the pointer can rest — see `scripts/disclosure.ts`.
+ *
  * Pass the summary row through the `summary` slot; everything else is content.
  */
 interface Props {
   class?: string
+  /** open and close with the pointer instead of a click */
+  openOnHover?: boolean
 }
 
-const { class: className } = Astro.props
+const { class: className, openOnHover = false } = Astro.props
 ---
 
-<details class={className} data-disclosure>
+<details class={className} data-disclosure data-disclosure-hover={openOnHover ? '' : undefined}>
   <summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-900">
     <slot name="summary" />
   </summary>

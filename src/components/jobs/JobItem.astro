@@ -8,10 +8,12 @@ interface Props {
   job: Job
   /** folded away behind the section's "show more" until it is clicked */
   more?: boolean
+  /** the row opens as the pointer crosses it, rather than on a click */
+  openOnHover?: boolean
   class?: string
 }
 
-const { job, more = false, class: className } = Astro.props
+const { job, more = false, openOnHover = false, class: className } = Astro.props
 ---
 
 <li
@@ -19,7 +21,7 @@ const { job, more = false, class: className } = Astro.props
   data-more={more ? '' : undefined}
   data-folded={more ? '' : undefined}
 >
-  <Disclosure>
+  <Disclosure openOnHover={openOnHover}>
     <JobHeading slot="summary" job={job} />
     <JobRoles job={job} />
   </Disclosure>

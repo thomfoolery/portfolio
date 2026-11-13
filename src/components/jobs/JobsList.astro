@@ -8,16 +8,16 @@ import { blockArt } from '@/data/art'
 ---
 
 <Section id="experience" labelledby="experience-title">
-  <h2 id="experience-title" class="sr-only font-bold">
+  <h2 id="experience-title" class="sr-only font-bold scroll-mt-2">
     Jobs
   </h2>
 
   <ArtHtml art={blockArt.experience} scrollReveal class="mt-3" />
 
   <!-- every job after the first is spaced away by one line while the rows are collapsed -->
-  <ol class="mt-3 font-extralight">
+  <ol class="mt-2 font-extralight">
     {jobs.map((job, index) => (
-      <JobItem job={job} more={index > 2} />
+      <JobItem job={job} more={index > 2} openOnHover />
     ))}
   </ol>
 
