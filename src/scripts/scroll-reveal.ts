@@ -29,6 +29,9 @@ const KINDS: Record<Kind, { keyframes: Keyframe[]; easing: string }[]> = {
   fade: [{ keyframes: [{ opacity: 0 }, { opacity: 1 }], easing: 'linear' }],
 }
 
+const steps = (element: HTMLElement) =>
+  KINDS[(element.dataset.reveal || 'width') as Kind] ?? KINDS.width
+
 /** Motion does not export its `ScrollOffset` type, so borrow it off the function. */
 type ScrollOffset = NonNullable<Parameters<typeof scroll>[1]>['offset']
 
@@ -49,48 +52,44 @@ interface Reveal {
   animations: Animation[]
   /** stops the scroll binding; a rebind starts from scratch */
   unsync: () => void
-  /** a row entering on a click holds still until the scroll catches up */
-  holding: boolean
+  /** an entrance owns the element, so the scroll leaves it alone */
+  entering: boolean
+  /** it entered on a click and waits at full for the scroll to catch up */
+  held: boolean
 }
 
 /** Bind one element's animations to its scroll range. */
-function bind(element: HTMLElement, holding = false): Reveal {
-  const kind = (element.dataset.reveal || 'width') as Kind
-  const steps = KINDS[kind] ?? KINDS.width
+function bind(element: HTMLElement, entering = false): Reveal {
   const offset = toOffset(element.dataset.revealRange ?? '0% 20%')
+  const start = entering ? DURATION : 0
 
-  const animations = steps.map(({ keyframes, easing }) => {
+  const animations = steps(element).map(({ keyframes, easing }) => {
     const animation = element.animate(keyframes, { duration: DURATION, easing, fill: 'both' })
     animation.pause()
-    animation.currentTime = 0
+    animation.currentTime = start
     return animation
   })
 
-  /** Park the animations at a frame. A seek on a running animation only moves
-   * the playhead: it would carry on from there, which reads as a replay. */
-  const seek = (time: number) => {
-    for (const animation of animations) {
-      if (animation.playState !== 'paused') animation.pause()
-      animation.currentTime = time
-    }
-  }
-
-  const reveal: Reveal = {
-    animations,
-    holding,
-    unsync: () => {},
-  }
+  const reveal: Reveal = { animations, entering, held: false, unsync: () => {} }
 
   reveal.unsync = scroll(
     (progress) => {
-      // A row that entered on a click stays where it landed until the scroll has
-      // caught up. From there it is scrubbed like its neighbours, so scrolling
-      // back up runs its reveal in reverse again.
-      if (reveal.holding) {
+      // While a row is entering, the scroll must not touch it: a seek would cut
+      // the entrance short. It is handed back once the entrance has finished.
+      if (reveal.entering) return
+
+      if (reveal.held) {
         if (progress < CAUGHT_UP) return
-        reveal.holding = false
+        reveal.held = false
       }
-      seek(Math.min(1, Math.max(0, progress)) * DURATION)
+
+      // Park the animations at a frame. A seek on a running animation only moves
+      // the playhead: it would carry on from there, which reads as a replay.
+      const time = Math.min(1, Math.max(0, progress)) * DURATION
+      for (const animation of animations) {
+        if (animation.playState !== 'paused') animation.pause()
+        animation.currentTime = time
+      }
     },
     { target: element, offset },
   )
@@ -106,9 +105,12 @@ for (const element of document.querySelectorAll<HTMLElement>('[data-reveal]')) {
 /**
  * `show-more.js` asks a revealed row to enter instead of waiting for a scroll
  * that has already gone past it. The row fires `reveal:enter` with its place in
- * the stagger as the detail; every `[data-reveal]` it holds is rewound at once
- * and played when its turn comes, so the row does not sit half-drawn while it
- * waits.
+ * the stagger as the detail.
+ *
+ * The entrance is its own animation, played on top of a scroll animation parked
+ * at full, and it cancels itself when it lands: from then on the scroll owns the
+ * element. It was measured while folded away, so the scroll range is taken again
+ * now that it has a size.
  */
 document.addEventListener('reveal:enter', (event) => {
   const row = event.target
@@ -121,9 +123,6 @@ document.addEventListener('reveal:enter', (event) => {
   ]
 
   for (const element of elements) {
-    // It was measured while folded away, so its range has to be taken again now
-    // that it has a size. The old animations would keep a second opinion on the
-    // same properties, so drop them.
     const previous = reveals.get(element)
     previous?.unsync()
     for (const animation of previous?.animations ?? []) animation.cancel()
@@ -131,8 +130,27 @@ document.addEventListener('reveal:enter', (event) => {
     const reveal = bind(element, true)
     reveals.set(element, reveal)
 
+    // Created now and held at their first frame, so a row waiting its turn shows
+    // nothing rather than the full line the scroll animation is parked on.
+    const entrances = steps(element).map(({ keyframes, easing }) =>
+      element.animate(keyframes, { duration: DURATION, easing, fill: 'both' }),
+    )
+    for (const entrance of entrances) entrance.pause()
+
     setTimeout(() => {
-      for (const animation of reveal.animations) animation.play()
+      for (const entrance of entrances) entrance.play()
     }, delay)
+
+    Promise.all(entrances.map((entrance) => entrance.finished))
+      .then(() => {
+        for (const entrance of entrances) entrance.cancel()
+        reveal.entering = false
+        // Stay where the entrance landed until the scroll has caught up, so the
+        // row does not drop to whatever the viewport says it should be.
+        reveal.held = true
+      })
+      .catch(() => {
+        // cancelled by the next click
+      })
   }
 })

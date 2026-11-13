@@ -134,10 +134,12 @@ fails to load and shows the page rather than a blank one.
 
 **Rows can enter on a click instead.** The "show more" rows were already past the
 scroll that would have revealed them, so each fires `reveal:enter` with its place
-in the stagger and this script plays it in turn. The row holds at full until the
-scroll catches up with it, then it is scrubbed like its neighbours — scroll back
-and it runs in reverse again. The two scripts do not import each other: one asks
-in an event, the other owns the animations.
+in the stagger. The entrance is its own animation, played in turn and cancelled
+the moment it lands; while it runs the scroll is not allowed to touch the row, so
+a scroll cannot cut it short. Then the scroll owns the element again: the row
+holds at full until the scroll catches up with it, and from there it is scrubbed
+like its neighbours — scroll back and it runs in reverse again. The two scripts
+do not import each other: one asks in an event, the other owns the animations.
 
 **The page is a stack of panels.** `Section.astro` wraps the header, each
 section and the footer: each panel is at least one viewport tall and centres its
