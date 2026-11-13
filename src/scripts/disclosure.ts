@@ -45,8 +45,13 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
     // back to `auto` once it has arrived.
     if (opening) details.open = true
 
+    // The row's line is part of the reveal the scroll drives; an open row shows
+    // it whole, and asks for it back when it closes.
+    if (opening) details.dispatchEvent(new CustomEvent('reveal:play', { bubbles: true }))
+
     if (reduced.matches) {
       details.open = opening
+      if (!opening) details.dispatchEvent(new CustomEvent('reveal:reset', { bubbles: true }))
       return
     }
 
@@ -66,7 +71,10 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
 
     animation.finished
       .then(() => {
-        if (!wanted) details.open = false
+        if (!wanted) {
+          details.open = false
+          details.dispatchEvent(new CustomEvent('reveal:reset', { bubbles: true }))
+        }
         animation?.cancel()
       })
       .catch(() => {

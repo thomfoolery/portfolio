@@ -16,6 +16,8 @@ const DURATION = 1000
 /** Where the scroll is close enough to done that a row can be handed back to it. */
 const CAUGHT_UP = 0.99
 
+const reduced = matchMedia('(prefers-reduced-motion: reduce)')
+
 type Kind = 'width' | 'fade'
 
 /**
@@ -31,6 +33,12 @@ const KINDS: Record<Kind, { keyframes: Keyframe[]; easing: string }[]> = {
 
 const steps = (element: HTMLElement) =>
   KINDS[(element.dataset.reveal || 'width') as Kind] ?? KINDS.width
+
+/** The reveals a row owns, itself included. */
+const revealsIn = (row: Element) => [
+  ...(row.matches('[data-reveal]') ? [row as HTMLElement] : []),
+  ...row.querySelectorAll<HTMLElement>('[data-reveal]'),
+]
 
 /** Motion does not export its `ScrollOffset` type, so borrow it off the function. */
 type ScrollOffset = NonNullable<Parameters<typeof scroll>[1]>['offset']
@@ -54,8 +62,16 @@ interface Reveal {
   unsync: () => void
   /** an entrance owns the element, so the scroll leaves it alone */
   entering: boolean
+  /** the row is open, so the line is shown in full whatever the scroll says */
+  open: boolean
   /** it entered on a click and waits at full for the scroll to catch up */
   held: boolean
+  /** the last progress the scroll reported, kept up to date while it is ignored */
+  progress: number
+  /** park the animations at a frame */
+  seek: (time: number) => void
+  /** let the scroll take the element back, if it may */
+  resume: () => void
 }
 
 /** Bind one element's animations to its scroll range. */
@@ -70,26 +86,44 @@ function bind(element: HTMLElement, entering = false): Reveal {
     return animation
   })
 
-  const reveal: Reveal = { animations, entering, held: false, unsync: () => {} }
+  // Park the animations at a frame. A seek on a running animation only moves the
+  // playhead: it would carry on from there, which reads as a replay.
+  const seek = (time: number) => {
+    for (const animation of animations) {
+      if (animation.playState !== 'paused') animation.pause()
+      animation.currentTime = time
+    }
+  }
 
+  const reveal: Reveal = {
+    animations,
+    entering,
+    open: false,
+    held: false,
+    progress: 0,
+    seek,
+    resume: () => {},
+    unsync: () => {},
+  }
+
+  const apply = () => {
+    // While a row is entering, the scroll must not touch it: a seek would cut the
+    // entrance short. An open row shows its whole line instead of the scroll's.
+    if (reveal.entering || reveal.open) return
+
+    if (reveal.held) {
+      if (reveal.progress < CAUGHT_UP) return
+      reveal.held = false
+    }
+
+    seek(reveal.progress * DURATION)
+  }
+
+  reveal.resume = apply
   reveal.unsync = scroll(
     (progress) => {
-      // While a row is entering, the scroll must not touch it: a seek would cut
-      // the entrance short. It is handed back once the entrance has finished.
-      if (reveal.entering) return
-
-      if (reveal.held) {
-        if (progress < CAUGHT_UP) return
-        reveal.held = false
-      }
-
-      // Park the animations at a frame. A seek on a running animation only moves
-      // the playhead: it would carry on from there, which reads as a replay.
-      const time = Math.min(1, Math.max(0, progress)) * DURATION
-      for (const animation of animations) {
-        if (animation.playState !== 'paused') animation.pause()
-        animation.currentTime = time
-      }
+      reveal.progress = Math.min(1, Math.max(0, progress))
+      apply()
     },
     { target: element, offset },
   )
@@ -117,12 +151,8 @@ document.addEventListener('reveal:enter', (event) => {
   if (!(row instanceof Element)) return
 
   const delay = Number((event as CustomEvent<number>).detail) || 0
-  const elements = [
-    ...(row.matches('[data-reveal]') ? [row as HTMLElement] : []),
-    ...row.querySelectorAll<HTMLElement>('[data-reveal]'),
-  ]
 
-  for (const element of elements) {
+  for (const element of revealsIn(row)) {
     const previous = reveals.get(element)
     previous?.unsync()
     for (const animation of previous?.animations ?? []) animation.cancel()
@@ -152,5 +182,51 @@ document.addEventListener('reveal:enter', (event) => {
       .catch(() => {
         // cancelled by the next click
       })
+  }
+})
+
+/**
+ * A row that is opening shows its line whole, so the reveal is played out rather
+ * than left at whatever the scroll last said. `disclosure.ts` asks for this as
+ * the panel starts to open.
+ */
+document.addEventListener('reveal:play', (event) => {
+  const row = event.target
+  if (!(row instanceof Element)) return
+
+  for (const element of revealsIn(row)) {
+    const reveal = reveals.get(element)
+    if (!reveal) continue
+
+    reveal.open = true
+    if (reduced.matches) {
+      reveal.seek(DURATION)
+      continue
+    }
+
+    for (const animation of reveal.animations) {
+      // Already at the end is already revealed; replaying would blink.
+      if (animation.playState === 'paused' && Number(animation.currentTime) < DURATION) {
+        animation.play()
+      }
+    }
+  }
+})
+
+/**
+ * The row has closed, so the line goes back to the scroll — from wherever the
+ * scroll has got to while the row was open. `disclosure.ts` asks for this once
+ * the close has finished.
+ */
+document.addEventListener('reveal:reset', (event) => {
+  const row = event.target
+  if (!(row instanceof Element)) return
+
+  for (const element of revealsIn(row)) {
+    const reveal = reveals.get(element)
+    if (!reveal) continue
+
+    reveal.open = false
+    reveal.resume()
   }
 })
