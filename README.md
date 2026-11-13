@@ -118,8 +118,9 @@ row for 250 ms opens it — long enough that crossing the list opens nothing —
 leaving closes it, while a click is ignored (Enter and Space still toggle it).
 That only applies where a pointer can rest, so a touch screen keeps the click.
 An opening row also plays its line's reveal out, so a heading the scroll had only
-half drawn opens whole; when the close finishes the line goes back to the scroll,
-from wherever the scroll has got to meanwhile. In both, animating and interpolating stay the
+half drawn opens whole. When the close finishes the line travels back to wherever
+the scroll has got to meanwhile, over the span it had played, rather than
+snapping there. In both, animating and interpolating stay the
 browser's work, so no easing is reimplemented. The two chunks are about 6.5 KB
 gzipped together, and are the page's only script requests besides the stylesheet
 and the font.

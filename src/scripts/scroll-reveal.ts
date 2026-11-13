@@ -26,9 +26,9 @@ type Kind = 'width' | 'fade'
  * element, since the text reflows into the width it has. `fade` brings a block
  * up from nothing, for the art and the honors rows.
  */
-const KINDS: Record<Kind, { keyframes: Keyframe[]; easing: string }[]> = {
-  width: [{ keyframes: [{ width: '0' }, { width: '100%' }], easing: 'ease' }],
-  fade: [{ keyframes: [{ opacity: 0 }, { opacity: 1 }], easing: 'linear' }],
+const KINDS: Record<Kind, { keyframes: Keyframe[]; easing: string; props: string[] }[]> = {
+  width: [{ keyframes: [{ width: '0' }, { width: '100%' }], easing: 'ease', props: ['width'] }],
+  fade: [{ keyframes: [{ opacity: 0 }, { opacity: 1 }], easing: 'linear', props: ['opacity'] }],
 }
 
 const steps = (element: HTMLElement) =>
@@ -68,10 +68,14 @@ interface Reveal {
   held: boolean
   /** the last progress the scroll reported, kept up to date while it is ignored */
   progress: number
+  /** the animation carrying the line back to its scroll position, while it runs */
+  settling?: Animation
   /** park the animations at a frame */
   seek: (time: number) => void
   /** let the scroll take the element back, if it may */
   resume: () => void
+  /** carry the line back to a frame of the timeline */
+  settle: (time: number) => void
 }
 
 /** Bind one element's animations to its scroll range. */
@@ -102,21 +106,66 @@ function bind(element: HTMLElement, entering = false): Reveal {
     held: false,
     progress: 0,
     seek,
+    settle: () => {},
     resume: () => {},
     unsync: () => {},
+  }
+
+  /** Off the scroll's leash: entering, open, or already on its way back. */
+  const free = () => {
+    if (reveal.entering || reveal.open || reveal.settling) return false
+    if (reveal.held) {
+      if (reveal.progress < CAUGHT_UP) return false
+      reveal.held = false
+    }
+    return true
   }
 
   const apply = () => {
     // While a row is entering, the scroll must not touch it: a seek would cut the
     // entrance short. An open row shows its whole line instead of the scroll's.
-    if (reveal.entering || reveal.open) return
+    if (free()) seek(reveal.progress * DURATION)
+  }
 
-    if (reveal.held) {
-      if (reveal.progress < CAUGHT_UP) return
-      reveal.held = false
+  /** Carry the line back to `time`, rather than jumping it there. */
+  reveal.settle = (time: number) => {
+    const specs = steps(element)
+    const from = Number(animations[0]?.currentTime ?? 0)
+    const distance = Math.abs(from - time)
+    if (distance < 1) {
+      seek(time)
+      return
     }
 
-    seek(reveal.progress * DURATION)
+    // The value at a frame is the browser's answer, not ours: ask it twice, with
+    // the animations parked at each end, then animate between the two answers.
+    const props = specs.flatMap((spec) => spec.props)
+    const read = () => {
+      const style = getComputedStyle(element)
+      return props.map((prop) => style.getPropertyValue(prop))
+    }
+    const was = read()
+    seek(time)
+    const becomes = read()
+    seek(from)
+
+    reveal.settling = element.animate(
+      [
+        Object.fromEntries(props.map((prop, index) => [prop, was[index]])),
+        Object.fromEntries(props.map((prop, index) => [prop, becomes[index]])),
+      ],
+      { duration: distance, easing: specs[0]?.easing ?? 'ease', fill: 'both' },
+    )
+
+    reveal.settling.finished
+      .then(() => {
+        reveal.settling?.cancel()
+        reveal.settling = undefined
+        seek(time)
+      })
+      .catch(() => {
+        // an open cancelled it
+      })
   }
 
   reveal.resume = apply
@@ -199,6 +248,9 @@ document.addEventListener('reveal:play', (event) => {
     if (!reveal) continue
 
     reveal.open = true
+    reveal.settling?.cancel()
+    reveal.settling = undefined
+
     if (reduced.matches) {
       reveal.seek(DURATION)
       continue
@@ -214,9 +266,9 @@ document.addEventListener('reveal:play', (event) => {
 })
 
 /**
- * The row has closed, so the line goes back to the scroll — from wherever the
- * scroll has got to while the row was open. `disclosure.ts` asks for this once
- * the close has finished.
+ * The row has closed, so the line goes back to the scroll — animated back to
+ * wherever the scroll has got to while the row was open, not snapped there.
+ * `disclosure.ts` asks for this once the close has finished.
  */
 document.addEventListener('reveal:reset', (event) => {
   const row = event.target
@@ -227,6 +279,10 @@ document.addEventListener('reveal:reset', (event) => {
     if (!reveal) continue
 
     reveal.open = false
-    reveal.resume()
+    if (reveal.entering || reveal.held) {
+      reveal.resume()
+      continue
+    }
+    reveal.settle(reveal.progress * DURATION)
   }
 })
