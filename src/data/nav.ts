@@ -10,9 +10,9 @@ export type NavItem = {
 }
 
 export const navItems: NavItem[] = [
-  { href: '#welcome', label: 'about', key: '1' },
-  { href: '#experience', label: 'jobs', key: '2' },
-  { href: '#honors', label: 'honors', key: '3' },
+  { href: '#welcome', label: 'whoami', key: '1' },
+  { href: '#experience', label: 'xp', key: '2' },
+  { href: '#honors', label: 'certs', key: '3' },
   {
     href: 'https://github.com/thomfoolery',
     label: 'github',

@@ -14,8 +14,12 @@ import { blockArt } from '@/data/art'
 
   <ArtHtml art={blockArt.experience} scrollReveal class="mt-3" />
 
-  <!-- every job after the first is spaced away by one line while the rows are collapsed -->
-  <ol class="mt-2 font-extralight">
+  <p class="mt-2 ml-1.5" data-reveal="fade" data-reveal-range="50% 0%">
+    <span class="pointer-coarse:hidden">Hover</span>
+    <span class="pointer-fine:hidden">Click</span> to open
+  </p>
+
+  <ol class="font-extralight">
     {jobs.map((job, index) => (
       <JobItem job={job} more={index > 2} openOnHover />
     ))}

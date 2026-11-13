@@ -14,7 +14,7 @@ export const honors: Honor[] = [
     date: '2025.03',
     title: 'CERTIFIED AI ENGINEER',
     href: 'https://bit.ly/AIE05020',
-    blurb: 'AI Makerspace graduate',
+    blurb: 'AI Makerspace alumni',
     measure: 56,
   },
   {

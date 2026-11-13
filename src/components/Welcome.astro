@@ -6,18 +6,16 @@ import Link from '@/components/ui/Link.astro'
 import { blockArt } from '@/data/art'
 ---
 
-<ArtHtml art={blockArt.prism} scrollReveal class="mt-8" />
-
 <Section id="welcome" labelledby="welcome-title" class="overflow-clip mt-8 scroll-mt-2">
   <p class="font-extralight leading-loose">
     <div class="h-[1.8em] break-all overflow-clip" data-reveal>
       Hi,
     </div>
-    <div class="mt-1 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 20%">
-      My name is <span class="text-green-900">Thom Yuill</span>.
+    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 20%">
+      My name is <span class="text-green-900">Thomas Yuill</span>.
     </div>
   </p>
-  <p class="mt-1 font-extralight leading-loose">
+  <p class="font-extralight leading-loose">
     <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 30%">
       I am a <span class="text-green-900">designer</span> and{' '}
       <span class="text-green-900">engineer</span> and I currently work at{' '}
@@ -27,9 +25,9 @@ import { blockArt } from '@/data/art'
       .
     </div>
   </p>
-  <p class="mt-1 mx-auto font-extralight leading-loose">
+  <p class="mt-4 mx-auto font-extralight leading-loose">
     <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 35%">
-      I enjoy building dynamic, interactive, accessible,
+      I enjoy building dynamic, accessible,
     </div>
     <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="35% 40%">
       and aesthetic web experiences powered with
@@ -38,8 +36,31 @@ import { blockArt } from '@/data/art'
       real-time data/media.
     </div>
   </p>
+  <p class="mt-4 mx-auto font-extralight leading-loose">
+    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 35%">
+      If I have free time, you'll find me
+    </div>
+    <div
+      class="mt-1 ml-1 h-[1.8em] break-all overflow-clip"
+      data-reveal
+      data-reveal-range="35% 40%"
+    >
+      * reading a great book
+    </div>
+    <div class="ml-1 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="35% 40%">
+      * organizing a new adventure
+    </div>
+    <div class="ml-1 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="35% 40%">
+      * breaking, fixing or building something
+    </div>
+    <div class="ml-1 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="20% 45%">
+      * searching for new grass to touch
+    </div>
+  </p>
 
-  <div class="flex mt-12 gap-6 ml-2">
+  <ArtHtml art={blockArt.prism} scrollReveal class="my-6" />
+
+  <div class="flex gap-3 ml-2">
     <div class="flex-1">
       <p
         data-reveal
@@ -83,7 +104,7 @@ import { blockArt } from '@/data/art'
         <li data-reveal data-reveal-range="30% 30%" class="h-[1.8em] break-all overflow-clip">
           [2]{' '}
           <Link href="#experience" title="Where I've been">
-            browse past jobs
+            browse my jobs
           </Link>
         </li>
         <li data-reveal data-reveal-range="20% 40%" class="h-[1.8em] break-all overflow-clip">
