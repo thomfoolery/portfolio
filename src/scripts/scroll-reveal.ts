@@ -66,6 +66,15 @@ function bind(element: HTMLElement, holding = false): Reveal {
     return animation
   })
 
+  /** Park the animations at a frame. A seek on a running animation only moves
+   * the playhead: it would carry on from there, which reads as a replay. */
+  const seek = (time: number) => {
+    for (const animation of animations) {
+      if (animation.playState !== 'paused') animation.pause()
+      animation.currentTime = time
+    }
+  }
+
   const reveal: Reveal = {
     animations,
     holding,
@@ -81,8 +90,7 @@ function bind(element: HTMLElement, holding = false): Reveal {
         if (progress < CAUGHT_UP) return
         reveal.holding = false
       }
-      const time = Math.min(1, Math.max(0, progress)) * DURATION
-      for (const animation of animations) animation.currentTime = time
+      seek(Math.min(1, Math.max(0, progress)) * DURATION)
     },
     { target: element, offset },
   )
@@ -114,8 +122,12 @@ document.addEventListener('reveal:enter', (event) => {
 
   for (const element of elements) {
     // It was measured while folded away, so its range has to be taken again now
-    // that it has a size.
-    reveals.get(element)?.unsync()
+    // that it has a size. The old animations would keep a second opinion on the
+    // same properties, so drop them.
+    const previous = reveals.get(element)
+    previous?.unsync()
+    for (const animation of previous?.animations ?? []) animation.cancel()
+
     const reveal = bind(element, true)
     reveals.set(element, reveal)
 
