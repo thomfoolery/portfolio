@@ -51,8 +51,7 @@
 }
 
 html {
-  interpolate-size: allow-keywords;
-  scrollbar-color: var(--color-green-600) _var(--color-black);
+  scrollbar-color: var(--color-green-600) var(--color-black);
 }
 
 body {
