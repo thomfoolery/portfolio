@@ -4,8 +4,9 @@ A résumé, served as a terminal session on a 72-column grid.
 
 Astro and Tailwind are build-time tools here. The page is prerendered to static
 HTML. The JavaScript it ships is two handlers inlined at build time, about 1.4 KB
-between them — the nav hotkeys and the "show more" buttons — plus one module:
-Motion's `scroll()`, about 4 KB gzipped, which scrubs every reveal on the page.
+between them — the nav hotkeys and the "show more" buttons — plus two modules,
+about 6.5 KB gzipped: Motion's `scroll()`, which scrubs every reveal, and its
+spring, which opens and closes a job.
 
 ## Commands
 
@@ -29,7 +30,8 @@ Serve `dist/`. It is flat HTML plus its hashed assets:
 ```
 dist/index.html                 the résumé, block art, job entries collapsible
 dist/_astro/*.css               the hashed stylesheet
-dist/_astro/*.js                the scroll reveals, the only script request
+dist/_astro/*.js                the reveals and the disclosures, the only scripts
+                                the page requests
 dist/_astro/*.woff2             the hashed Commit Mono subset
 ```
 
@@ -56,7 +58,7 @@ src/
   lib/              art.ts, utils.ts (`cn`)
   pages/            index.astro, the one page
   scripts/          hotkeys.js and show-more.js, inlined at build time;
-                    scroll-reveal.ts, the one module that ships
+                    scroll-reveal.ts and disclosure.ts, the modules that ship
   styles/           main.css: the theme, and the one rule a utility cannot state
 ```
 
@@ -104,13 +106,17 @@ because the type scale is the column count. What genuinely needs CSS lives with
 the component that needs it: `ui/Link.astro`, `ui/Hint.astro`,
 `ui/Disclosure.astro` and `ui/Toggle.astro`.
 
-**The one dependency with a client.** `motion` is imported only by
-`scripts/scroll-reveal.ts`, and only for `scroll()`: it reports how far each
-element has travelled, and `scroll-reveal.ts` scrubs paused animations with
-`currentTime` — a width reveal, which types a line out, or a fade. Animating and
-interpolating are still the browser's work, so no easing is reimplemented and the
-bundle stays under 4 KB gzipped. That request is the page's only one besides the
-stylesheet and the font.
+**The one dependency with a client.** Two modules import `motion`, for two
+things. `scripts/scroll-reveal.ts` takes `scroll()`: it reports how far an
+element has travelled, and the script scrubs a paused animation with
+`currentTime` — a width reveal, which types a line out, or a fade.
+`scripts/disclosure.ts` takes `spring()` and nothing else: it asks for the curve
+and samples it into the `linear()` easing a browser animation runs, so a job
+opens on a critically damped spring (`bounce: 0`, no overshoot) and its content
+fades over the same curve. In both, animating and interpolating stay the
+browser's work, so no easing is reimplemented. The two chunks are about 6.5 KB
+gzipped together, and are the page's only script requests besides the stylesheet
+and the font.
 
 **Markup carries the reveal.** An element opts in with `data-reveal`, and names
 its animation with `data-reveal="fade"` when it is not the default width reveal.

@@ -47,9 +47,6 @@
 
   --leading-tight: 1.2em; /* art rows, so block characters touch with no seam */
 
-  /* Disclosure motion: quick to move, slow to settle. */
-  --ease-disclosure: cubic-bezier(0.32, 0.72, 0, 1);
-
   --shadow-black: 0 0 20px #000, 0 0 20px #000, 0 0 30px #000, 0 0 50px #000;
 }
 
