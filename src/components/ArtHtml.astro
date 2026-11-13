@@ -40,9 +40,9 @@ const fragment = renderFragment(
   ]}
   data-reveal={scrollReveal ? 'fade' : undefined}
   data-reveal-range={scrollReveal ? '20% 30%' : undefined}
-  style={dev ? 'position:relative;width:fit-content' : undefined}
   data-art-frame={dev ? '' : undefined}
   data-art-path={dev ? art.path : undefined}
+  style={dev ? 'position:relative;width:fit-content' : undefined}
   set:html={fragment}
 />
 {/* eslint-enable astro/no-set-html-directive */}
