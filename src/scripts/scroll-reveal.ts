@@ -42,6 +42,12 @@ function toOffset(range: string): ScrollOffset {
   return edges as unknown as ScrollOffset
 }
 
+/** The scrubbed animations, so an entrance can borrow them. */
+const scrubbed = new Map<HTMLElement, Animation[]>()
+
+/** Rows that entered on a click rather than on a scroll; the scroll leaves them be. */
+const entered = new Set<HTMLElement>()
+
 for (const element of document.querySelectorAll<HTMLElement>('[data-reveal]')) {
   const kind = (element.dataset.reveal || 'width') as Kind
   const steps = KINDS[kind] ?? KINDS.width
@@ -53,12 +59,43 @@ for (const element of document.querySelectorAll<HTMLElement>('[data-reveal]')) {
     animation.currentTime = 0
     return animation
   })
+  scrubbed.set(element, animations)
 
   scroll(
     (progress) => {
+      if (entered.has(element)) return
       const time = Math.min(1, Math.max(0, progress)) * DURATION
       for (const animation of animations) animation.currentTime = time
     },
     { target: element, offset },
   )
 }
+
+/**
+ * `show-more.js` asks a revealed row to enter instead of waiting for a scroll
+ * that has already gone past it. The row fires `reveal:enter` with its place in
+ * the stagger as the detail; every `[data-reveal]` it holds is rewound at once
+ * and played when its turn comes, so the row does not sit half-drawn while it
+ * waits. Having entered, the scroll stops scrubbing it: the row stays revealed.
+ */
+document.addEventListener('reveal:enter', (event) => {
+  const row = event.target
+  if (!(row instanceof Element)) return
+
+  const delay = Number((event as CustomEvent<number>).detail) || 0
+  const elements = [
+    ...(row.matches('[data-reveal]') ? [row as HTMLElement] : []),
+    ...row.querySelectorAll<HTMLElement>('[data-reveal]'),
+  ]
+
+  for (const element of elements) {
+    const animations = scrubbed.get(element)
+    if (!animations) continue
+
+    entered.add(element)
+    for (const animation of animations) animation.currentTime = 0
+    setTimeout(() => {
+      for (const animation of animations) animation.play()
+    }, delay)
+  }
+})

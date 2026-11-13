@@ -3,7 +3,7 @@
 A résumé, served as a terminal session on a 72-column grid.
 
 Astro and Tailwind are build-time tools here. The page is prerendered to static
-HTML. The JavaScript it ships is two handlers inlined at build time, about 1.2 KB
+HTML. The JavaScript it ships is two handlers inlined at build time, about 1.4 KB
 between them — the nav hotkeys and the "show more" buttons — plus one module:
 Motion's `scroll()`, about 4 KB gzipped, which scrubs every reveal on the page.
 
@@ -117,6 +117,12 @@ its animation with `data-reveal="fade"` when it is not the default width reveal.
 `data-reveal-range="50% 20%"` takes the CSS `view()` range it used to be written
 with, so the scroll positions stayed the same when the timelines moved out of
 CSS.
+
+**Rows can enter on a click instead.** The "show more" rows were already past the
+scroll that would have revealed them, so each fires `reveal:enter` with its place
+in the stagger and this script plays it in turn, then stops scrubbing it — the
+row stays revealed when the page scrolls on. The two scripts do not import each
+other: one asks in an event, the other owns the animations.
 
 **The page is a stack of panels.** `Section.astro` wraps the header, each
 section and the footer: each panel is at least one viewport tall and centres its
