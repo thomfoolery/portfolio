@@ -113,9 +113,10 @@ element has travelled, and the script scrubs a paused animation with
 `scripts/disclosure.ts` takes `spring()` and nothing else: it asks for the curve
 and samples it into the `linear()` easing a browser animation runs, so a job
 opens on a critically damped spring (`bounce: 0`, no overshoot) and its content
-fades over the same curve. Jobs pass `openOnHover`: there the pointer opens and
-closes the row and a click is ignored (Enter and Space still toggle it). That
-only applies where a pointer can rest, so a touch screen keeps the click. In both, animating and interpolating stay the
+fades over the same curve. Jobs pass `openOnHover`: there a pointer resting on a
+row for 250 ms opens it — long enough that crossing the list opens nothing — and
+leaving closes it, while a click is ignored (Enter and Space still toggle it).
+That only applies where a pointer can rest, so a touch screen keeps the click. In both, animating and interpolating stay the
 browser's work, so no easing is reimplemented. The two chunks are about 6.5 KB
 gzipped together, and are the page's only script requests besides the stylesheet
 and the font.

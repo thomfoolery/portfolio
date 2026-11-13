@@ -13,6 +13,9 @@ const CURVE = spring({ keyframes: [0, 1], bounce: 0, visualDuration: 0.2 }).toSt
 const DURATION = Number.parseFloat(CURVE)
 const EASING = CURVE.replace(/^[\d.]+ms /, '')
 
+/** Long enough that a pointer crossing the list does not open every row it passes. */
+const HOVER_DELAY = 250
+
 const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 /** A pointer that can rest on a row. Touch only claims to hover for an instant. */
 const canHover = matchMedia('(hover: hover)')
@@ -28,6 +31,8 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
   /** Where the disclosure is heading, so a second gesture can reverse mid-flight. */
   let wanted = details.open
   let animation: Animation | undefined
+  /** the pending hover open, dropped if the pointer moves on first */
+  let hoverTimer: ReturnType<typeof setTimeout> | undefined
 
   const set = (opening: boolean) => {
     // Idle means the element is the truth; mid-flight, `wanted` is.
@@ -77,6 +82,7 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
   summary.addEventListener('click', (event) => {
     // The UA would toggle on its own; every path below decides for itself.
     event.preventDefault()
+    clearTimeout(hoverTimer)
 
     // In hover mode the pointer has already said what it wants. A click with no
     // pointer behind it (`detail` 0) is Enter or Space, which still toggles, so
@@ -89,7 +95,15 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
   if (onHover) {
     // Bound to the element, not the summary: opening moves the pointer's target
     // into the content, and leaving the summary would close it again.
-    details.addEventListener('pointerenter', () => set(true))
-    details.addEventListener('pointerleave', () => set(false))
+    details.addEventListener('pointerenter', () => {
+      clearTimeout(hoverTimer)
+      hoverTimer = setTimeout(() => set(true), HOVER_DELAY)
+    })
+    // A pointer that has only passed through never opens the row; one that
+    // leaves an open row closes it at once.
+    details.addEventListener('pointerleave', () => {
+      clearTimeout(hoverTimer)
+      set(false)
+    })
   }
 }
