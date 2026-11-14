@@ -1,0 +1,61 @@
+---
+/**
+ * The pointer, redrawn as the terminal's own caret: a phosphor block that follows
+ * the mouse and inverts whatever it covers — `mix-blend-mode: exclusion` turns
+ * green on green black, which is what a real block cursor does to the glyph under
+ * it. It blinks while still, as a caret waiting for input does, and holds solid
+ * while it moves.
+ *
+ * It is only armed for a fine pointer, and the native pointer is only hidden once
+ * the script has taken over, so a touch screen or a failed script keeps its own
+ * cursor. See `scripts/cursor.ts`.
+ */
+---
+
+<div data-caret aria-hidden="true" class="cursor"></div>
+
+<style>
+  .cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 1ch;
+    height: 1.2em;
+    background-color: var(--color-green-900);
+    mix-blend-mode: exclusion;
+    pointer-events: none;
+    visibility: hidden;
+    transform: translate3d(-100px, -100px, 0);
+    animation: caret 1.06s steps(1, end) infinite;
+    will-change: transform;
+  }
+  .cursor[data-visible] {
+    visibility: visible;
+  }
+  /* Moving, so it is being "typed": solid, the way a caret is while you type. */
+  .cursor[data-typing] {
+    animation: none;
+  }
+
+  @keyframes caret {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    50.01%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import '@/scripts/cursor'
+</script>

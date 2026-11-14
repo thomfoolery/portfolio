@@ -4,9 +4,10 @@ A résumé, served as a terminal session on a 72-column grid.
 
 Astro and Tailwind are build-time tools here. The page is prerendered to static
 HTML. The JavaScript it ships is two handlers inlined at build time, about 1.4 KB
-between them — the nav hotkeys and the "show more" buttons — plus two modules,
-about 6.5 KB gzipped: Motion's `scroll()`, which scrubs every reveal, and its
-spring, which opens and closes a job.
+between them — the nav hotkeys and the "show more" buttons — plus three modules,
+about 7 KB gzipped: Motion's `scroll()`, which scrubs every reveal, its spring,
+which opens and closes a job, and the caret, which is small enough that the build
+inlines it into the page.
 
 ## Commands
 
@@ -58,7 +59,8 @@ src/
   lib/              art.ts, utils.ts (`cn`)
   pages/            index.astro, the one page
   scripts/          hotkeys.js and show-more.js, inlined at build time;
-                    scroll-reveal.ts and disclosure.ts, the modules that ship
+                    scroll-reveal.ts, disclosure.ts and cursor.ts, the modules
+                    that ship
   styles/           main.css: the theme, and the one rule a utility cannot state
 ```
 
@@ -147,6 +149,13 @@ a scroll cannot cut it short. Then the scroll owns the element again: the row
 holds at full until the scroll catches up with it, and from there it is scrubbed
 like its neighbours — scroll back and it runs in reverse again. The two scripts
 do not import each other: one asks in an event, the other owns the animations.
+
+**The pointer is a caret.** `ui/Cursor.astro` draws the pointer as the terminal's
+own block: one column wide, phosphor, `mix-blend-mode: exclusion` so a glyph it
+covers flips dark the way a block cursor flips the character under it. It blinks
+while still and holds solid while moving, both of which stop under
+`prefers-reduced-motion`. It only arms for a fine pointer, and the native cursor
+is only hidden once the script has run — a touch screen keeps its own.
 
 **The page is a stack of panels.** `Section.astro` wraps the header, each
 section and the footer: each panel is at least one viewport tall and centres its

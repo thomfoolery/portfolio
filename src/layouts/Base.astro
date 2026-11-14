@@ -2,6 +2,7 @@
 import '@/styles/main.css'
 import fontUrl from '@/fonts/commit-mono-subset.woff2?url'
 import showMore from '@/scripts/show-more.js?raw'
+import Cursor from '@/components/ui/Cursor.astro'
 
 interface Props {
   title: string
@@ -33,6 +34,11 @@ const dev = import.meta.env.DEV
       }
       [data-reveal='fade'] {
         opacity: 0;
+      }
+      /* The caret in Cursor.astro stands in for the pointer, once its script has
+         run and marked the document. Until then the native pointer stays. */
+      html[data-cursor] * {
+        cursor: none;
       }
       /* Folded rows: hidden by CSS rather than the hidden attribute, because
          preflight's `[hidden] { display: none !important }` sits in a layer and
@@ -80,6 +86,7 @@ const dev = import.meta.env.DEV
        everything border-box, so a padded frame would come out 24px narrow. -->
   <body class="px-[12px] font-light leading-1 text-green-500 selection:bg-green-600 selection:text-black">
     <slot />
+    <Cursor />
     {/* after the slot, so the lists the button collapses are already parsed */}
     {/* eslint-disable-next-line astro/no-set-html-directive -- this is our own script text */}
     <script is:inline set:html={showMore} />
