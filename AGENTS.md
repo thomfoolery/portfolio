@@ -13,9 +13,9 @@ to remove duplication within the résumé, not to ship a framework. So:
   The output has no framework and makes no external requests.
 - The page ships two inlined `<script>`s, `src/scripts/hotkeys.js` and
   `src/scripts/show-more.js`, because the nav hotkeys and the "show more" buttons
-  need them, plus three modules, `src/scripts/scroll-reveal.ts`,
-  `src/scripts/disclosure.ts` and `src/scripts/cursor.ts`. The first two are the
-  only files that import `motion`.
+  need them, plus four modules, `src/scripts/scroll-reveal.ts`,
+  `src/scripts/disclosure.ts`, `src/scripts/cursor.ts` and `src/scripts/bit.ts`.
+  The first two are the only files that import `motion`.
 - Serve `dist/`. The URL is `/index.html`.
 - A new client dependency, or anything that grows the shipped JS, has to be
   justified against that.

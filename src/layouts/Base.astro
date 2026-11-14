@@ -3,6 +3,7 @@ import '@/styles/main.css'
 import fontUrl from '@/fonts/commit-mono-subset.woff2?url'
 import showMore from '@/scripts/show-more.js?raw'
 import Cursor from '@/components/ui/Cursor.astro'
+import Bit from '@/components/ui/Bit.astro'
 
 interface Props {
   title: string
@@ -86,6 +87,7 @@ const dev = import.meta.env.DEV
        everything border-box, so a padded frame would come out 24px narrow. -->
   <body class="px-[12px] font-light leading-1 text-green-500 selection:bg-green-600 selection:text-black">
     <slot />
+    <Bit />
     <Cursor />
     {/* after the slot, so the lists the button collapses are already parsed */}
     {/* eslint-disable-next-line astro/no-set-html-directive -- this is our own script text */}
