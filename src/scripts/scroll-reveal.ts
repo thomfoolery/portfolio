@@ -23,11 +23,17 @@ type Kind = 'width' | 'fade'
 /**
  * `width` grows a line from nothing to its full measure, which is the reveal the
  * introduction types out; it needs `break-all` and a fixed line height on the
- * element, since the text reflows into the width it has. `fade` brings a block
- * up from nothing, for the art and the honors rows.
+ * element, since the text reflows into the width it has. It is drawn in `steps(72,
+ * end)`, one step per column of the grid, so the line types as the scroll moves
+ * instead of easing to nearly full early: half a range is half a line. That is
+ * what the CSS meant by `step(72, end)`, which is not a CSS function and was
+ * dropped, leaving `ease`. `fade` brings a block up from nothing, for the art and
+ * the honors rows, and stays linear because the scroll scrubs it.
  */
 const KINDS: Record<Kind, { keyframes: Keyframe[]; easing: string; props: string[] }[]> = {
-  width: [{ keyframes: [{ width: '0' }, { width: '100%' }], easing: 'ease', props: ['width'] }],
+  width: [
+    { keyframes: [{ width: '0' }, { width: '100%' }], easing: 'steps(72, end)', props: ['width'] },
+  ],
   fade: [{ keyframes: [{ opacity: 0 }, { opacity: 1 }], easing: 'linear', props: ['opacity'] }],
 }
 
@@ -66,6 +72,8 @@ interface Reveal {
   open: boolean
   /** it entered on a click and waits at full for the scroll to catch up */
   held: boolean
+  /** reduced motion: the line is simply there, never typed */
+  still: boolean
   /** the last progress the scroll reported, kept up to date while it is ignored */
   progress: number
   /** the animation carrying the line back to its scroll position, while it runs */
@@ -81,7 +89,10 @@ interface Reveal {
 /** Bind one element's animations to its scroll range. */
 function bind(element: HTMLElement, entering = false): Reveal {
   const offset = toOffset(element.dataset.revealRange ?? '0% 20%')
-  const start = entering ? DURATION : 0
+  // A reveal is movement, and reduced motion keeps the state rather than the
+  // travel: the line starts and stays at full.
+  const still = reduced.matches
+  const start = still || entering ? DURATION : 0
 
   const animations = steps(element).map(({ keyframes, easing }) => {
     const animation = element.animate(keyframes, { duration: DURATION, easing, fill: 'both' })
@@ -104,6 +115,7 @@ function bind(element: HTMLElement, entering = false): Reveal {
     entering,
     open: false,
     held: false,
+    still,
     progress: 0,
     seek,
     settle: () => {},
@@ -122,9 +134,16 @@ function bind(element: HTMLElement, entering = false): Reveal {
   }
 
   const apply = () => {
+    if (reveal.still) {
+      seek(DURATION)
+      return
+    }
+
     // While a row is entering, the scroll must not touch it: a seek would cut the
     // entrance short. An open row shows its whole line instead of the scroll's.
-    if (free()) seek(reveal.progress * DURATION)
+    if (!free()) return
+
+    seek(reveal.progress * DURATION)
   }
 
   /** Carry the line back to `time`, rather than jumping it there. */
@@ -169,6 +188,8 @@ function bind(element: HTMLElement, entering = false): Reveal {
   }
 
   reveal.resume = apply
+  if (still) return reveal
+
   reveal.unsync = scroll(
     (progress) => {
       reveal.progress = Math.min(1, Math.max(0, progress))
@@ -208,6 +229,9 @@ document.addEventListener('reveal:enter', (event) => {
 
     const reveal = bind(element, true)
     reveals.set(element, reveal)
+
+    // Nothing to type when motion is reduced: the line is already at full.
+    if (reveal.still) continue
 
     // Created now and held at their first frame, so a row waiting its turn shows
     // nothing rather than the full line the scroll animation is parked on.
