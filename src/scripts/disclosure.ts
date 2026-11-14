@@ -17,6 +17,12 @@ const EASING = CURVE.replace(/^[\d.]+ms /, '')
 const HOVER_DELAY = 250
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)')
+
+/**
+ * With reduced motion the panel arrives at its full height and only the fade
+ * runs: the state change survives, the travel does not.
+ */
+const FADE = 150
 /** A pointer that can rest on a row. Touch only claims to hover for an instant. */
 const canHover = matchMedia('(hover: hover)')
 
@@ -50,24 +56,25 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
     if (opening) details.dispatchEvent(new CustomEvent('reveal:play', { bubbles: true }))
 
     if (reduced.matches) {
-      details.open = opening
-      if (!opening) details.dispatchEvent(new CustomEvent('reveal:reset', { bubbles: true }))
-      return
+      animation = panel.animate(
+        opening ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }],
+        { duration: FADE, easing: 'linear', fill: 'both' },
+      )
+    } else {
+      const height = panel.offsetHeight
+      animation = panel.animate(
+        opening
+          ? [
+              { height: '0px', opacity: 0 },
+              { height: `${height}px`, opacity: 1 },
+            ]
+          : [
+              { height: `${height}px`, opacity: 1 },
+              { height: '0px', opacity: 0 },
+            ],
+        { duration: DURATION, easing: EASING, fill: 'both' },
+      )
     }
-
-    const height = panel.offsetHeight
-    animation = panel.animate(
-      opening
-        ? [
-            { height: '0px', opacity: 0 },
-            { height: `${height}px`, opacity: 1 },
-          ]
-        : [
-            { height: `${height}px`, opacity: 1 },
-            { height: '0px', opacity: 0 },
-          ],
-      { duration: DURATION, easing: EASING, fill: 'both' },
-    )
 
     animation.finished
       .then(() => {

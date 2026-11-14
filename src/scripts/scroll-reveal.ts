@@ -279,7 +279,8 @@ document.addEventListener('reveal:reset', (event) => {
     if (!reveal) continue
 
     reveal.open = false
-    if (reveal.entering || reveal.held) {
+    // Reduced motion puts the line back at once rather than drawing the return.
+    if (reduced.matches || reveal.entering || reveal.held) {
       reveal.resume()
       continue
     }

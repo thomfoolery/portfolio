@@ -59,8 +59,8 @@ src/
   lib/              art.ts, utils.ts (`cn`)
   pages/            index.astro, the one page
   scripts/          hotkeys.js and show-more.js, inlined at build time;
-                    scroll-reveal.ts, disclosure.ts and cursor.ts, the modules
-                    that ship
+                    scroll-reveal.ts, disclosure.ts, cursor.ts and bit.ts, the
+                    modules that ship
   styles/           main.css: the theme, and the one rule a utility cannot state
 ```
 
@@ -115,7 +115,9 @@ element has travelled, and the script scrubs a paused animation with
 `scripts/disclosure.ts` takes `spring()` and nothing else: it asks for the curve
 and samples it into the `linear()` easing a browser animation runs, so a job
 opens on a critically damped spring (`bounce: 0`, no overshoot) and its content
-fades over the same curve. Jobs pass `openOnHover`: there a pointer resting on a
+fades over the same curve. Under `prefers-reduced-motion` the panel arrives at
+its full height and only the fade runs, 150ms of it: the state change survives,
+the travel does not. Jobs pass `openOnHover`: there a pointer resting on a
 row for 250 ms opens it — long enough that crossing the list opens nothing — and
 leaving closes it, while a click is ignored (Enter and Space still toggle it).
 That only applies where a pointer can rest, so a touch screen keeps the click.
@@ -156,6 +158,13 @@ covers flips dark the way a block cursor flips the character under it. It blinks
 while still and holds solid while moving, both of which stop under
 `prefers-reduced-motion`. It only arms for a fine pointer, and the native cursor
 is only hidden once the script has run — a touch screen keeps its own.
+
+**A stray bit crosses now and then.** `ui/Bit.astro` flies a `0` or `1` across
+what is on screen every 8–25s, gliding through two to five turns with a fading
+trail: the same keyframes played by six followers, each 40ms late. It is placed
+on the page, not the viewport, so a scroll carries it off. Its layer clips and is
+zero tall between trips, so it never changes the page's size. It does not fly in
+a hidden tab or under `prefers-reduced-motion`.
 
 **The page is a stack of panels.** `Section.astro` wraps the header, each
 section and the footer: each panel is at least one viewport tall and centres its
