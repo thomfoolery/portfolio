@@ -6,18 +6,15 @@
  * with the text around it.
  *
  * The layer clips, so a bit past the right or bottom edge never widens or
- * lengthens the page, and it is zero tall between trips. The trail is the same
- * flight played again by each follower, a few ms late and dimmer. See
- * `scripts/bit.ts`.
+ * lengthens the page, and it is zero tall between trips. Only the lead is in the
+ * markup: the script adds the trail, which is the same flight played again by
+ * each follower, a few ms late and dimmer. Its look and timing are
+ * `data/bit.json`, tuned with the dev-only lab. See `scripts/bit.ts`.
  */
-const TRAIL = 12
 ---
 
 <div data-bit-layer aria-hidden="true" class="layer">
   <span data-bit class="bit"></span>
-  {Array.from({ length: TRAIL }, () => (
-    <span data-bit class="bit" />
-  ))}
 </div>
 
 <style>
@@ -33,16 +30,19 @@ const TRAIL = 12
     z-index: -1;
     pointer-events: none;
   }
+  /* Size and colours come from data/bit.json, set on the layer by the script. */
   .bit {
     position: absolute;
     top: 0;
     left: 0;
-    /* px, not cells: a bit is a lit square, not a glyph on the grid. */
-    width: 5px;
-    height: 5px;
-    background-color: var(--color-green-300);
+    width: var(--bit-size);
+    height: var(--bit-size);
+    background-color: var(--bit-lead);
     visibility: hidden;
-    will-change: transform;
+  }
+  /* Followers are cloned from the lead, so they carry its scoping attribute. */
+  .bit.trail {
+    background-color: var(--bit-trail);
   }
   .layer[data-flying] .bit {
     visibility: visible;

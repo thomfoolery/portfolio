@@ -93,5 +93,6 @@ const dev = import.meta.env.DEV
     {/* eslint-disable-next-line astro/no-set-html-directive -- this is our own script text */}
     <script is:inline set:html={showMore} />
     {dev && <script type="module" is:inline src="/src/components/art-editor/editor.js"></script>}
+    {dev && <script type="module" is:inline src="/src/components/bit-lab/lab.js"></script>}
   </body>
 </html>

@@ -1,0 +1,141 @@
+/* Dev-only. Loaded by lab.js, which never reaches a build, so none of this
+   ships. Tailwind does not scan this file either — see the @source list. */
+
+.bl-toggle {
+  position: fixed;
+  right: 1ch;
+  bottom: 1ch;
+  /* Over the sticky nav (100), under the caret in ui/Cursor (1000), which has to
+     stay visible to work the controls. */
+  z-index: 999;
+  padding: 0 0.5ch;
+  border: 1px solid var(--color-green-700);
+  background: var(--color-black);
+  color: var(--color-green-900);
+  cursor: pointer;
+}
+
+.bl-panel {
+  position: fixed;
+  right: 1ch;
+  bottom: calc(1ch + 2em);
+  z-index: 999;
+  display: grid;
+  gap: 0.4em;
+  width: min(52ch, calc(100vw - 2ch));
+  max-height: calc(100vh - 4em);
+  overflow: auto;
+  padding: 1ch;
+  border: 1px solid var(--color-green-700);
+  background: var(--color-black);
+  color: var(--color-green-700);
+  font: inherit;
+  /* px: a dev tool, sized to sit beside the page rather than on its grid. */
+  font-size: 12px;
+}
+.bl-panel[hidden] {
+  display: none;
+}
+
+.bl-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1ch;
+}
+.bl-bar input {
+  width: 13ch;
+}
+
+.bl-row {
+  display: grid;
+  /* minmax(0, …): a range input's own width would otherwise push the row wide. */
+  grid-template-columns: 11ch minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 1ch;
+}
+.bl-row > label {
+  display: contents;
+}
+.bl-end {
+  display: flex;
+  align-items: center;
+  gap: 0.5ch;
+  grid-column: span 1;
+}
+.bl-end.bl-wide {
+  grid-column: span 2;
+}
+.bl-end input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--color-green-700);
+}
+.bl-out {
+  min-width: 6ch;
+  text-align: right;
+  color: var(--color-green-900);
+}
+
+.bl-name {
+  margin: 0;
+  font: inherit;
+  color: var(--color-green-500);
+}
+
+.bl-panel button,
+.bl-panel input[type='number'],
+.bl-panel select {
+  padding: 0 0.5ch;
+  border: 1px solid var(--color-green-500);
+  background: var(--color-black);
+  color: var(--color-green-900);
+  font: inherit;
+  cursor: pointer;
+}
+.bl-panel button:hover {
+  border-color: var(--color-green-900);
+}
+.bl-panel :focus-visible,
+.bl-toggle:focus-visible {
+  outline: 1px solid var(--color-green-900);
+  outline-offset: 2px;
+}
+
+.bl-status {
+  min-height: 1.6em;
+  margin: 0;
+  color: var(--color-green-900);
+}
+
+.bl-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5ch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bl-rail li {
+  display: flex;
+}
+.bl-panel .bl-forget {
+  border-left: 0;
+  color: var(--color-green-500);
+}
+
+/* The native pointer inside the lab: the page hides it everywhere for the caret
+   (Base.astro), and these out-rank that rule. The caret steps aside meanwhile. */
+html[data-cursor] .bl-panel,
+html[data-cursor] .bl-panel *,
+html[data-cursor] .bl-toggle {
+  cursor: auto;
+}
+html[data-cursor] .bl-panel button,
+html[data-cursor] .bl-panel select,
+html[data-cursor] .bl-toggle {
+  cursor: pointer;
+}
+html:has(.bl-panel:hover, .bl-toggle:hover) [data-caret] {
+  visibility: hidden;
+}

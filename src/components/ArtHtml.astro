@@ -14,18 +14,31 @@ import type { SectionArtItem } from '@/data/art'
  *
  * `scrollReveal` marks the block for the page's one reveal script. A `contents`
  * box has no opacity of its own, so the fade only shows in the editor's real box.
+ *
+ * A block that glitches gets a second copy of itself, `art-ghost`, made by
+ * `scripts/glitch.ts` as it starts: parked over the real art and clipped to a
+ * band, so a slice can be displaced without giving the rows boxes (which stops
+ * the block glyphs abutting). It is cloned rather than rendered, because a copy
+ * in the markup would double the art's bytes. `glitch` defaults to `scrollReveal`.
  */
 interface Props {
   art: SectionArtItem
   hoverReveal?: boolean
   scrollReveal?: boolean
+  glitch?: boolean
   class?: string
 }
 
-const { art, scrollReveal = false, hoverReveal = false, class: className } = Astro.props
+const {
+  art,
+  scrollReveal = false,
+  hoverReveal = false,
+  glitch = scrollReveal,
+  class: className,
+} = Astro.props
 const dev = import.meta.env.DEV
 const fragment = renderFragment(
-  `class="leading-none text-green-600" aria-hidden="true"`.trimEnd(),
+  `class="relative leading-none text-green-600 overflow-clip" aria-hidden="true"`.trimEnd(),
   art,
 )
 ---
@@ -38,6 +51,7 @@ const fragment = renderFragment(
       'opacity-10 hover:opacity-100 duration-200 hover:duration-500 transition-opacity',
     className,
   ]}
+  data-glitch={glitch ? '' : undefined}
   data-reveal={scrollReveal ? 'fade' : undefined}
   data-reveal-range={scrollReveal ? '20% 30%' : undefined}
   data-art-frame={dev ? '' : undefined}
@@ -46,3 +60,21 @@ const fragment = renderFragment(
   set:html={fragment}
 />
 {/* eslint-enable astro/no-set-html-directive */}
+
+<style>
+  /* The ghost is a whole copy of the art, parked over it and clipped to nothing
+     until a burst shows a band of it. `scripts/glitch.ts` moves the band and the
+     copy, so a slice of the illustration tears on its own. */
+  :global(.art-ghost) {
+    position: absolute;
+    inset: 0;
+    display: block;
+    white-space: pre;
+    pointer-events: none;
+    visibility: hidden;
+  }
+</style>
+
+<script>
+  import '@/scripts/glitch'
+</script>

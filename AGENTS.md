@@ -14,7 +14,8 @@ to remove duplication within the résumé, not to ship a framework. So:
 - The page ships two inlined `<script>`s, `src/scripts/hotkeys.js` and
   `src/scripts/show-more.js`, because the nav hotkeys and the "show more" buttons
   need them, plus four modules, `src/scripts/scroll-reveal.ts`,
-  `src/scripts/disclosure.ts`, `src/scripts/cursor.ts` and `src/scripts/bit.ts`.
+  `src/scripts/disclosure.ts`, `src/scripts/cursor.ts` and `src/scripts/bit.ts`,
+  and `src/scripts/glitch.ts`, which the build inlines.
   The first two are the only files that import `motion`.
 - Serve `dist/`. The URL is `/index.html`.
 - A new client dependency, or anything that grows the shipped JS, has to be
@@ -94,6 +95,10 @@ dependency decision: ask first.
 - The résumé's data lives in `src/data/` — `jobs.ts`, `honors.ts`, `nav.ts`,
   `grid.ts`, the art. Edit the data, not the markup. `posts.ts` is the exception:
   it sits beside `PostsList` in `components/posts/`.
+- The stray bit is tuned, not hand-edited: `src/data/bit.json` holds every
+  setting, and the dev-only lab (`[bit]` under `pnpm dev`) writes it. Flights
+  come from `plan()` in `lib/bit.ts`, which must stay pure — same settings,
+  seed and screen, same path — or the lab's replay and save stop meaning anything.
 - The site is one page, `src/pages/index.astro`, built from `src/components/`.
   The page holds the structure — the frame, the header panel, the nav, the
   sections in order, the footer — and destructures `blockArt` for the fragments.

@@ -15,8 +15,8 @@ const measures = {
 ---
 
 <Section id="honors" labelledby="honors-title">
-  <h2 id="honors-title" class="sr-only font-bold scroll-mt-2">
-    Honors, awards &amp; certs
+  <h2 id="honors-title" class="sr-only font-bold scroll-mt-1">
+    Honors, awards &amp; certifications
   </h2>
 
   <ArtHtml art={blockArt.honors} scrollReveal />
@@ -41,7 +41,7 @@ const measures = {
             <span class="text-green-900">{honor.title}</span>
           )}
         </h3>
-        <p class:list={['mt-1 ml-[9ch] font-extralight leading-[2]', measures[honor.measure]]}>
+        <p class:list={['mt-1 ml-[9ch] font-extralight leading-2', measures[honor.measure]]}>
           {honor.blurb}
         </p>
       </li>

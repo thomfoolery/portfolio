@@ -176,7 +176,11 @@ function open(frame) {
   if (!pre) return
 
   const path = frame.dataset.artPath ?? ''
-  let art = parse(pre.outerHTML)
+  // The ghost copy the glitch shears, and any glyph caught mid-flicker, are not
+  // art; drop them before reading the grid.
+  const clean = pre.cloneNode(true)
+  for (const noise of clean.querySelectorAll('[data-art-ghost], [data-art-flicker]')) noise.remove()
+  let art = parse(clean.outerHTML)
   /** Which of the two things a stroke paints. Both at once stamps a whole cell. */
   const drawing = { brush: true, colour: false }
   let tool = 'draw'

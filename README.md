@@ -42,21 +42,24 @@ Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
 
 ```
 eslint.config.ts    type-aware lint; formatting is left to Prettier
-astro.config.mjs    the build, plus the dev-only art-editor integration
+astro.config.mjs    the build, plus the dev-only art-editor and bit-lab integrations
 .prettierrc.json    single quotes, no semicolons, 100 columns
 src/
   components/       the shell: Section, Nav, Header, Footer, ArtHtml
+    bit-lab/        the dev-only panel that tunes the stray bit
     honors/         HonorsList
     jobs/           JobsList and the job rows
     ui/             Link, Hint, Disclosure, Toggle — what the theme used to style
     Welcome.astro   the introduction
     Posts.astro     the posts list, not yet on the page
-  data/             nav.ts, jobs.ts, honors.ts, posts.ts, grid.ts
+  data/             nav.ts, jobs.ts, honors.ts, posts.ts, grid.ts, bit.json
     art/            the ASCII art, as character and colour arrays
-  dev/              art-editor.ts, which writes art back under `astro dev`
+  dev/              art-editor.ts and bit-lab.ts, which write art and the bit's
+                    settings back under `astro dev`
   fonts/            the Commit Mono subset, with its OFL licence
   layouts/          Base.astro, the document shell
-  lib/              art.ts, utils.ts (`cn`)
+  lib/              art.ts, bit.ts (the bit's settings and flight plan),
+                    utils.ts (`cn`)
   pages/            index.astro, the one page
   scripts/          hotkeys.js and show-more.js, inlined at build time;
                     scroll-reveal.ts, disclosure.ts, cursor.ts and bit.ts, the
@@ -152,6 +155,19 @@ holds at full until the scroll catches up with it, and from there it is scrubbed
 like its neighbours — scroll back and it runs in reverse again. The two scripts
 do not import each other: one asks in an event, the other owns the animations.
 
+**The art loses sync, but only while the page moves.** Glitches come from scroll
+events, not a timer (`scripts/glitch.ts`): the first scroll of a burst glitches
+within a few frames, then one every 60 to 190 ms for as long as the page keeps
+moving — now a band of one illustration, a row or three tall, jumping sideways by
+one to three character cells, now single cells flickering, inverted or knocked out,
+several at a time. Nothing happens when the page is still, nothing is touched on a
+block that is off screen, and none of it under `prefers-reduced-motion` or in a
+hidden tab. The band is a ghost copy of the art that the script clones when it
+first glitches a block: a copy in the markup would double the art's bytes, and
+moving the rows themselves is impossible without giving each a box, which stops the
+block glyphs abutting and opens hairline seams. Only the hero and the blocks that
+reveal on scroll take part.
+
 **The pointer is a caret.** `ui/Cursor.astro` draws the pointer as the terminal's
 own block: one column wide, phosphor, `mix-blend-mode: exclusion` so a glyph it
 covers flips dark the way a block cursor flips the character under it. It blinks
@@ -159,13 +175,20 @@ while still and holds solid while moving, both of which stop under
 `prefers-reduced-motion`. It only arms for a fine pointer, and the native cursor
 is only hidden once the script has run — a touch screen keeps its own.
 
-**A stray bit crosses now and then.** `ui/Bit.astro` flies a filled 5px square
-across what is on screen every 8–25s. It glides only up, down, left or right,
-turning at a right angle two to five times, with a fading trail: the same
-keyframes played by twelve followers, each 6ms late. It is placed
-on the page, not the viewport, so a scroll carries it off. Its layer clips and is
-zero tall between trips, so it never changes the page's size. It does not fly in
-a hidden tab or under `prefers-reduced-motion`.
+**A stray bit crosses now and then.** `ui/Bit.astro` flies a filled square
+across what is on screen, behind the text. It glides only up, down, left or
+right, turning at right angles, with a fading trail: the same keyframes played
+by dimmer followers a few ms apart. It is placed on the page, not the viewport,
+so a scroll carries it off. Its layer clips and is zero tall between trips, so it
+never changes the page's size. Like the caret, it only flies for a mouse or a
+pen, and not in a hidden tab or under `prefers-reduced-motion`. Its trail is
+made at launch and removed when the trip lands.
+
+Its size, colours, trail, speed, timing and turns are `src/data/bit.json`, and a
+flight is a pure function of those settings, a seed and the screen
+(`lib/bit.ts`). Under `pnpm dev` the **[bit]** button opens a lab over the page:
+every setting is a slider, a change replays the current seed, `fly` draws a new
+one, and `save` writes `bit.json` — the file the page ships with.
 
 **The page is a stack of panels.** `Section.astro` wraps the header, each
 section and the footer: each panel is at least one viewport tall and centres its
