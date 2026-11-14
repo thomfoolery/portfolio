@@ -1,8 +1,9 @@
 ---
 /**
- * A stray bit: every so often a filled square glides across the page, turning a
- * few times at right angles on the way, with a fading trail behind it. It is placed on the page
- * rather than the viewport, so a scroll carries it off with the text around it.
+ * A stray bit: every so often a filled square glides across the page behind the
+ * text, turning a few times at right angles on the way, with a fading trail. It
+ * is placed on the page rather than the viewport, so a scroll carries it off
+ * with the text around it.
  *
  * The layer clips, so a bit past the right or bottom edge never widens or
  * lengthens the page, and it is zero tall between trips. The trail is the same
@@ -27,16 +28,19 @@ const TRAIL = 12
     width: 100%;
     height: 0;
     overflow: clip;
+    /* Behind the page: the text and art paint over it, and the sticky nav, the
+       one opaque surface, hides it. The black is the canvas, so it stays below. */
+    z-index: -1;
     pointer-events: none;
   }
   .bit {
     position: absolute;
     top: 0;
     left: 0;
-    /* px, not cells: a bit is a lit pixel cluster, not a glyph on the grid. */
-    width: 3px;
-    height: 3px;
-    background-color: var(--color-green-900);
+    /* px, not cells: a bit is a lit square, not a glyph on the grid. */
+    width: 5px;
+    height: 5px;
+    background-color: var(--color-green-300);
     visibility: hidden;
     will-change: transform;
   }

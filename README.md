@@ -159,7 +159,7 @@ while still and holds solid while moving, both of which stop under
 `prefers-reduced-motion`. It only arms for a fine pointer, and the native cursor
 is only hidden once the script has run — a touch screen keeps its own.
 
-**A stray bit crosses now and then.** `ui/Bit.astro` flies a filled 3px square
+**A stray bit crosses now and then.** `ui/Bit.astro` flies a filled 5px square
 across what is on screen every 8–25s. It glides only up, down, left or right,
 turning at a right angle two to five times, with a fading trail: the same
 keyframes played by twelve followers, each 6ms late. It is placed

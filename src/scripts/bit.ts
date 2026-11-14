@@ -34,17 +34,17 @@ if (layer && lead) {
 
   const fly = () => {
     const height = document.documentElement.scrollHeight
-    const size = lead.offsetWidth
+    const size = { x: lead.offsetWidth, y: lead.offsetHeight }
     // It crosses what is on screen as the trip starts. That box is fixed on the
     // page from then on, so a scroll carries the bit off with the text.
     const box = {
-      x: [0, document.documentElement.clientWidth - size],
-      y: [scrollY, Math.min(height, scrollY + innerHeight) - size],
+      x: [0, document.documentElement.clientWidth - size.x],
+      y: [scrollY, Math.min(height, scrollY + innerHeight) - size.y],
     } as const
     const inside = (axis: Axis) => between(box[axis])
     // Just past an edge, so it enters and leaves whole.
     const outside = (axis: Axis, forward: boolean) =>
-      forward ? box[axis][1] + size : box[axis][0] - size
+      forward ? box[axis][1] + size[axis] : box[axis][0] - size[axis]
 
     // The edge it enters by sets the crossing: the axis it travels along and
     // which way. The other axis is where it wanders.
