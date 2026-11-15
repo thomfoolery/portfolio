@@ -14,7 +14,8 @@ import type { SectionArtItem } from '@/data/art'
  *
  * `scrollReveal` marks the block for the page's one reveal script. A `contents`
  * box has no opacity of its own, so the fade only shows in the editor's real box.
- * Below the `wide` breakpoint nothing reveals, so the art is just there.
+ * Below the `wide` breakpoint nothing reveals, so the art is just there; that
+ * includes `hoverReveal`, since a phone has no hover to reveal it with.
  *
  * The art is sized by `--art-size` (main.css), not the text: it stays 72 columns
  * at any width, while the text stops shrinking at 12px.
@@ -54,12 +55,12 @@ const fragment = renderFragment(
   class:list={[
     fullWidth && 'wide:-mx-1',
     hoverReveal &&
-      'opacity-10 hover:opacity-100 duration-200 hover:duration-500 transition-opacity',
+      'opacity-10 hover:opacity-100 max-wide:opacity-100 duration-200 hover:duration-500 transition-opacity',
     className,
   ]}
   data-glitch={glitch ? '' : undefined}
   data-reveal={scrollReveal ? 'fade' : undefined}
-  data-reveal-range={scrollReveal ? '20% 30%' : undefined}
+  data-reveal-range={scrollReveal ? '50% 20%' : undefined}
   data-art-frame={dev ? '' : undefined}
   data-art-path={dev ? art.path : undefined}
   style={dev ? 'position:relative;width:fit-content' : undefined}

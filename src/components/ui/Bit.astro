@@ -27,7 +27,7 @@
     overflow: clip;
     /* Behind the page: the text and art paint over it, and the sticky nav, the
        one opaque surface, hides it. The black is the canvas, so it stays below. */
-    z-index: -1;
+    z-index: var(--z-bit);
     pointer-events: none;
   }
   /* Size and colours come from data/bit.json, set on the layer by the script. */

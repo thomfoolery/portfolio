@@ -12,6 +12,10 @@
  * and it contains the content's top margin, so a closed job leaves no stray gap
  * behind.
  *
+ * On a touch screen the row's target reaches half a line above and below it,
+ * so a 12px row is a full two-line target. Rows are a line apart, so
+ * neighbouring targets meet without overlapping.
+ *
  * Pass the summary row through the `summary` slot; everything else is content.
  */
 interface Props {
@@ -22,7 +26,7 @@ const { class: className } = Astro.props
 ---
 
 <details class={className} data-disclosure>
-  <summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-900">
+  <summary class="relative pointer-coarse:before:absolute pointer-coarse:before:inset-x-0 pointer-coarse:before:-inset-y-0.5 cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-900">
     <slot name="summary" />
   </summary>
   <div data-disclosure-panel class="overflow-hidden">

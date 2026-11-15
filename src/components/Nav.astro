@@ -7,15 +7,20 @@ import { navItems } from '@/data/nav'
 
 <nav
   aria-label="Main"
-  class="sticky -top-px bg-black py-0.5 z-100 border-t border-b border-green-500"
+  class="sticky -top-px overflow-x-clip bg-black py-0.5 z-(--z-nav) border-t border-b border-green-200"
 >
   <div class="mx-auto wide:w-[72ch]">
-    <ul class="flex flex-wrap gap-x-[2ch]">
+    {/* On a touch screen each link's target is the bar's full two lines, and a
+        column either side, so neighbours meet in the 2ch gap. A narrow phone
+        wraps the bar, and the line between rows keeps their targets apart. The
+        bar clips them sideways: the last link's would reach past the screen and
+        widen a phone's page. */}
+    <ul class="flex flex-wrap gap-x-[2ch] gap-y-1">
       {navItems.map((item) => (
         <li class={item.right ? 'ml-auto' : undefined}>
           {item.key && <Hint>[{item.key}]</Hint>}
           <Link
-            class="no-underline py-[3px] px-[1ch] font-semibold"
+            class="relative no-underline py-[3px] px-[1ch] font-semibold pointer-coarse:before:absolute pointer-coarse:before:-inset-x-[1ch] pointer-coarse:before:top-1/2 pointer-coarse:before:h-2 pointer-coarse:before:-translate-y-1/2"
             href={item.href}
             title={item.title}
             external={item.external}

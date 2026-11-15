@@ -93,7 +93,7 @@ const dev = import.meta.env.DEV
   <!-- The 12px gutter lives here, not on the 72ch frames (each panel and the
        nav): preflight makes everything border-box, so a padded frame would come
        out 24px narrow. -->
-  <body class="font-light leading-1 text-green-500 selection:bg-green-600 selection:text-black">
+  <body class="antialiased font-light leading-1 text-green-500 selection:bg-green-600 selection:text-black">
     <slot />
     <Bit />
     <Cursor />

@@ -19,7 +19,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1000;
+    z-index: var(--z-cursor);
     width: 1ch;
     height: 1.2em;
     background-color: var(--color-green-900);
@@ -27,6 +27,9 @@
     pointer-events: none;
     visibility: hidden;
     transform: translate3d(-100px, -100px, 0);
+    /* The pointer's hotspot sits at the block's centre, not its top-left corner.
+       `translate` composes with the script's `transform`, so the two never fight. */
+    translate: -50% -50%;
     animation: caret 1.06s steps(1, end) infinite;
     will-change: transform;
   }
