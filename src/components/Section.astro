@@ -39,10 +39,10 @@ const justify = { top: 'justify-start', center: 'justify-center', bottom: 'justi
 /**
  * What each element adds to the frame inside it: every panel's frame is a flex
  * column, aligned by `align`. Only the sections take the space below their
- * content, and the header tucks the nav up under its art.
+ * content.
  */
 const perElement = {
-  header: ['flex flex-col wide:-mb-3 pt-1 wide:pt-5', justify],
+  header: ['flex flex-col pt-1 wide:pt-5', justify],
   section: ['flex flex-col pt-2 wide:pb-[50dvh]', justify],
   footer: ['flex flex-col', justify],
 }[as]

@@ -106,5 +106,7 @@ dependency decision: ask first.
   The page holds the structure — the header panel, the nav, the sections in
   order, the footer — and destructures `blockArt` for the fragments. There is
   no page-wide wrapper: each panel (`Section.astro`) and the nav is its own
-  centred `w-[72ch]` frame.
+  centred `w-[72ch]` frame. The nav is docked to the bottom of the screen but
+  stays second in the markup: the body is a flex column and the nav is
+  `order-last`, so keyboard and screen-reader order are unchanged.
   `<Welcome />` is the introduction; job entries are collapsible `<details>`.
