@@ -6,15 +6,58 @@
 @source '../**/*.ts';
 @source '../**/*.html';
 
-/* Commit Mono, subset to the characters this page draws — printable ASCII, ©,
+/* Ioskeley Mono, subset to the characters this page draws — printable ASCII, ©,
    and the block glyphs the art is built from — plus the few the dev-only editor
    paints with, so no swatch can put a glyph in the art that the font cannot
-   draw. One variable file, wght 200-700, ital pinned to 0, and no OpenType
-   features: a ligature could reflow the art. README.md has the command. */
+   draw. One static file per weight the page asks for, upright only, and no
+   OpenType features: a ligature could reflow the art. A browser only fetches
+   the weights it draws. README.md has the command. */
 @font-face {
-  font-family: 'Commit Mono';
-  src: url('../fonts/commit-mono-subset.woff2') format('woff2');
-  font-weight: 200 700;
+  font-family: 'Ioskeley Mono';
+  src: url('../fonts/ioskeley-mono-extralight-subset.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('../fonts/ioskeley-mono-light-subset.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('../fonts/ioskeley-mono-regular-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('../fonts/ioskeley-mono-medium-subset.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('../fonts/ioskeley-mono-semibold-subset.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('../fonts/ioskeley-mono-bold-subset.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('../fonts/ioskeley-mono-black-subset.woff2') format('woff2');
+  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
@@ -42,10 +85,19 @@
   --spacing: 1.6em;
 
   --font-mono:
-    'Commit Mono', ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', 'Courier New', monospace;
+    'Ioskeley Mono', ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', 'Courier New', monospace;
   --default-font-family: var(--font-mono);
 
-  --leading-tight: 1.2em; /* art rows, so block characters touch with no seam */
+  /* Art rows: one block character tall, so rows meet with no seam and no overlap.
+     Ioskeley Mono's full block runs from -285 to 965 units of 1000, which is
+     also its line box (typo ascender and descender, no gap): 1.25em. */
+  --leading-tight: 1.25;
+
+  /* px, because it is where the body's px clamp crosses 12px: 12px * 43.5 + the
+     24px gutter. From here up the text is the art's size and the page is the
+     72-column grid; below it the text holds at 12px and reflows (`max-wide:`),
+     and only the art keeps shrinking. scripts/scroll-reveal.ts repeats it. */
+  --breakpoint-wide: 546px;
 
   --shadow-black: 0 0 20px #000, 0 0 20px #000, 0 0 30px #000, 0 0 50px #000;
 }
@@ -57,5 +109,8 @@ html {
 body {
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
-  font-size: round(down, min(16px, calc((100vw - 24px) / 43.5)), 1px);
+  /* The art's size: 72 columns across the viewport, at most 16px. The art always
+     fits; the text stops at 12px, the floor for reading, and reflows below that. */
+  --art-size: round(down, min(16px, calc((100vw - 24px) / 43.5)), 1px);
+  font-size: max(12px, var(--art-size));
 }

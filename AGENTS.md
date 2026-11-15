@@ -27,7 +27,10 @@ Every length is a character cell or a terminal line.
 
 - `--spacing` is one line (1.6em), so `mt-3` is three lines, `gap-6` is six.
   Widths are `w-[72ch]` and indents `ml-[11ch]`.
-- Body text is 16px, clamped down so 72 columns still fit a narrow viewport.
+- Body text is 16px, clamped down so 72 columns still fit a narrow viewport,
+  down to 12px. Below that (`max-wide:`, 546px) only the art (`--art-size`)
+  holds the 72-column grid: text reflows, rows stack, and reveals are off.
+  Anything with a fixed `ch` width needs a `max-wide:` answer.
   `<p>` states `leading-[2]` of its own; everything else inherits the terminal
   line (1.6em).
 - Every panel is one viewport tall with its content centred. `Section.astro`
@@ -49,7 +52,7 @@ Every length is a character cell or a terminal line.
    Use `GAP` / `SPACE` from `src/data/grid.ts` and keep such a row on one
    source line. See `JobHeading.astro`.
 2. **Preflight is border-box.** A padded `w-[72ch]` frame comes out 24px narrow
-   and the art gets clipped. The gutter lives on `body`, not on the frame.
+   and the art gets clipped. The gutter lives on `body`, not on the frames.
 3. **Prettier would reflow the grid.** Its Astro printer breaks inline runs onto
    separate lines, which turns those significant spaces into newlines for the
    compiler to drop. Such a row carries a `prettier-ignore`, with the
@@ -100,6 +103,8 @@ dependency decision: ask first.
   come from `plan()` in `lib/bit.ts`, which must stay pure — same settings,
   seed and screen, same path — or the lab's replay and save stop meaning anything.
 - The site is one page, `src/pages/index.astro`, built from `src/components/`.
-  The page holds the structure — the frame, the header panel, the nav, the
-  sections in order, the footer — and destructures `blockArt` for the fragments.
+  The page holds the structure — the header panel, the nav, the sections in
+  order, the footer — and destructures `blockArt` for the fragments. There is
+  no page-wide wrapper: each panel (`Section.astro`) and the nav is its own
+  centred `w-[72ch]` frame.
   `<Welcome />` is the introduction; job entries are collapsible `<details>`.

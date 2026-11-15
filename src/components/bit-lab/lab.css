@@ -9,7 +9,7 @@
      stay visible to work the controls. */
   z-index: 999;
   padding: 0 0.5ch;
-  border: 1px solid var(--color-green-700);
+  border: 0;
   background: var(--color-black);
   color: var(--color-green-900);
   cursor: pointer;
@@ -96,10 +96,17 @@
 .bl-panel button:hover {
   border-color: var(--color-green-900);
 }
-.bl-panel :focus-visible,
-.bl-toggle:focus-visible {
+.bl-panel :focus-visible {
   outline: 1px solid var(--color-green-900);
   outline-offset: 2px;
+}
+/* The toggle is focused the moment it is clicked, and a ring — or a border —
+   then sits in the page's corner like a stray box. The lightbar carries the
+   focus instead, the same inversion the page's links use. */
+.bl-toggle:focus-visible {
+  outline: none;
+  background-color: var(--color-green-900);
+  color: var(--color-black);
 }
 
 .bl-status {

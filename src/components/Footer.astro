@@ -9,30 +9,34 @@ const year = new Date().getFullYear()
 ---
 
 <Section class="overflow-clip">
-  <ArtHtml art={blockArt.eyes} scrollReveal />
+  <ArtHtml art={blockArt.eyes} fullWidth scrollReveal />
 
-  <p class="font-medium mt-2 leading-[2]">
-    <div class="ml-5 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="30% 20%">
+  <p class="font-medium mt-2 ml-2 wide:ml-5 leading-[2]">
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="30% 20%"
+    >
       20+ glorious years pushing pixels and...
-    </div>
+    </span>
   </p>
 
-  <p class="font-black mt-1 leading-[2]">
-    <div
-      class="ml-16 h-[1.8em] break-all overflow-clip text-green-900"
+  <p class="font-black mt-1 ml-8 wide:ml-16 leading-[2]">
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip text-green-900"
       data-reveal
       data-reveal-range="20% 40%"
     >
       NOTHING IS REAL ;)
-    </div>
+    </span>
   </p>
 </Section>
 
 <Section as="footer" align="bottom" class="pb-0">
   <ArtHtml art={blockArt.footer} hoverReveal class="peer ml-4" />
 
-  <p class="text-right my-1 font-extralight leading-[2] peer-hover:opacity-100 opacity-10 duration-200 peer-hover:duration-500 transition-opacity">
-    <small class="bg-clip-text text-transparent bg-linear-to-r from-green-100 via-green-900 to-green-100 font-extralight [font-size:inherit]">
+  <p class="text-right my-1 leading-[2] peer-hover:opacity-100 opacity-10 duration-200 peer-hover:duration-500 transition-opacity">
+    <small class="bg-clip-text text-transparent bg-linear-to-r from-green-100 via-green-900 to-green-100 [font-size:inherit]">
       &copy; Thomas Yuill {year}
     </small>
   </p>

@@ -13,9 +13,6 @@ const CURVE = spring({ keyframes: [0, 1], bounce: 0, visualDuration: 0.2 }).toSt
 const DURATION = Number.parseFloat(CURVE)
 const EASING = CURVE.replace(/^[\d.]+ms /, '')
 
-/** Long enough that a pointer crossing the list does not open every row it passes. */
-const HOVER_DELAY = 250
-
 const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 
 /**
@@ -23,22 +20,15 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)')
  * runs: the state change survives, the travel does not.
  */
 const FADE = 150
-/** A pointer that can rest on a row. Touch only claims to hover for an instant. */
-const canHover = matchMedia('(hover: hover)')
 
 for (const details of document.querySelectorAll<HTMLDetailsElement>('details[data-disclosure]')) {
   const summary = details.querySelector('summary')
   const panel = details.querySelector<HTMLElement>('[data-disclosure-panel]')
   if (!summary || !panel) continue
 
-  /** This one is driven by the pointer, so a click does not toggle it. */
-  const onHover = details.hasAttribute('data-disclosure-hover') && canHover.matches
-
   /** Where the disclosure is heading, so a second gesture can reverse mid-flight. */
   let wanted = details.open
   let animation: Animation | undefined
-  /** the pending hover open, dropped if the pointer moves on first */
-  let hoverTimer: ReturnType<typeof setTimeout> | undefined
 
   const set = (opening: boolean) => {
     // Idle means the element is the truth; mid-flight, `wanted` is.
@@ -95,30 +85,9 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
   }
 
   summary.addEventListener('click', (event) => {
-    // The UA would toggle on its own; every path below decides for itself.
+    // The UA would toggle at once; this animates the same toggle instead. Enter
+    // and Space arrive here as clicks too.
     event.preventDefault()
-    clearTimeout(hoverTimer)
-
-    // In hover mode the pointer has already said what it wants. A click with no
-    // pointer behind it (`detail` 0) is Enter or Space, which still toggles, so
-    // the row stays reachable from the keyboard.
-    if (onHover && event.detail > 0) return
-
     toggle()
   })
-
-  if (onHover) {
-    // Bound to the element, not the summary: opening moves the pointer's target
-    // into the content, and leaving the summary would close it again.
-    details.addEventListener('pointerenter', () => {
-      clearTimeout(hoverTimer)
-      hoverTimer = setTimeout(() => set(true), HOVER_DELAY)
-    })
-    // A pointer that has only passed through never opens the row; one that
-    // leaves an open row closes it at once.
-    details.addEventListener('pointerleave', () => {
-      clearTimeout(hoverTimer)
-      set(false)
-    })
-  }
 }

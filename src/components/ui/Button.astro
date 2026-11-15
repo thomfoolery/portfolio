@@ -1,0 +1,35 @@
+---
+import { cn } from '@/lib/utils'
+
+/**
+ * The page's one button, written as the terminal writes one: bracketed text,
+ * `[ show more ]`, at full phosphor. Hover, focus and press fill it with the
+ * same BBS lightbar as ui/Link — an inverted cell — and
+ * `outline: 2px solid transparent` keeps that visible in forced-colors mode,
+ * where the background is dropped. Tailwind's `hover:` only applies where the
+ * pointer can hover, so a tap does not leave it lit.
+ *
+ * Attributes pass through, so a script can find it (`data-show-more`).
+ */
+interface Props {
+  type?: 'button' | 'submit' | 'reset'
+  class?: string
+  [key: string]: unknown
+}
+
+const { type = 'button', class: className, ...rest } = Astro.props
+---
+
+<button
+  type={type}
+  class={cn(
+    'cursor-pointer text-green-900',
+    'hover:bg-green-900 hover:text-black hover:outline-2 hover:outline-transparent',
+    'focus-visible:bg-green-900 focus-visible:text-black focus-visible:outline-2 focus-visible:outline-transparent',
+    'active:bg-green-900 active:text-black',
+    className,
+  )}
+  {...rest}
+>
+  <slot />
+</button>

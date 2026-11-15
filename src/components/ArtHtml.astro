@@ -14,6 +14,10 @@ import type { SectionArtItem } from '@/data/art'
  *
  * `scrollReveal` marks the block for the page's one reveal script. A `contents`
  * box has no opacity of its own, so the fade only shows in the editor's real box.
+ * Below the `wide` breakpoint nothing reveals, so the art is just there.
+ *
+ * The art is sized by `--art-size` (main.css), not the text: it stays 72 columns
+ * at any width, while the text stops shrinking at 12px.
  *
  * A block that glitches gets a second copy of itself, `art-ghost`, made by
  * `scripts/glitch.ts` as it starts: parked over the real art and clipped to a
@@ -23,6 +27,7 @@ import type { SectionArtItem } from '@/data/art'
  */
 interface Props {
   art: SectionArtItem
+  fullWidth?: boolean
   hoverReveal?: boolean
   scrollReveal?: boolean
   glitch?: boolean
@@ -31,6 +36,7 @@ interface Props {
 
 const {
   art,
+  fullWidth = false,
   scrollReveal = false,
   hoverReveal = false,
   glitch = scrollReveal,
@@ -38,7 +44,7 @@ const {
 } = Astro.props
 const dev = import.meta.env.DEV
 const fragment = renderFragment(
-  `class="relative leading-none text-green-600 overflow-clip" aria-hidden="true"`.trimEnd(),
+  `class="relative text-(length:--art-size) leading-tight text-green-600 overflow-clip" aria-hidden="true"`.trimEnd(),
   art,
 )
 ---
@@ -46,7 +52,7 @@ const fragment = renderFragment(
 {/* eslint-disable astro/no-set-html-directive -- art is constant, generated from src/data/art */}
 <div
   class:list={[
-    dev ? undefined : 'contents',
+    fullWidth && 'wide:-mx-1',
     hoverReveal &&
       'opacity-10 hover:opacity-100 duration-200 hover:duration-500 transition-opacity',
     className,

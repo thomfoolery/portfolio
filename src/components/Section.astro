@@ -8,11 +8,15 @@ import { cn } from '@/lib/utils'
  * rhythm as the sections without pretending to be `<section>`s. Only the
  * sections take the space below their content; the header and footer keep their
  * own alignment.
+ *
+ * Each panel is its own 72-column frame, centred, as the nav is: there is no
+ * page-wide wrapper. Below the `wide` breakpoint it takes the full width, and
+ * the text reflows.
  */
 type Align = 'top' | 'center' | 'bottom'
 
 interface Props {
-  as?: 'section' | 'header' | 'footer' | 'div'
+  as?: 'section' | 'header' | 'footer'
   id?: string
   labelledby?: string
   hidden?: boolean
@@ -33,15 +37,14 @@ const Tag = as
 const justify = { top: 'justify-start', center: 'justify-center', bottom: 'justify-end' }[align]
 
 /**
- * What each element adds to the shared panel classes. Only the sections and the
- * footer are flex columns; the header stays in flow, so its art can tuck the nav
- * up under it.
+ * What each element adds to the frame inside it: every panel's frame is a flex
+ * column, aligned by `align`. Only the sections take the space below their
+ * content, and the header tucks the nav up under its art.
  */
 const perElement = {
-  header: '-mb-3',
-  section: ['flex flex-col pb-[50dvh]', justify],
-  footer: ['flex flex-col pb-2', justify],
-  div: '',
+  header: ['flex flex-col wide:-mb-3 pt-1 wide:pt-5', justify],
+  section: ['flex flex-col pt-2 wide:pb-[50dvh]', justify],
+  footer: ['flex flex-col py-2', justify],
 }[as]
 ---
 
@@ -49,7 +52,12 @@ const perElement = {
   id={id}
   aria-labelledby={labelledby}
   hidden={hidden || undefined}
-  class={cn(['min-h-dvh pt-2', perElement, className])}
+  class={cn(['px-1', className])}
 >
-  <slot />
+  {/* The frame: the full width on a phone, 72 columns centred from `wide` up.
+      w-full keeps it from sizing to its content, where a job's rule is 72
+      unbreakable columns and would widen a phone's page. */}
+  <div class:list={cn(['wide:min-h-dvh mx-auto w-full wide:w-[72ch]', perElement])}>
+    <slot />
+  </div>
 </Tag>

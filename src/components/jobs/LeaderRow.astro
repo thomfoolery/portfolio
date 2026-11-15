@@ -8,6 +8,9 @@ import { LEADER } from '@/data/grid'
  *
  * The row is laid out in `white-space: pre`, so the markup stays on one line and
  * the formatter is held off it. See AGENTS.md.
+ *
+ * Below the `wide` breakpoint there is no room for the 25ch column, so the
+ * value drops under the label, indented, and the leader goes.
  */
 interface Props {
   label: string
@@ -19,8 +22,8 @@ const { label, value, class: className } = Astro.props
 ---
 
 {/* prettier-ignore */}
-<p class:list={['flex font-extralight leading-[2]', className]}>
+<p class:list={['flex max-wide:flex-col leading-[2]', className]}>
   <span class="mr-[1ch] shrink-0">{label}</span>
-  <span class="grow overflow-hidden whitespace-nowrap text-green-100" aria-hidden="true">{LEADER}</span>
-  <span class="ml-[1ch] w-[25ch] shrink-0">{value}</span>
+  <span class="grow overflow-hidden whitespace-nowrap text-green-100 max-wide:hidden" aria-hidden="true">{LEADER}</span>
+  <span class="ml-[2ch] wide:ml-[1ch] wide:w-[25ch] shrink-0">{value}</span>
 </p>

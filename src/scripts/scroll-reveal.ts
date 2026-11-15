@@ -18,6 +18,16 @@ const CAUGHT_UP = 0.99
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 
+/**
+ * Below the `wide` breakpoint in main.css the text reflows at 12px rather than
+ * holding the 72-column grid, so there is no line to type, and nothing reveals:
+ * text and art are simply there.
+ */
+const narrow = matchMedia('(width < 546px)')
+
+/** Shown whole from the start: no travel for reduced motion, none on a phone. */
+const isStill = () => reduced.matches || narrow.matches
+
 type Kind = 'width' | 'fade'
 
 /**
@@ -90,8 +100,8 @@ interface Reveal {
 function bind(element: HTMLElement, entering = false): Reveal {
   const offset = toOffset(element.dataset.revealRange ?? '0% 20%')
   // A reveal is movement, and reduced motion keeps the state rather than the
-  // travel: the line starts and stays at full.
-  const still = reduced.matches
+  // travel: the line starts and stays at full. So does everything on a phone.
+  const still = isStill()
   const start = still || entering ? DURATION : 0
 
   const animations = steps(element).map(({ keyframes, easing }) => {
@@ -206,6 +216,21 @@ for (const element of document.querySelectorAll<HTMLElement>('[data-reveal]')) {
   reveals.set(element, bind(element))
 }
 
+// Turning a phone can cross the breakpoint, so every reveal is bound again for
+// the width it now has.
+narrow.addEventListener('change', () => {
+  for (const [element, previous] of reveals) {
+    previous.unsync()
+    previous.settling?.cancel()
+    for (const animation of previous.animations) animation.cancel()
+    const reveal = bind(element)
+    // An open row keeps its whole line.
+    reveal.open = previous.open
+    if (reveal.open) reveal.seek(DURATION)
+    reveals.set(element, reveal)
+  }
+})
+
 /**
  * `show-more.js` asks a revealed row to enter instead of waiting for a scroll
  * that has already gone past it. The row fires `reveal:enter` with its place in
@@ -275,7 +300,7 @@ document.addEventListener('reveal:play', (event) => {
     reveal.settling?.cancel()
     reveal.settling = undefined
 
-    if (reduced.matches) {
+    if (reveal.still || reduced.matches) {
       reveal.seek(DURATION)
       continue
     }
@@ -304,7 +329,7 @@ document.addEventListener('reveal:reset', (event) => {
 
     reveal.open = false
     // Reduced motion puts the line back at once rather than drawing the return.
-    if (reduced.matches || reveal.entering || reveal.held) {
+    if (reveal.still || reduced.matches || reveal.entering || reveal.held) {
       reveal.resume()
       continue
     }

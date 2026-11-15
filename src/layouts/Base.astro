@@ -1,6 +1,7 @@
 ---
 import '@/styles/main.css'
-import fontUrl from '@/fonts/commit-mono-subset.woff2?url'
+import lightUrl from '@/fonts/ioskeley-mono-light-subset.woff2?url'
+import semiboldUrl from '@/fonts/ioskeley-mono-semibold-subset.woff2?url'
 import showMore from '@/scripts/show-more.js?raw'
 import Cursor from '@/components/ui/Cursor.astro'
 import Bit from '@/components/ui/Bit.astro'
@@ -23,18 +24,24 @@ const dev = import.meta.env.DEV
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <!-- The font draws the first viewport, so fetch it alongside the stylesheet. -->
-    <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
+    <!-- The font draws the first viewport, so fetch it alongside the stylesheet:
+         the weights up there are the prose and art's 300 and the nav's 600.
+         The rest load when something asks for them. -->
+    <link rel="preload" href={lightUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={semiboldUrl} as="font" type="font/woff2" crossorigin />
     <!-- super-low bandwidth tribute to cultdeadcow.com -->
     <!-- A reveal starts where its animation will: without this the whole line
          paints and then collapses when scroll-reveal.ts takes over. Fades and
-         widths are the only kinds; see scripts/scroll-reveal.ts. -->
+         widths are the only kinds; see scripts/scroll-reveal.ts. Below the
+         `wide` breakpoint (main.css) nothing reveals: it is simply there. -->
     <style is:global>
-      [data-reveal]:not([data-reveal='fade']) {
-        width: 0;
-      }
-      [data-reveal='fade'] {
-        opacity: 0;
+      @media (width >= 546px) {
+        [data-reveal]:not([data-reveal='fade']) {
+          width: 0;
+        }
+        [data-reveal='fade'] {
+          opacity: 0;
+        }
       }
       /* The caret in Cursor.astro stands in for the pointer, once its script has
          run and marked the document. Until then the native pointer stays. */
@@ -83,9 +90,10 @@ const dev = import.meta.env.DEV
       </style>
     </noscript>
   </head>
-  <!-- The 12px gutter lives here, not on the 72ch frame: preflight makes
-       everything border-box, so a padded frame would come out 24px narrow. -->
-  <body class="px-[12px] font-light leading-1 text-green-500 selection:bg-green-600 selection:text-black">
+  <!-- The 12px gutter lives here, not on the 72ch frames (each panel and the
+       nav): preflight makes everything border-box, so a padded frame would come
+       out 24px narrow. -->
+  <body class="font-light leading-1 text-green-500 selection:bg-green-600 selection:text-black">
     <slot />
     <Bit />
     <Cursor />

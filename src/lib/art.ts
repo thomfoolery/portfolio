@@ -41,9 +41,10 @@ const COLOR_CLASS: Record<NonNullable<Color>, string> = {
 }
 
 /**
- * The weights Commit Mono actually has. Its `wght` axis runs 200-700, so a cell
- * asking for 100 renders as 200 and one asking for 900 renders as 700 — the
- * editor only offers the steps listed here. Spelled out for the same reason as
+ * The weights the art may use: the Ioskeley Mono files main.css ships, 200-700
+ * (900 ships too, for the footer, but the art never asks for it). A weight with
+ * no file falls to the nearest one, so the editor only offers the steps listed
+ * here. Spelled out for the same reason as
  * COLOR_CLASS: Tailwind has to see the literal class name.
  */
 export const WEIGHTS = [200, 300, 400, 500, 600, 700] as const

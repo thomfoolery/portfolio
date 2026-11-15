@@ -33,7 +33,7 @@ dist/index.html                 the résumé, block art, job entries collapsible
 dist/_astro/*.css               the hashed stylesheet
 dist/_astro/*.js                the reveals and the disclosures, the only scripts
                                 the page requests
-dist/_astro/*.woff2             the hashed Commit Mono subset
+dist/_astro/*.woff2             the hashed Ioskeley Mono subsets, one per weight
 ```
 
 Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
@@ -56,7 +56,7 @@ src/
     art/            the ASCII art, as character and colour arrays
   dev/              art-editor.ts and bit-lab.ts, which write art and the bit's
                     settings back under `astro dev`
-  fonts/            the Commit Mono subset, with its OFL licence
+  fonts/            the Ioskeley Mono subsets, with their OFL licence
   layouts/          Base.astro, the document shell
   lib/              art.ts, bit.ts (the bit's settings and flight plan),
                     utils.ts (`cn`)
@@ -69,25 +69,33 @@ src/
 
 ## Typography
 
-The page draws one typeface, and it ships it: **Commit Mono** (OFL 1.1, notice in
-`src/fonts/CommitMono-OFL.txt`), subset to the characters the page draws:
-printable ASCII, `©`, the block glyphs the art is built from, and the handful the
-dev-only editor paints with.
-It is variable, `wght 200-700`, so the page's three roles take three weights:
-prose 200, the terminal's own voice 300, headlines 700, and the nav's button-links 600. `➚` is the one character Commit Mono has no glyph for, so that prose marker
-falls back to a system face.
+The page draws one typeface, and it ships it: **Ioskeley Mono** (OFL 1.1, notice in
+`src/fonts/IoskeleyMono-OFL.txt`), an Iosevka build by Ahmed Hatem, subset to the
+characters the page draws: printable ASCII, `©`, the block glyphs the art is built
+from, and the handful the dev-only editor paints with.
+It ships one static file per weight, about 10KB each: prose and art 300, the
+body's own weight, the nav's button-links 600, headlines 700, and the rest where
+markup or the art editor asks (200, 400, 500, 900). A browser fetches only the
+weights it draws, and Base.astro preloads the two in the first viewport: 300
+and 600. Art rows are `leading-tight`, 1.25: the height of the font's full block,
+so rows of `█` meet with no seam and no overlap.
+`➚` is the one character the font has no glyph for, so that prose marker falls
+back to a system face.
 
-The subset is committed, so a build needs no font tooling. To regenerate it after
-a version bump — `pyftsubset` in a throwaway venv, never a project dependency:
+The subsets are committed, so a build needs no font tooling. To regenerate them
+after a version bump — `pyftsubset` in a throwaway venv, never a project
+dependency:
 
 ```sh
 python3 -m venv /tmp/venv && /tmp/venv/bin/pip install fonttools brotli
 
-curl -O https://raw.githubusercontent.com/eigilnikolajsen/commit-mono/main/src/fonts/fontlab/CommitMonoV143-VF.ttf
-/tmp/venv/bin/python -m fontTools.varLib.instancer CommitMonoV143-VF.ttf ital=0 --output /tmp/vf.ttf
-/tmp/venv/bin/pyftsubset /tmp/vf.ttf --flavor=woff2 --layout-features='' \
-  --unicodes='U+0020-007E,U+00A9,U+00B7,U+00D7,U+2580,U+2584,U+2588,U+258C,U+2590,U+2591,U+2592,U+2593' \
-  --output-file=src/fonts/commit-mono-subset.woff2
+curl -LO https://github.com/ahatem/IoskeleyMono/releases/latest/download/IoskeleyMono-Web.zip
+unzip IoskeleyMono-Web.zip -d /tmp/ioskeley
+for w in ExtraLight Light Regular Medium SemiBold Bold Black; do
+  /tmp/venv/bin/pyftsubset /tmp/ioskeley/WOFF2/IoskeleyMono-$w.woff2 --flavor=woff2 --layout-features='' \
+    --unicodes='U+0020-007E,U+00A9,U+00B7,U+00D7,U+2580,U+2584,U+2588,U+258C,U+2590,U+2591,U+2592,U+2593' \
+    --output-file=src/fonts/ioskeley-mono-$(echo $w | tr A-Z a-z)-subset.woff2
+done
 ```
 
 `--layout-features=''` is load-bearing: a ligature in the art would reflow the
@@ -101,15 +109,19 @@ ramp, and sets `--spacing` to one terminal line so `mt-3` is three lines rather
 than three-quarters of a rem. Lengths in this layout are character cells and
 lines, so `w-[72ch]` and `ml-[11ch]` are written out as arbitrary values rather
 than snapped to a pixel scale. Body text is 16px, clamped down so 72 columns
-still fit a narrow viewport, and `<p>` takes `leading-[2]`, a step looser than
-the terminal line.
+still fit a narrow viewport, but never below 12px: under the `wide` breakpoint
+(546px, where the two part) the text reflows, nothing reveals on scroll, and
+only the art, sized by `--art-size`, keeps shrinking to hold 72 columns. `<p>`
+takes `leading-[2]`, a step looser than the terminal line.
 
 **Everything else is markup.** The weights, the link lightbar and the prose
 rhythm are utilities on the elements that want them, so `main.css` holds the
 theme, the face, and the body font-size — the one rule that cannot be a utility,
 because the type scale is the column count. What genuinely needs CSS lives with
 the component that needs it: `ui/Link.astro`, `ui/Hint.astro`,
-`ui/Disclosure.astro` and `ui/Toggle.astro`.
+`ui/Disclosure.astro` and `ui/Toggle.astro`. `ui/Button.astro` is the "[ show
+more ]" button: full phosphor, filled with Link's lightbar on hover, focus and
+press.
 
 **The one dependency with a client.** Two modules import `motion`, for two
 things. `scripts/scroll-reveal.ts` takes `scroll()`: it reports how far an
@@ -120,10 +132,7 @@ and samples it into the `linear()` easing a browser animation runs, so a job
 opens on a critically damped spring (`bounce: 0`, no overshoot) and its content
 fades over the same curve. Under `prefers-reduced-motion` the panel arrives at
 its full height and only the fade runs, 150ms of it: the state change survives,
-the travel does not. Jobs pass `openOnHover`: there a pointer resting on a
-row for 250 ms opens it — long enough that crossing the list opens nothing — and
-leaving closes it, while a click is ignored (Enter and Space still toggle it).
-That only applies where a pointer can rest, so a touch screen keeps the click.
+the travel does not. A row opens and closes on a click, or on Enter or Space.
 An opening row also plays its line's reveal out, so a heading the scroll had only
 half drawn opens whole. When the close finishes the line travels back to wherever
 the scroll has got to meanwhile, over the span it had played, rather than

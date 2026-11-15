@@ -95,14 +95,19 @@
 .ae-canvas {
   display: grid;
   width: fit-content;
-  line-height: 1;
+  /* The page's art rows (`--leading-tight`), so a block reads here as it will there. */
+  line-height: var(--leading-tight);
   user-select: none;
   touch-action: none;
   cursor: crosshair;
+  /* The art is green on black, so its edge is otherwise invisible: a hairline
+     frame, dim enough to sit under the art rather than around it. */
+  outline: 1px solid var(--color-green-600);
+  outline-offset: 2px;
 }
 .ae-cell {
   width: 1ch;
-  height: 1em;
+  height: 1lh;
   text-align: center;
 }
 /* The select tool's box. Cells are contiguous, so a fill reads as one rectangle. */
@@ -194,4 +199,28 @@
 .ae-button:disabled:focus-visible {
   background: var(--color-black);
   color: var(--color-green-900);
+}
+
+/* The native pointer inside the editor: the page hides it everywhere for the
+   caret (Base.astro), and these out-rank that rule, so they restate each cursor
+   above. The overlay covers the caret, which steps aside over the trigger too. */
+html[data-cursor] .ae-overlay,
+html[data-cursor] .ae-overlay * {
+  cursor: auto;
+}
+html[data-cursor] .ae-canvas,
+html[data-cursor] .ae-canvas * {
+  cursor: crosshair;
+}
+html[data-cursor] .ae-trigger,
+html[data-cursor] .ae-swatch,
+html[data-cursor] .ae-button {
+  cursor: pointer;
+}
+html[data-cursor] .ae-swatch:disabled,
+html[data-cursor] .ae-button:disabled {
+  cursor: default;
+}
+html:has(.ae-trigger:hover) [data-caret] {
+  visibility: hidden;
 }

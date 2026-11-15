@@ -6,74 +6,110 @@ import Link from '@/components/ui/Link.astro'
 import { blockArt } from '@/data/art'
 ---
 
-<Section id="welcome" labelledby="welcome-title" class="overflow-clip mt-8 scroll-mt-1">
-  <p class="font-extralight leading-loose">
-    <div class="h-[1.8em] break-all overflow-clip" data-reveal>
+<Section id="welcome" labelledby="welcome-title" class="overflow-clip mt-4 wide:mt-8 scroll-mt-1">
+  <p class="leading-loose">
+    <span class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip" data-reveal>
       Hi,
-    </div>
-    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 20%">
+    </span>{' '}
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="50% 20%"
+    >
       My name is <span class="text-green-900">Thomas Yuill</span>.
-    </div>
+    </span>
   </p>
-  <p class="font-extralight leading-loose">
-    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 30%">
+  <p class="leading-loose">
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="50% 30%"
+    >
       I am a <span class="text-green-900">designer</span> and{' '}
       <span class="text-green-900">engineer</span> and I currently work at{' '}
       <Link href="https://livekit.com/" title="Day job!!" external>
         LiveKit ➚
       </Link>
       .
-    </div>
+    </span>
   </p>
-  <p class="mt-4 mx-auto font-extralight leading-loose">
-    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 35%">
+  <p class="mt-4 leading-loose">
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="50% 35%"
+    >
       I enjoy building dynamic, accessible,
-    </div>
-    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="35% 40%">
+    </span>{' '}
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="35% 40%"
+    >
       and aesthetic web experiences powered with
-    </div>
-    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="20% 45%">
+    </span>{' '}
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="20% 45%"
+    >
       real-time data/media.
-    </div>
+    </span>
   </p>
-  <p class="mt-4 mx-auto font-extralight leading-loose">
-    <div class="h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="50% 35%">
+  <p class="mt-4 leading-loose">
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="50% 35%"
+    >
       If I have free time, you'll find me
-    </div>
-    <div
-      class="mt-1 ml-1 h-[1.8em] break-all overflow-clip"
+    </span>
+    <span
+      class="block mt-1 ml-1 wide:h-[1.8em] wide:break-all wide:overflow-clip"
       data-reveal
       data-reveal-range="35% 40%"
     >
       * reading a great book
-    </div>
-    <div class="ml-1 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="35% 40%">
+    </span>
+    <span
+      class="block ml-1 wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="35% 40%"
+    >
       * organizing a new adventure
-    </div>
-    <div class="ml-1 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="35% 40%">
+    </span>
+    <span
+      class="block ml-1 wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="35% 40%"
+    >
       * breaking, fixing or building something
-    </div>
-    <div class="ml-1 h-[1.8em] break-all overflow-clip" data-reveal data-reveal-range="20% 45%">
+    </span>
+    <span
+      class="block ml-1 wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="20% 45%"
+    >
       * searching for new grass to touch
-    </div>
+    </span>
   </p>
 
-  <ArtHtml art={blockArt.prism} scrollReveal class="my-6" />
+  <ArtHtml art={blockArt.prism} fullWidth scrollReveal class="my-6" />
 
-  <div class="flex gap-3 ml-2">
+  <div class="flex max-wide:flex-col gap-3 max-wide:gap-2 wide:ml-2">
     <div class="flex-1">
       <p
         data-reveal
         data-reveal-range="40% 20%"
-        class="mb-1 font-extralight leading-loose h-[1.8em] break-all overflow-clip"
+        class="mb-1 leading-loose wide:h-[1.8em] wide:break-all wide:overflow-clip"
       >
         Shoot me a line on
       </p>
-      <ul class="ml-[1ch] font-extralight">
+      <ul class="ml-[1ch]">
         <li
           data-reveal
           data-reveal-range="30% 30%"
-          class="text-green-300 h-[1.8em] break-all overflow-clip"
+          class="text-green-300 wide:h-[1.8em] wide:break-all wide:overflow-clip"
         >
           [g]{' '}
           <Link href="https://github.com/thomfoolery" title="Read the source, Luke" external>
@@ -83,7 +119,7 @@ import { blockArt } from '@/data/art'
         <li
           data-reveal
           data-reveal-range="20% 40%"
-          class="text-green-300 h-[1.8em] break-all overflow-clip"
+          class="text-green-300 wide:h-[1.8em] wide:break-all wide:overflow-clip"
         >
           [l]{' '}
           <Link href="https://www.linkedin.com/in/thomasyuill/" title="Very professional" external>
@@ -96,18 +132,26 @@ import { blockArt } from '@/data/art'
       <p
         data-reveal
         data-reveal-range="40% 20%"
-        class="mb-1 font-extralight leading-loose h-[1.8em] break-all overflow-clip"
+        class="mb-1 leading-loose wide:h-[1.8em] wide:break-all wide:overflow-clip"
       >
         While you're at it
       </p>
-      <ul class="ml-[1ch] font-extralight">
-        <li data-reveal data-reveal-range="30% 30%" class="h-[1.8em] break-all overflow-clip">
+      <ul class="ml-[1ch]">
+        <li
+          data-reveal
+          data-reveal-range="30% 30%"
+          class="wide:h-[1.8em] wide:break-all wide:overflow-clip"
+        >
           [2]{' '}
           <Link href="#experience" title="Where I've been">
             browse my jobs
           </Link>
         </li>
-        <li data-reveal data-reveal-range="20% 40%" class="h-[1.8em] break-all overflow-clip">
+        <li
+          data-reveal
+          data-reveal-range="20% 40%"
+          class="wide:h-[1.8em] wide:break-all wide:overflow-clip"
+        >
           [3]{' '}
           <Link href="#honors" title="Shiny things">
             gaze upon my honors
