@@ -1,12 +1,11 @@
 ---
 import LeaderRow from './LeaderRow.astro'
-import type { Job, Role } from '@/data/jobs'
+import type { Job } from '@/data/jobs'
 
 /**
  * The roles of one job, indented past the 2ch the [+] / [-] marker spends in
- * the summary row. The indent lands on the <ul> rather than on each row, which
- * lays out the same because a block child with a left margin is exactly that
- * much narrower.
+ * the summary row: halved below the `wide` breakpoint, where the text reflows
+ * at 12px. A role with a value prints the leader between the two.
  *
  * The class names are written out rather than interpolated: Tailwind only sees
  * a class if it appears in the source literally.
@@ -17,52 +16,16 @@ interface Props {
 
 const { job } = Astro.props
 
-// Halved below the `wide` breakpoint, where the text reflows at 12px.
 const roleIndent = 'ml-[2ch] wide:ml-[4ch]'
-const projectIndent = 'ml-[4ch] wide:ml-[7ch]'
-
-/** A role prints its title alone unless it opts into the leader. */
-const roleHasLeader = (role: Role) => role.layout === 'dots'
-
-/** The row layout lives on the list, so no row needs a conditional class. */
-const projectList = (role: Role) => {
-  if (role.projectsLayout === 'grid') return 'grid wide:grid-cols-[24ch_auto]'
-  if (role.projectsLayout === 'columns') return '[&>li]:flex max-wide:[&>li]:flex-col'
-  return ''
-}
 ---
 
-<ul class="mt-1 [&>li+li]:mt-1">
+<ul class="mt-1">
   {job.roles.map((role) => (
     <li>
-      {roleHasLeader(role) ? (
+      {role.value ? (
         <LeaderRow label={role.label} value={role.value} class={roleIndent} />
-      ) : role.value ? (
-        <p class:list={['flex max-wide:flex-col leading-[2]', roleIndent]}>
-          <span>{role.label}</span>
-          <span class="ml-[2ch]">{role.value}</span>
-        </p>
       ) : (
-        <p class:list={['leading-[2]', roleIndent]}>{role.label}</p>
-      )}
-
-      {role.projects && (
-        <ul class:list={[projectIndent, projectList(role)]}>
-          {role.projects.map((project) => (
-            <li>
-              {typeof project === 'string' ? (
-                project
-              ) : role.projectsLayout === 'columns' ? (
-                <>
-                  <span class="wide:w-[24ch] shrink-0">{project.label}</span>
-                  <span class="max-wide:ml-[2ch]">{project.value}</span>
-                </>
-              ) : (
-                <LeaderRow label={project.label} value={project.value} />
-              )}
-            </li>
-          ))}
-        </ul>
+        <p class:list={['leading-loose', roleIndent]}>{role.label}</p>
       )}
     </li>
   ))}

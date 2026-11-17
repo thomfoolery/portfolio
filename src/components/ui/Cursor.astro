@@ -30,11 +30,18 @@
     /* The pointer's hotspot sits at the block's centre, not its top-left corner.
        `translate` composes with the script's `transform`, so the two never fight. */
     translate: -50% -50%;
-    animation: caret 1.06s steps(1, end) infinite;
-    will-change: transform;
   }
   .cursor[data-visible] {
     visibility: visible;
+    will-change: transform;
+  }
+  /* It only blinks while shown. Hidden — before the first move, off the window,
+     and on a touch screen for good — a blink would keep the page from ever
+     going idle. */
+  @media (prefers-reduced-motion: no-preference) {
+    .cursor[data-visible] {
+      animation: caret 1.06s steps(1, end) infinite;
+    }
   }
   /* Moving, so it is being "typed": solid, the way a caret is while you type. */
   .cursor[data-typing] {
@@ -49,12 +56,6 @@
     50.01%,
     100% {
       opacity: 0;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .cursor {
-      animation: none;
     }
   }
 </style>

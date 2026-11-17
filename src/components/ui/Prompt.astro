@@ -1,0 +1,20 @@
+---
+/**
+ * A line of the terminal session the page is written as: the prompt, and the
+ * command typed at it, which is the slot.
+ */
+interface Props {
+  class?: string
+}
+
+const { class: className } = Astro.props
+---
+
+<p class={className}>
+  <code>
+    root@thomfoolery:~#{' '}
+    <span class="text-green-900 font-black">
+      <slot />
+    </span>
+  </code>
+</p>

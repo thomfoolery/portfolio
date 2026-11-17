@@ -1,0 +1,20 @@
+---
+/**
+ * A cell of a `Table`: an optional heading, drawn in small caps (write it in
+ * sentence case), over its text. Text only: a link is markdown,
+ * `[text](href "title")`, and `<br />` is a line break. A line too long for the
+ * cell wraps at its spaces, never inside a link. It only marks its place: the
+ * table draws it.
+ */
+interface Props {
+  heading?: string
+  /** How many of the table's grid columns it spans. */
+  colSpan?: number
+}
+
+const { heading, colSpan = 1 } = Astro.props
+---
+
+<ascii-td data-span={colSpan} data-heading={heading}>
+  <slot />
+</ascii-td>

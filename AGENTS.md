@@ -11,12 +11,17 @@ to remove duplication within the résumé, not to ship a framework. So:
 
 - `pnpm build` writes flat HTML to `dist/`. Astro runs at build time only.
   The output has no framework and makes no external requests.
-- The page ships two inlined `<script>`s, `src/scripts/hotkeys.js` and
-  `src/scripts/show-more.js`, because the nav hotkeys and the "show more" buttons
-  need them, plus four modules, `src/scripts/scroll-reveal.ts`,
-  `src/scripts/disclosure.ts`, `src/scripts/cursor.ts` and `src/scripts/bit.ts`,
-  and `src/scripts/glitch.ts`, which the build inlines.
-  The first two are the only files that import `motion`.
+- The page ships one inlined `<script>`, `src/scripts/hotkeys.js`, because the
+  nav hotkeys need it, plus the modules in `src/scripts/`: `scroll-reveal.ts`,
+  `disclosure.ts`, `show-more.ts`, `cursor.ts`, `bit.ts`, `glitch.ts` and
+  `work.ts`. The build inlines a small one without imports; the rest are chunks
+  in `_astro/`, and today that is only `scroll-reveal.ts`. A module two scripts share becomes
+  a chunk of its own and stops both being inlined.
+  `scroll-reveal.ts` and `lib/spring.ts` are the only files that import
+  `motion`, and every spring on the page comes from `lib/spring`, which runs at
+  build time only: a component works the curve out and hands it to its script
+  on an element (`ui/Disclosure`, `ui/ShowMore`). Import it from a component,
+  never from a script.
 - Serve `dist/`. The URL is `/index.html`.
 - A new client dependency, or anything that grows the shipped JS, has to be
   justified against that.
@@ -31,17 +36,17 @@ Every length is a character cell or a terminal line.
   down to 12px. Below that (`max-wide:`, 546px) only the art (`--art-size`)
   holds the 72-column grid: text reflows, rows stack, and reveals are off.
   Anything with a fixed `ch` width needs a `max-wide:` answer.
-  `<p>` states `leading-[2]` of its own; everything else inherits the terminal
+  `<p>` states `leading-loose` of its own; everything else inherits the terminal
   line (1.6em).
-- Every panel is one viewport tall with its content centred. `Section.astro`
-  renders the element it is given via `as`, so the header, the sections and the
-  footer share one rhythm, and the footer aligns its content to the end.
+- Every panel is a `Section.astro`, which renders the element it is given via
+  `as`, so the header, the sections and the footer share one frame. The space
+  between panels is each one's own top margin.
 - Do not snap these to Tailwind's rem scale. If a value is in `px` or `rem`,
-  say why in a comment. The 12px page gutter and the nav's 1rem lift are the
-  deliberate ones.
+  say why in a comment. The 12px page gutter is the deliberate one.
 - `src/styles/main.css` is the theme, plus the one body rule a utility cannot
   state. Everything else is a utility on the element, or scoped CSS in the
-  component that needs it (`ui/Link`, `ui/Hint`, `ui/Disclosure`, `ui/Toggle`).
+  component that needs it (`ui/Link`, `ui/Hint`, `ui/Disclosure`, `ui/Toggle`,
+  `Work`).
   Keep the `[+]/[-]` markers hand-written — Tailwind cannot express them.
 
 ## Three traps that have already bitten
@@ -95,18 +100,34 @@ dependency decision: ask first.
   exemption. Do not componentize the art itself, and do not add a second
   `set:html` elsewhere:
   the rule is deliberately still armed for anything that could carry input.
-- The résumé's data lives in `src/data/` — `jobs.ts`, `honors.ts`, `nav.ts`,
-  `grid.ts`, the art. Edit the data, not the markup. `posts.ts` is the exception:
-  it sits beside `PostsList` in `components/posts/`.
+- The résumé's data lives in `src/data/` — `jobs.ts`, `honors.ts`,
+  `recommendations.ts`, `posts.ts`, `work.ts`, `nav.ts`, `grid.ts`, the art. Edit
+  the data, not the markup.
+- The Work carousel's media lives in `src/assets/work/`, not a public folder:
+  `data/work.ts` imports it, so the build hashes it, and the poster is resized
+  and made AVIF there (`getImage`). A loop stays `preload="none"` and plays only
+  through `scripts/work.ts`, so it costs nothing until its tile is on screen.
+  The enlarged view is an overlay on `--z-zoom`, not a `<dialog>`: a modal is
+  drawn in the top layer, over the caret, and the page hides the system pointer.
+  The tile's own video moves into it rather than a copy, which would fetch again.
+- `src/data/github.json` is a snapshot, not hand-edited: `pnpm github` rewrites
+  it from GitHub's public API. The build reads the file, never the network.
 - The stray bit is tuned, not hand-edited: `src/data/bit.json` holds every
   setting, and the dev-only lab (`[bit]` under `pnpm dev`) writes it. Flights
   come from `plan()` in `lib/bit.ts`, which must stay pure — same settings,
   seed and screen, same path — or the lab's replay and save stop meaning anything.
 - The site is one page, `src/pages/index.astro`, built from `src/components/`.
   The page holds the structure — the header panel, the nav, the sections in
-  order, the footer — and destructures `blockArt` for the fragments. There is
+  order, the footer — and each takes its fragments from `blockArt`. There is
   no page-wide wrapper: each panel (`Section.astro`) and the nav is its own
   centred `w-[72ch]` frame. The nav is docked to the bottom of the screen but
   stays second in the markup: the body is a flex column and the nav is
   `order-last`, so keyboard and screen-reader order are unchanged.
-  `<Welcome />` is the introduction; job entries are collapsible `<details>`.
+  `<WhoAmI />` is the introduction; job entries are collapsible `<details>`.
+- The page is written as a terminal session: a command is a `ui/Prompt`, and a
+  folded list ends in a `ui/ShowMore`. Do not write either by hand.
+- Box-drawn tables are markup, written like an HTML table: `ui/Table`, `Tr` and
+  `Td` (`heading`, `colSpan`). Never draw one by hand: `lib/ascii-table` does the
+  borders and junctions, and fails the build when a row does not fill the grid.
+  Cells are text: a link is markdown, `[text](href)`, drawn with `ui/Link`, so no
+  cell's HTML is passed through and there is still only one `set:html`.

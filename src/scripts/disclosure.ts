@@ -1,18 +1,9 @@
-import { spring } from 'motion'
-
 /**
- * The disclosure's open and close. Motion is asked only for the curve: its
- * spring, sampled into the `linear()` easing a browser animation can run, so the
- * height and the fade are animated by the engine rather than by a frame loop of
- * ours.
- *
- * `bounce: 0` is critically damped — it arrives without overshooting — and
- * `visualDuration` is when it looks arrived, which is also the fade's length.
+ * The disclosure's open and close: the page's spring (`lib/spring`), with no
+ * bounce, on the height and the fade together. Disclosure.astro works the curve
+ * out at build time and hands it over on the element as `data-duration` and
+ * `data-easing`, so this script ships without the spring solver.
  */
-const CURVE = spring({ keyframes: [0, 1], bounce: 0, visualDuration: 0.2 }).toString()
-const DURATION = Number.parseFloat(CURVE)
-const EASING = CURVE.replace(/^[\d.]+ms /, '')
-
 const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 
 /**
@@ -26,14 +17,17 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
   const panel = details.querySelector<HTMLElement>('[data-disclosure-panel]')
   if (!summary || !panel) continue
 
+  const duration = Number(details.dataset.duration)
+  const easing = details.dataset.easing
+
   /** Where the disclosure is heading, so a second gesture can reverse mid-flight. */
   let wanted = details.open
   let animation: Animation | undefined
 
-  const set = (opening: boolean) => {
+  const toggle = () => {
     // Idle means the element is the truth; mid-flight, `wanted` is.
     if (!animation || animation.playState !== 'running') wanted = details.open
-    if (wanted === opening) return
+    const opening = !wanted
     wanted = opening
 
     animation?.cancel()
@@ -62,7 +56,7 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
               { height: `${height}px`, opacity: 1 },
               { height: '0px', opacity: 0 },
             ],
-        { duration: DURATION, easing: EASING, fill: 'both' },
+        { duration, easing, fill: 'both' },
       )
     }
 
@@ -79,11 +73,6 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
       })
   }
 
-  const toggle = () => {
-    if (!animation || animation.playState !== 'running') wanted = details.open
-    set(!wanted)
-  }
-
   summary.addEventListener('click', (event) => {
     // The UA would toggle at once; this animates the same toggle instead. Enter
     // and Space arrive here as clicks too.
@@ -91,3 +80,6 @@ for (const details of document.querySelectorAll<HTMLDetailsElement>('details[dat
     toggle()
   })
 }
+
+// A module, so its helpers do not land in the page's global scope.
+export {}

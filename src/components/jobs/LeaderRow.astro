@@ -3,8 +3,7 @@ import { LEADER } from '@/data/grid'
 
 /**
  * One dotted row: the label, the leader that fills the gap between, and the
- * value in a 25ch column. A role and a project are the same row, only indented
- * differently — a role indents the row, a project indents the list holding it.
+ * value in a 25ch column. The caller indents it.
  *
  * The row is laid out in `white-space: pre`, so the markup stays on one line and
  * the formatter is held off it. See AGENTS.md.
@@ -14,7 +13,7 @@ import { LEADER } from '@/data/grid'
  */
 interface Props {
   label: string
-  value?: string
+  value: string
   class?: string
 }
 
@@ -22,7 +21,7 @@ const { label, value, class: className } = Astro.props
 ---
 
 {/* prettier-ignore */}
-<p class:list={['flex max-wide:flex-col leading-[2]', className]}>
+<p class:list={['flex max-wide:flex-col leading-loose', className]}>
   <span class="mr-[1ch] shrink-0">{label}</span>
   <span class="grow overflow-hidden whitespace-nowrap text-green-100 max-wide:hidden" aria-hidden="true">{LEADER}</span>
   <span class="ml-[2ch] wide:ml-[1ch] wide:w-[25ch] shrink-0">{value}</span>

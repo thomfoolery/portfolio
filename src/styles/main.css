@@ -99,13 +99,13 @@
      and only the art keeps shrinking. scripts/scroll-reveal.ts repeats it. */
   --breakpoint-wide: 546px;
 
-  /* The page's three layers, bottom to top: the stray bit behind the canvas,
-     the sticky nav over the content, and the caret over everything. */
+  /* The page's layers, bottom to top: the stray bit behind the content, the
+     sticky nav over it, an enlarged Work video over both, and the caret over
+     everything. */
   --z-bit: -1;
   --z-nav: 100;
+  --z-zoom: 500;
   --z-cursor: 1000;
-
-  --shadow-black: 0 0 20px #000, 0 0 20px #000, 0 0 30px #000, 0 0 50px #000;
 }
 
 html {

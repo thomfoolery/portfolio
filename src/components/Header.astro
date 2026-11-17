@@ -2,11 +2,9 @@
 import Section from './Section.astro'
 import ArtHtml from '@/components/ArtHtml.astro'
 import { blockArt } from '@/data/art'
-
-interface Props {}
 ---
 
-<Section as="header">
+<Section as="header" class="pt-1">
   <h1 class="sr-only font-bold">Thom Yuill - UX developer and design engineer</h1>
-  <ArtHtml art={blockArt.header} fullWidth glitch />
+  <ArtHtml art={blockArt.header} glitch="loop" />
 </Section>

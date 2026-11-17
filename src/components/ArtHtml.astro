@@ -8,14 +8,13 @@ import type { SectionArtItem } from '@/data/art'
  * site's only `set:html`, and the exemption is scoped to it so the rule stays
  * armed for anything that could carry input.
  *
- * `display: contents` keeps the wrapper out of the layout, so the art behaves as
- * a direct child of whatever section holds it. In dev the wrapper becomes a real
- * box instead: a `contents` box has no corner to hang the editor trigger on.
+ * The wrapper is the block: it takes the caller's classes, the reveal and the
+ * glitch. In dev it is also positioned and shrink-wrapped, so the editor trigger
+ * has a corner to hang on.
  *
- * `scrollReveal` marks the block for the page's one reveal script. A `contents`
- * box has no opacity of its own, so the fade only shows in the editor's real box.
- * Below the `wide` breakpoint nothing reveals, so the art is just there; that
- * includes `hoverReveal`, since a phone has no hover to reveal it with.
+ * `scrollReveal` fades the block in on the page's one reveal script. Below the
+ * `wide` breakpoint nothing reveals, so the art is just there; that includes
+ * `hoverReveal`, since a phone has no hover to reveal it with.
  *
  * The art is sized by `--art-size` (main.css), not the text: it stays 72 columns
  * at any width, while the text stops shrinking at 12px.
@@ -24,14 +23,16 @@ import type { SectionArtItem } from '@/data/art'
  * `scripts/glitch.ts` as it starts: parked over the real art and clipped to a
  * band, so a slice can be displaced without giving the rows boxes (which stops
  * the block glyphs abutting). It is cloned rather than rendered, because a copy
- * in the markup would double the art's bytes. `glitch` defaults to `scrollReveal`.
+ * in the markup would double the art's bytes. `glitch` defaults to `scrollReveal`:
+ * the block glitches while the page scrolls. `glitch="loop"` glitches on its own
+ * instead, page moving or not.
  */
 interface Props {
   art: SectionArtItem
   fullWidth?: boolean
   hoverReveal?: boolean
   scrollReveal?: boolean
-  glitch?: boolean
+  glitch?: boolean | 'loop'
   class?: string
 }
 
@@ -45,7 +46,7 @@ const {
 } = Astro.props
 const dev = import.meta.env.DEV
 const fragment = renderFragment(
-  `class="relative text-(length:--art-size) leading-tight text-green-600 overflow-clip" aria-hidden="true"`.trimEnd(),
+  `class="relative text-(length:--art-size) leading-tight text-green-600 overflow-clip" aria-hidden="true"`,
   art,
 )
 ---
@@ -58,7 +59,7 @@ const fragment = renderFragment(
       'opacity-10 hover:opacity-100 max-wide:opacity-100 duration-200 hover:duration-500 transition-opacity',
     className,
   ]}
-  data-glitch={glitch ? '' : undefined}
+  data-glitch={glitch === 'loop' ? 'loop' : glitch ? '' : undefined}
   data-reveal={scrollReveal ? 'fade' : undefined}
   data-reveal-range={scrollReveal ? '50% 20%' : undefined}
   data-art-frame={dev ? '' : undefined}

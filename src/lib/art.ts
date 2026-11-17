@@ -1,3 +1,5 @@
+import { decode } from './html'
+
 /**
  * The ASCII art as data: a grid of characters and a grid of colours.
  *
@@ -72,18 +74,6 @@ export type Art = {
   weights?: Weight[][]
 }
 
-const ENTITIES: Record<string, string> = {
-  amp: '&',
-  lt: '<',
-  gt: '>',
-  quot: '"',
-  nbsp: '\u00a0',
-  '#39': "'",
-}
-
-const unescape = (text: string) =>
-  text.replace(/&(#?[a-z0-9]+);/gi, (match, name: string) => ENTITIES[name] ?? match)
-
 const escape = (text: string) =>
   text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
@@ -110,7 +100,7 @@ export function parse(fragment: string): Art {
   while ((match = token.exec(inner))) {
     const text = match[2]
     if (text != null) {
-      for (const char of unescape(text)) {
+      for (const char of decode(text)) {
         if (char === '\n') {
           chars.push([])
           colors.push([])

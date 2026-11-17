@@ -1,0 +1,152 @@
+---
+import { getImage } from 'astro:assets'
+import { blockArt } from '@/data/art'
+import { work } from '@/data/work'
+import { springCurve } from '@/lib/spring'
+import ArtHtml from '@/components/ArtHtml.astro'
+import Button from '@/components/ui/Button.astro'
+
+// A tile is at most 683px wide (15 lines of 16px text, at 16:9), so a 1366px
+// poster covers a 2x screen. AVIF makes it about a quarter of the JPEG.
+const tiles = await Promise.all(
+  work.map(async (item) => ({
+    ...item,
+    poster: (await getImage({ src: item.poster, width: 1366, format: 'avif' })).src,
+  })),
+)
+
+// A tile zooms on the page's spring, worked out here and handed to the script on
+// the overlay, so the script ships without the solver.
+const { duration, easing } = springCurve(0.4)
+
+// At either end a step is dimmed rather than disabled: a disabled button drops
+// focus, so stepping to the end from the keyboard would lose your place.
+const step =
+  'aria-disabled:cursor-default aria-disabled:text-green-200 aria-disabled:hover:bg-transparent aria-disabled:hover:text-green-200'
+---
+
+<section id="work" aria-labelledby="work-title" class="mt-8">
+  <h2 id="work-title" class="sr-only font-bold">
+    Work
+  </h2>
+
+  <div class="wide:max-w-[72ch] mx-auto">
+    <ArtHtml art={blockArt.work} scrollReveal class="mt-1" />
+
+    <p class="mt-2">Click to reveal</p>
+  </div>
+
+  <div class="mt-1 overflow-x-clip w-full">
+    <div
+      id="work-tiles"
+      data-work-tiles
+      class="w-full px-[calc((100vw-72ch)/2)] flex gap-1 overflow-x-scroll snap-x [scrollbar-color:transparent_transparent]"
+    >
+      {/* A tile is a button that enlarges its video. Its poster is also its
+        background, so the tile is not left empty while the video is enlarged.
+        The focus ring is drawn inside it: the scroller clips anything outside. */}
+      {tiles.map((item) => (
+        <button
+          type="button"
+          data-work-tile
+          aria-label={`Enlarge ${item.title}`}
+          style={`background-image: url(${item.poster})`}
+          class="relative h-15 aspect-video snap-start scroll-ml-[calc((100vw-72ch)/2)] bg-green-100 bg-cover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-green-900 cursor-zoom-in!"
+        >
+          <video
+            data-work-video
+            src={item.video}
+            poster={item.poster}
+            aria-label={item.title}
+            muted
+            loop
+            playsinline
+            preload="none"
+            class="block w-full h-full object-cover border border-green-100"
+          />
+          {/* The loop's colour, taken away and given back: `color` blends the hue
+            and saturation of green-900 over the grayscale video and leaves its
+            luminance alone, so the tile is one green until you touch it. */}
+          <span data-work-tint aria-hidden="true" class="tint"></span>
+        </button>
+      ))}
+    </div>
+
+    {/* Steps the carousel a tile at a time, to the next snap either way. */}
+    <p
+      data-work-steps
+      class="flex justify-between wide:max-w-[72ch] mx-auto gap-x-2 mt-1 leading-loose"
+    >
+      <Button
+        data-work-step="-1"
+        aria-controls="work-tiles"
+        aria-label="Previous"
+        aria-disabled="true"
+        class={step}
+      >
+        [ &lt;&lt; ]
+      </Button>
+      <Button data-work-step="1" aria-controls="work-tiles" aria-label="Next" class={step}>
+        [ &gt;&gt; ]
+      </Button>
+    </p>
+  </div>
+
+  {/* The enlarged video's overlay. It sits outside the carousel, whose reveal
+    would fade it and whose scroller would clip it, and it is not a <dialog>:
+    a modal draws over everything, the caret included, and the page hides the
+    system pointer. The script moves the tile's own video in and out of it. */}
+  <div
+    data-work-zoom
+    data-duration={duration}
+    data-easing={easing}
+    role="dialog"
+    aria-modal="true"
+    tabindex="-1"
+    hidden
+    class="zoom fixed inset-0 z-(--z-zoom) flex items-center justify-center p-2 outline-none"
+  >
+    <div data-work-backdrop class="absolute inset-0 bg-black/90"></div>
+  </div>
+</section>
+
+<style>
+  /* A tile is a duotone: its loop and its poster are drawn in one green, and
+     stay that way under the pointer. Enlarged, the video leaves the tile and with
+     it the tint, so the overlay is the one place it shows its own colour. */
+  [data-work-tile] video {
+    filter: grayscale(1);
+    transition: filter 180ms ease;
+  }
+  [data-work-tile] .tint {
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-green-900);
+    mix-blend-mode: color;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+  /* Over a tile the pointer is the platform's magnifier, so the page's caret
+     steps aside — the same bargain the dev lab makes over its panel. */
+  html[data-cursor] [data-work-tile] {
+    cursor: zoom-in!;
+  }
+  /*html:has([data-work-tile]:hover) :global([data-caret]) {
+    visibility: hidden;
+  }*/
+
+  /* Enlarged, a video is 16:9 and as large as fits inside the overlay's padding
+     of two lines a side, over the backdrop. Its transform starts from the top
+     left, which is what the script's zoom is worked out from. */
+  .zoom video {
+    position: relative;
+    width: min(100%, calc((100dvh - var(--spacing) * 4) * 16 / 9));
+    height: auto;
+    aspect-ratio: 16 / 9;
+    transform-origin: 0 0;
+  }
+</style>
+
+<script>
+  import '@/scripts/work'
+</script>

@@ -1,0 +1,72 @@
+---
+import JobItem from '@/components/jobs/JobItem.astro'
+import { jobs } from '@/data/jobs'
+import ArtHtml from '@/components/ArtHtml.astro'
+import Section from '@/components/Section.astro'
+import Prompt from '@/components/ui/Prompt.astro'
+import ShowMore from '@/components/ui/ShowMore.astro'
+import Table from '@/components/ui/Table.astro'
+import Td from '@/components/ui/Td.astro'
+import Tr from '@/components/ui/Tr.astro'
+
+import { blockArt } from '@/data/art'
+import github from '@/data/github.json'
+
+const since = new Date(github.since)
+  .toLocaleDateString('en', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+  .toLowerCase()
+---
+
+<Section id="experience" labelledby="experience-title" class="mt-8">
+  <h2 id="experience-title" class="sr-only font-bold">
+    Jobs
+  </h2>
+
+  <ArtHtml art={blockArt.experience} scrollReveal class="mt-1" />
+
+  <p class="ml-[4ch] mt-2" data-reveal="fade" data-reveal-range="50% 0%">
+    Click to open
+  </p>
+
+  <ol>
+    {jobs.map((job, index) => (
+      <JobItem job={job} more={index > 2} />
+    ))}
+  </ol>
+
+  <ShowMore />
+
+  <Prompt class="mt-2">cat details.md</Prompt>
+
+  <Table class="mt-0.5">
+    <Tr>
+      <Td heading="Education" colSpan={3} />
+    </Tr>
+    <Tr>
+      <Td heading="School">York University</Td>
+      <Td heading="Major" colSpan={2}>
+        Information Technology
+      </Td>
+    </Tr>
+    <Tr>
+      <Td heading="Github" colSpan={3} />
+    </Tr>
+    <Tr>
+      <Td heading="Joined github">{since}</Td>
+      <Td heading="Public repos">{github.repos.own}</Td>
+      <Td heading="Most starred">
+        [{github.starred.name}]({github.starred.url})
+      </Td>
+    </Tr>
+    <Tr>
+      <Td heading="Github handles">
+        {github.handles.map((handle) => `[${handle.login}](${handle.url})\n`)}
+      </Td>
+      <Td heading="Top languages" colSpan={2}>
+        {github.languages.join(', ').toLowerCase()}
+      </Td>
+    </Tr>
+  </Table>
+
+  <ArtHtml art={blockArt.prism} fullWidth scrollReveal class="mt-6" />
+</Section>

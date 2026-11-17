@@ -1,12 +1,16 @@
 ---
+import { springCurve } from '@/lib/spring'
+
 /**
  * A <details> disclosure that springs open and whose content fades with it.
  *
  * The summary carries `list-none` and hides WebKit's own marker, since the
  * marker is Toggle.astro. The open/close motion is JS: `scripts/disclosure.ts`
- * animates the panel's height and opacity from a spring's curve, and keeps
+ * animates the panel's height and opacity on the page's spring, and keeps
  * `open` on the element until the close has finished so the content stays
- * rendered. Without the script the UA toggles as it always did.
+ * rendered. The curve is worked out here at build time and handed over on the
+ * element, so the script ships without it. Without the script the UA toggles
+ * as it always did.
  *
  * `overflow: hidden` on the panel does two jobs: it clips the collapsing box,
  * and it contains the content's top margin, so a closed job leaves no stray gap
@@ -23,9 +27,10 @@ interface Props {
 }
 
 const { class: className } = Astro.props
+const { duration, easing } = springCurve(0.2)
 ---
 
-<details class={className} data-disclosure>
+<details class={className} data-disclosure data-duration={duration} data-easing={easing}>
   <summary class="relative pointer-coarse:before:absolute pointer-coarse:before:inset-x-0 pointer-coarse:before:-inset-y-0.5 cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-900">
     <slot name="summary" />
   </summary>

@@ -1,20 +1,10 @@
 /** A date that may or may not be worth marking up as a <time>. */
 export type Dateish = { label: string; datetime?: string }
 
-/**
- * A project row. A bare string is a plain line; an object prints the leader
- * between its label and its value.
- */
-export type Row = string | { label: string; value: string }
-
+/** One line of a job: the label alone, or with a value, joined by a dotted leader. */
 export type Role = {
   label: string
   value?: string
-  /** `dots` prints the leader between the label and the value */
-  layout?: 'dots' | 'plain'
-  projects?: Row[]
-  /** one per line, two-up in a 24ch grid, or label beside value in 24ch */
-  projectsLayout?: 'list' | 'grid' | 'columns'
 }
 
 export type Job = {
@@ -32,7 +22,6 @@ export const jobs: Job[] = [
     roles: [
       {
         label: 'Design Engineering Manager',
-        projects: [{ label: 'Agents UI', value: 'Open Source UI library' }],
       },
     ],
   },
@@ -44,23 +33,14 @@ export const jobs: Job[] = [
       {
         label: 'Shopify Learn',
         value: 'Staff design technologist',
-        layout: 'dots',
-        projects: [
-          { label: 'Design System', value: 'Shopify.dev Redesign' },
-          { label: 'Programmatic References', value: 'Shopify GraphQL Docs' },
-        ],
       },
       {
         label: 'Shopify Build',
         value: 'Staff design technologist',
-        layout: 'dots',
-        projects: [{ label: 'Developer Experience', value: 'App Distribution' }],
       },
       {
         label: 'Shopify Plus Automation',
         value: 'Sr UX developer',
-        layout: 'dots',
-        projects: [{ label: 'Visual Programming Tool', value: 'Shopify Flow' }],
       },
     ],
   },
@@ -72,31 +52,14 @@ export const jobs: Job[] = [
       {
         label: 'Amazon Devices Concept Lab',
         value: 'Sr design technologist',
-        layout: 'dots',
-        projects: [
-          { label: 'Visual Programming Tool', value: 'Voice Design Tool' },
-          { label: 'Prototyping Tool', value: 'VR Home Environment' },
-          { label: 'Concept Device', value: 'Amazon Echo Show 15' },
-        ],
       },
       {
         label: 'Amazon Alexa Skills Kit',
         value: 'Sr design technologist',
-        layout: 'dots',
-        projects: [
-          { label: 'Design System', value: 'Alexa Developer Console' },
-          { label: 'Visual Programming Tool', value: 'Alexa Interaction Models' },
-        ],
       },
       {
         label: 'Amazon Advertising Concept Lab',
         value: 'Design technologist',
-        projects: [
-          { label: 'Alexa', value: 'The Wayne Investigation' },
-          { label: 'Fire TV', value: 'Interactive Ads' },
-          { label: 'Fire Tablet', value: 'Daily Deals App' },
-          { label: 'Fire Tablet', value: 'Interactive Ads' },
-        ],
       },
     ],
   },
@@ -104,7 +67,7 @@ export const jobs: Job[] = [
     from: { label: '2012', datetime: '2012' },
     to: { label: '2015', datetime: '2015' },
     company: 'THEREDPIN.CA',
-    roles: [{ label: 'Lead frontend developer', projects: ['TheRedPin.ca'] }],
+    roles: [{ label: 'Lead frontend developer' }],
   },
   {
     from: { label: '2010', datetime: '2010' },
@@ -113,7 +76,6 @@ export const jobs: Job[] = [
     roles: [
       {
         label: 'Sr web developer',
-        projects: ['PcFinancial.ca', 'Infiniti.com'],
       },
     ],
   },
@@ -124,11 +86,6 @@ export const jobs: Job[] = [
     roles: [
       {
         label: 'User interface developer',
-        projectsLayout: 'columns',
-        projects: [
-          { label: 'Front Page', value: '2010 FIFA World Cup' },
-          { label: 'Media Portal', value: '2010 Winter Olympics Vancouver' },
-        ],
       },
     ],
   },
@@ -139,8 +96,6 @@ export const jobs: Job[] = [
     roles: [
       {
         label: 'Frontend developer',
-        projectsLayout: 'grid',
-        projects: ['iCoke.ca', 'JoeFresh.ca', 'Molson.ca', 'TimHortons.ca'],
       },
     ],
   },

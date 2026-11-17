@@ -8,6 +8,7 @@
     "dev-localnetwork": "astro dev --background --host --allowed-hosts zerocool,zerocool.tail4e11e3.ts.net",
     "build": "astro build",
     "preview": "astro preview",
+    "github": "node src/dev/github.ts && prettier --write src/data/github.json",
     "typecheck": "astro check",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix",

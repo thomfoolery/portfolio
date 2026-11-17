@@ -6,6 +6,10 @@
  * Tailwind cannot express generated content, so the marker is hand-written here.
  * The open and hover rules reach out to the summary that holds the marker, which
  * belongs to Disclosure.astro, hence `:global`.
+ *
+ * It never shrinks or wraps. Its row is a flex row that overflows, so the row
+ * squeezes each item down to its narrowest wrap, and Safari will break `[-]`
+ * after the hyphen (Chrome holds it whole, since nothing breaks before `]`).
  */
 ---
 
@@ -25,4 +29,4 @@
   }
 </style>
 
-<span class="toggle" aria-hidden="true" />
+<span class="toggle shrink-0 whitespace-nowrap" aria-hidden="true" />

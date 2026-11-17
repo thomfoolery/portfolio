@@ -1,0 +1,25 @@
+---
+import Button from './Button.astro'
+import { springCurve } from '@/lib/spring'
+
+/**
+ * The "[ show more ]" row under a list whose later rows carry `data-folded`.
+ * `scripts/show-more.ts` unfolds the rows of the section it is in and removes
+ * the row; without scripts, the noscript in Base.astro shows the rows and hides
+ * the row instead.
+ *
+ * The list springs open on the page's spring, worked out here at build time
+ * and handed to the script on the button, so the script ships without it.
+ */
+const { duration, easing } = springCurve(0.4)
+---
+
+<p class="text-center mt-2 leading-loose" data-show-more-row>
+  <Button data-show-more data-duration={duration} data-easing={easing}>
+    [ show more ]
+  </Button>
+</p>
+
+<script>
+  import '@/scripts/show-more'
+</script>

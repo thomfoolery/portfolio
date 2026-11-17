@@ -2,7 +2,6 @@
 import '@/styles/main.css'
 import lightUrl from '@/fonts/ioskeley-mono-light-subset.woff2?url'
 import semiboldUrl from '@/fonts/ioskeley-mono-semibold-subset.woff2?url'
-import showMore from '@/scripts/show-more.js?raw'
 import Cursor from '@/components/ui/Cursor.astro'
 import Bit from '@/components/ui/Bit.astro'
 
@@ -16,24 +15,23 @@ const dev = import.meta.env.DEV
 ---
 
 <!doctype html>
-<!-- color-scheme and the scrollbar are document-wide, so they sit on the root
-     rather than in main.css. -->
+{/* color-scheme is document-wide, so it sits on the root. */}
 <html lang="en" class="scroll-smooth bg-black scheme-dark">
   <head>
     <title>{title}</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <!-- The font draws the first viewport, so fetch it alongside the stylesheet:
-         the weights up there are the prose and art's 300 and the nav's 600.
-         The rest load when something asks for them. -->
+    {/* The font draws the first viewport, so fetch it alongside the stylesheet:
+        the weights up there are the prose and art's 300 and the nav's 600.
+        The rest load when something asks for them. */}
     <link rel="preload" href={lightUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={semiboldUrl} as="font" type="font/woff2" crossorigin />
     <!-- super-low bandwidth tribute to cultdeadcow.com -->
-    <!-- A reveal starts where its animation will: without this the whole line
-         paints and then collapses when scroll-reveal.ts takes over. Fades and
-         widths are the only kinds; see scripts/scroll-reveal.ts. Below the
-         `wide` breakpoint (main.css) nothing reveals: it is simply there. -->
+    {/* A reveal starts where its animation will: without this the whole line
+        paints and then collapses when scroll-reveal.ts takes over. Fades and
+        widths are the only kinds; see scripts/scroll-reveal.ts. Below the
+        `wide` breakpoint (main.css) nothing reveals: it is simply there. */}
     <style is:global>
       @media (width >= 546px) {
         [data-reveal]:not([data-reveal='fade']) {
@@ -70,8 +68,8 @@ const dev = import.meta.env.DEV
         true,
       )
     </script>
-    <!-- Without scripts nothing is folded and no reveal is scrubbed, so the page
-         shows itself whole and the buttons go away. -->
+    {/* Without scripts nothing is folded and no reveal is scrubbed, so the page
+        shows itself whole and the buttons go away. */}
     <noscript>
       <style is:inline>
         /* !important throughout: these undo Tailwind's preflight and the
@@ -84,23 +82,25 @@ const dev = import.meta.env.DEV
         html [data-folded] {
           display: list-item;
         }
-        html [data-show-more-row] {
+        html [data-show-more-row],
+        html [data-work-steps] {
           display: none !important;
         }
       </style>
     </noscript>
   </head>
-  <!-- The 12px gutter lives here, not on the 72ch frames (each panel and the
-       nav): preflight makes everything border-box, so a padded frame would come
-       out 24px narrow. The body is a flex column so the nav, first in the
-       markup, can be drawn last, docked to the bottom (Nav.astro). -->
+  {/* The 12px gutter lives here, not on the 72ch frames (each panel and the
+      nav): preflight makes everything border-box, so a padded frame would come
+      out 24px narrow. The body is a flex column so the nav, first in the
+      markup, can be drawn last, docked to the bottom (Nav.astro). */}
   <body class="flex flex-col antialiased font-light leading-1 text-green-500 selection:bg-green-600 selection:text-black">
     <slot />
     <Bit />
     <Cursor />
-    {/* after the slot, so the lists the button collapses are already parsed */}
-    {/* eslint-disable-next-line astro/no-set-html-directive -- this is our own script text */}
-    <script is:inline set:html={showMore} />
+    {/* Every reveal on the page, whichever section it is in. */}
+    <script>
+      import '@/scripts/scroll-reveal'
+    </script>
     {dev && <script type="module" is:inline src="/src/components/art-editor/editor.js"></script>}
     {dev && <script type="module" is:inline src="/src/components/bit-lab/lab.js"></script>}
   </body>

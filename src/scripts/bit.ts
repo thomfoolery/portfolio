@@ -7,10 +7,11 @@ import settings from '@/data/bit.json'
  * plans from a fresh seed. Positions are page coordinates, so the bit stays
  * where it is on the page when you scroll.
  *
- * The lead span is in the markup; the followers are made here at launch, one
- * per `followers`, and play the same keyframes `lag` ms apart, fading, which
- * draws the trail along the exact path, turns included. They are removed when
- * the trip lands, so between trips there is one hidden span and no layers.
+ * The lead span is in the markup; the followers are made here at the first
+ * launch, one per `followers`, and play the same keyframes `lag` ms apart,
+ * fading, which draws the trail along the exact path, turns included. They stay
+ * in the layer between trips, hidden and with no animation, so there are no
+ * layers, and are only made again after a retune.
  *
  * Only a fine pointer gets it, as with the caret: on a phone it is a lot of
  * moving parts for a dot too small to notice.
@@ -24,7 +25,9 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 
 function start(layer: HTMLElement, lead: HTMLElement) {
   let config = parseBitConfig(settings)
-  let spans = [lead]
+  let trail: HTMLElement[] = []
+  /** The config `trail` was made for. */
+  let mustered: BitConfig | undefined
   let flights: Animation[] = []
   let timer: ReturnType<typeof setTimeout> | undefined
 
@@ -35,41 +38,46 @@ function start(layer: HTMLElement, lead: HTMLElement) {
     layer.style.setProperty('--bit-trail', `var(--color-green-${config.trail})`)
   }
 
-  /** The trail for one trip, faded from the lead back. */
+  /**
+   * The lead and its trail, faded from the lead back. Made for the first trip and
+   * kept; only a retune, which is a new config, makes it again.
+   */
   const muster = () => {
-    const count = config.followers + 1
-    const trail = Array.from({ length: config.followers }, () => {
-      const follower = lead.cloneNode() as HTMLElement
-      follower.classList.add('trail')
-      return follower
-    })
-    spans = [lead, ...trail]
-    spans.forEach((span, i) => {
-      span.style.opacity = String((1 - i / count) ** config.fade)
-    })
-    layer.append(...trail)
+    if (mustered !== config) {
+      for (const follower of trail) follower.remove()
+      trail = Array.from({ length: config.followers }, () => {
+        const follower = lead.cloneNode() as HTMLElement
+        follower.classList.add('trail')
+        return follower
+      })
+      layer.append(...trail)
+      ;[lead, ...trail].forEach((span, i) => {
+        span.style.opacity = String((1 - i / (trail.length + 1)) ** config.fade)
+      })
+      mustered = config
+    }
+    return [lead, ...trail]
   }
 
   const land = () => {
     for (const flight of flights) flight.cancel()
     flights = []
-    for (const follower of spans.slice(1)) follower.remove()
-    spans = [lead]
     delete layer.dataset.flying
     layer.style.height = ''
   }
 
   const schedule = () => {
     clearTimeout(timer)
+    // Nobody is watching a hidden tab, and a reduced-motion reader asked not to:
+    // nothing waits for the next trip until that changes.
+    if (document.hidden || reduced.matches) return
     const [min, max] = config.gap
-    timer = setTimeout(
-      () => {
-        // Nobody is watching a hidden tab, and a reduced-motion reader asked not to.
-        if (document.hidden || reduced.matches) schedule()
-        else fly()
-      },
-      min + Math.random() * (max - min),
-    )
+    timer = setTimeout(() => fly(), min + Math.random() * (max - min))
+  }
+
+  /** Between trips, a tab coming back or motion allowed again starts the wait. */
+  const resume = () => {
+    if (!layer.hasAttribute('data-flying')) schedule()
   }
 
   const fly = (seed = randomSeed()) => {
@@ -88,7 +96,7 @@ function start(layer: HTMLElement, lead: HTMLElement) {
       size,
     })
 
-    muster()
+    const spans = muster()
     layer.style.height = `${height}px`
     layer.dataset.flying = ''
     layer.dispatchEvent(new CustomEvent('bit:fly', { detail: seed }))
@@ -112,6 +120,8 @@ function start(layer: HTMLElement, lead: HTMLElement) {
 
   draw()
   schedule()
+  document.addEventListener('visibilitychange', resume)
+  reduced.addEventListener('change', resume)
 
   return {
     get config() {

@@ -3,39 +3,67 @@ import Section from './Section.astro'
 import ArtHtml from '@/components/ArtHtml.astro'
 import { blockArt } from '@/data/art'
 
-interface Props {}
+import Prompt from '@/components/ui/Prompt.astro'
+import Table from '@/components/ui/Table.astro'
+import Td from '@/components/ui/Td.astro'
+import Tr from '@/components/ui/Tr.astro'
 
 const year = new Date().getFullYear()
 ---
 
-<Section class="overflow-clip">
+<Section as="footer" class="overflow-clip mt-12">
   <ArtHtml art={blockArt.eyes} fullWidth scrollReveal />
 
-  <p class="font-medium mt-2 ml-2 wide:ml-5 leading-[2]">
-    <span
-      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
-      data-reveal
-      data-reveal-range="30% 50%"
-    >
-      20+ glorious years pushing pixels and...
-    </span>
-  </p>
+  <Prompt class="mt-12">cat design.md</Prompt>
 
-  <p class="font-black mt-1 ml-8 wide:ml-16 leading-[2]">
-    <span
-      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip text-green-900"
-      data-reveal
-      data-reveal-range="30% 50%"
-    >
-      NOTHING IS REAL ;)
-    </span>
-  </p>
-</Section>
+  <Table class="mt-0.5">
+    <Tr>
+      <Td heading="Unless otherwise specified" colSpan={3}>
+        1. ALL DIMENSIONS IN CHARACTER CELLS.
+        <br />
+        2. LINE PITCH 1.6EM, NO TOLERANCE.
+        <br />
+        3. BREAK ALL SHARP PIXELS. DO NOT SCALE DRAWING.
+        <br />
+        4. EVERY GLYPH ADVANCES 0.6000EM. NO LIGATURES.
+        <br />
+        5. SPRINGS CRITICALLY DAMPED. NO BOUNCE.
+        <br />
+        6. NO FRAMEWORK SHIPPED. NO THIRD-PARTY CALLS.
+      </Td>
+    </Tr>
+    <Tr>
+      <Td heading="Palette">9 GREENS, 1 BLACK</Td>
+      <Td heading="Breakpoint">546 PX</Td>
+      <Td heading="Libraries">ASTRO + TAILWIND</Td>
+    </Tr>
+    <Tr>
+      <Td heading="Max width">72 characters</Td>
+      <Td heading="Typeface">IOSKELEY MONO</Td>
+      <Td heading="Weights">7, SUBSET</Td>
+    </Tr>
+    <Tr>
+      <Td heading="Reveal">STEPS(72)</Td>
+      <Td heading="Glitch" colSpan={2}>
+        1-3 CELLS, 18% TEAR
+      </Td>
+    </Tr>
+    <Tr>
+      <Td heading="Scripts">9 KB GZIPPED</Td>
+      <Td heading="Phosphor" colSpan={2}>
+        #00FF00 ON #000
+      </Td>
+    </Tr>
+    <Tr>
+      <Td heading="And remember" colSpan={3}>
+        {'After 25+ glorious years pushing pixels...           NOTHING IS REAL'}
+      </Td>
+    </Tr>
+  </Table>
 
-<Section as="footer" align="bottom" class="pb-0">
-  <ArtHtml art={blockArt.footer} hoverReveal class="peer ml-4" />
+  <ArtHtml art={blockArt.footer} hoverReveal class="peer ml-4 mt-12" />
 
-  <p class="text-right my-1 leading-[2] peer-hover:opacity-100 opacity-10 max-wide:opacity-100 duration-200 peer-hover:duration-500 transition-opacity">
+  <p class="text-right my-1 leading-loose peer-hover:opacity-100 opacity-10 max-wide:opacity-100 duration-200 peer-hover:duration-500 transition-opacity">
     <small class="bg-clip-text text-transparent bg-linear-to-r from-green-100 via-green-900 to-green-100 [font-size:inherit]">
       &copy; Thomas Yuill {year}
     </small>

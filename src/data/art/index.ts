@@ -7,6 +7,7 @@ import blockHonors from './honors.json'
 import blockPosts from './posts.json'
 import blockPrism from './prism.json'
 import blockFooter from './footer.json'
+import blockWork from './work.json'
 
 /** One block: its two arrays, how it is drawn, and where it is stored. */
 export type SectionArtItem = Art & {
@@ -23,6 +24,7 @@ export type SectionArt = {
   honors: SectionArtItem
   eyes: SectionArtItem
   footer: SectionArtItem
+  work: SectionArtItem
 }
 
 /**
@@ -51,4 +53,5 @@ export const blockArt: SectionArt = {
   honors: block(blockHonors, 'src/data/art/honors.json'),
   eyes: block(blockEyes, 'src/data/art/eyes.json'),
   footer: block(blockFooter, 'src/data/art/footer.json'),
+  work: block(blockWork, 'src/data/art/work.json'),
 }

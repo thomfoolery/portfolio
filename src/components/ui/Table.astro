@@ -1,0 +1,39 @@
+---
+/**
+ * A box-drawn table, 72 columns wide, written the way an HTML table is:
+ *
+ *   <Table>
+ *     <Tr>
+ *       <Td heading="Operator profile" colSpan={2}>ux developer</Td>
+ *       <Td heading="Employer">[livekit.com](https://livekit.com)</Td>
+ *     </Tr>
+ *   </Table>
+ *
+ * It draws the borders and junctions, and fails the build when a row does not
+ * fill the grid or a word will not fit its cell: see `lib/ascii-table`. Cells
+ * hold text, with links in markdown, so nothing is passed through as HTML.
+ *
+ * The borders and their padding are hidden from assistive tech, so a screen
+ * reader reads the cells and not the box drawing. The borders take the caller's
+ * colour; headings and cells have their own.
+ */
+import Link from '@/components/ui/Link.astro'
+import { cn } from '@/lib/utils'
+import { layout, parse } from '@/lib/ascii-table'
+
+interface Props {
+  class?: string
+}
+
+const { class: className } = Astro.props
+const lines = layout(parse(await Astro.slots.render('default')))
+
+// Small caps, faked: the font has none, so headings are capitals at 0.8em,
+// tracked out 0.15em (0.12em of the row) to keep each glyph one 0.6em cell wide.
+const smallCaps = 'text-[0.8em] tracking-[0.15em] font-black uppercase text-green-300'
+---
+
+{/* The rows are the design, and every space in them counts: one source line,
+    so nothing between the tags reaches the pre. */}
+{/* prettier-ignore */}
+<pre class={cn('leading-tight', className)}>{lines.map((line, i) => <>{i > 0 && '\n'}{line.map((s) => s.kind === 'border' ? <span aria-hidden="true">{s.text}</span> : s.kind === 'head' ? <span class={smallCaps}>{s.text}</span> : s.kind === 'link' ? <Link href={s.href} title={s.title} external={s.external}>{s.text}</Link> : <span class="text-green-900">{s.text}</span>)}</>)}</pre>

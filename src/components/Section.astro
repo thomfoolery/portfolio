@@ -2,62 +2,30 @@
 import { cn } from '@/lib/utils'
 
 /**
- * One panel of the page: a full viewport tall with its content centred in it.
- *
- * The element is configurable so the header and footer can share the same
- * rhythm as the sections without pretending to be `<section>`s. Only the
- * sections take the space below their content; the header and footer keep their
- * own alignment.
+ * One panel of the page. The element is configurable so the header and footer
+ * share the sections' frame without pretending to be `<section>`s. The space
+ * between panels is the caller's.
  *
  * Each panel is its own 72-column frame, centred, as the nav is: there is no
  * page-wide wrapper. Below the `wide` breakpoint it takes the full width, and
  * the text reflows.
  */
-type Align = 'top' | 'center' | 'bottom'
-
 interface Props {
   as?: 'section' | 'header' | 'footer'
   id?: string
   labelledby?: string
-  hidden?: boolean
-  align?: Align
   class?: string
 }
 
-const {
-  as = 'section',
-  id,
-  labelledby,
-  hidden = false,
-  align = 'top',
-  class: className,
-} = Astro.props
-
-const Tag = as
-const justify = { top: 'justify-start', center: 'justify-center', bottom: 'justify-end' }[align]
-
-/**
- * What each element adds to the frame inside it: every panel's frame is a flex
- * column, aligned by `align`. Only the sections take the space below their
- * content.
- */
-const perElement = {
-  header: ['flex flex-col pt-1 wide:pt-5', justify],
-  section: ['flex flex-col pt-2 wide:pb-[50dvh]', justify],
-  footer: ['flex flex-col', justify],
-}[as]
+const { as: Tag = 'section', id, labelledby, class: className } = Astro.props
 ---
 
-<Tag
-  id={id}
-  aria-labelledby={labelledby}
-  hidden={hidden || undefined}
-  class={cn(['px-1', className])}
->
+<Tag id={id} aria-labelledby={labelledby} class={cn(['px-1', className])}>
   {/* The frame: the full width on a phone, 72 columns centred from `wide` up.
       w-full keeps it from sizing to its content, where a job's rule is 72
-      unbreakable columns and would widen a phone's page. */}
-  <div class:list={cn(['wide:min-h-dvh mx-auto w-full wide:w-[72ch]', perElement])}>
+      unbreakable columns and would widen a phone's page. It is a flex column so
+      its children's margins never collapse through it. */}
+  <div class="flex flex-col mx-auto w-full wide:w-[72ch]">
     <slot />
   </div>
 </Tag>

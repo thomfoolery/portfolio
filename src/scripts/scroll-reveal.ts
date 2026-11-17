@@ -1,4 +1,4 @@
-import { scroll } from 'motion'
+import { scrollInfo } from 'motion'
 
 /**
  * Every reveal on the page: Motion reports how far an element has travelled, and
@@ -57,7 +57,7 @@ const revealsIn = (row: Element) => [
 ]
 
 /** Motion does not export its `ScrollOffset` type, so borrow it off the function. */
-type ScrollOffset = NonNullable<Parameters<typeof scroll>[1]>['offset']
+type ScrollOffset = NonNullable<Parameters<typeof scrollInfo>[1]>['offset']
 
 /**
  * A CSS view() range and a Motion offset are the same two edges, crossed the
@@ -112,11 +112,13 @@ function bind(element: HTMLElement, entering = false): Reveal {
   })
 
   // Park the animations at a frame. A seek on a running animation only moves the
-  // playhead: it would carry on from there, which reads as a replay.
+  // playhead: it would carry on from there, which reads as a replay. Most reveals
+  // sit at one end or the other on any given scroll, and rewriting the same frame
+  // would still restyle the element, so an unchanged frame is left alone.
   const seek = (time: number) => {
     for (const animation of animations) {
       if (animation.playState !== 'paused') animation.pause()
-      animation.currentTime = time
+      if (animation.currentTime !== time) animation.currentTime = time
     }
   }
 
@@ -200,9 +202,11 @@ function bind(element: HTMLElement, entering = false): Reveal {
   reveal.resume = apply
   if (still) return reveal
 
-  reveal.unsync = scroll(
-    (progress) => {
-      reveal.progress = Math.min(1, Math.max(0, progress))
+  // `scrollInfo` is what Motion's `scroll()` runs for a callback, without the
+  // native-timeline code that only an animation passed to `scroll()` uses.
+  reveal.unsync = scrollInfo(
+    (info) => {
+      reveal.progress = Math.min(1, Math.max(0, info.y.progress))
       apply()
     },
     { target: element, offset },
@@ -232,7 +236,7 @@ narrow.addEventListener('change', () => {
 })
 
 /**
- * `show-more.js` asks a revealed row to enter instead of waiting for a scroll
+ * `show-more.ts` asks a revealed row to enter instead of waiting for a scroll
  * that has already gone past it. The row fires `reveal:enter` with its place in
  * the stagger as the detail.
  *

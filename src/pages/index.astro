@@ -1,26 +1,28 @@
 ---
-import Honors from '@/components/Honors.astro'
-import JobsList from '@/components/jobs/JobsList.astro'
 import Nav from '@/components/Nav.astro'
 // import Posts from '@/components/Posts.astro'
-import Footer from '@/components/Footer.astro'
-import Welcome from '@/components/Welcome.astro'
-import Header from '@/components/Header.astro'
 import Base from '@/layouts/Base.astro'
+import Header from '@/components/Header.astro'
+import WhoAmI from '@/components/WhoAmI.astro'
+import Experience from '@/components/Experience.astro'
+import Work from '@/components/Work.astro'
+import Certifications from '@/components/Certifications.astro'
+import Footer from '@/components/Footer.astro'
 ---
 
 <Base
   title="THOM YUILL | ux developer | design technologist | Waterloo, Canada"
   description="Thom Yuill - web developer and UX designer based out of Waterloo, Canada."
 >
-  <Header />
   <Nav />
+  <Header />
 
   <main>
-    <Welcome />
-    <!-- <Posts /> -->
-    <JobsList />
-    <Honors />
+    <WhoAmI />
+    <Work />
+    {/* <Posts /> */}
+    <Experience />
+    <Certifications />
   </main>
 
   <Footer />

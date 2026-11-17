@@ -1,0 +1,122 @@
+---
+import Section from '@/components/Section.astro'
+import Link from '@/components/ui/Link.astro'
+import Prompt from '@/components/ui/Prompt.astro'
+import Table from '@/components/ui/Table.astro'
+import Td from '@/components/ui/Td.astro'
+import Tr from '@/components/ui/Tr.astro'
+
+// The first job's year, and the years since as of the build.
+const since = 2000
+const years = new Date().getFullYear() - since
+---
+
+<Section id="welcome" labelledby="welcome-title" class="overflow-clip scroll-mt-1">
+  <Prompt>whoami</Prompt>
+  <p>
+    <code class="text-green-900 ml-1 font-black">thomas_yuill</code>
+  </p>
+  <Table class="mt-1">
+    <Tr>
+      <Td heading="Location">waterloo on, canada</Td>
+      <Td heading="Timezone">eastern (utc-5/-4)</Td>
+      <Td heading="Vehicle          year">{'suzuki dr650     2008'}</Td>
+    </Tr>
+    <Tr>
+      <Td heading="Operator profile" colSpan={2}>
+        ux developer / design engineer
+      </Td>
+      <Td heading="Shipping">since {`${since}     ${years} yrs`}</Td>
+    </Tr>
+  </Table>
+
+  <p class="leading-loose mt-1">
+    <span class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip" data-reveal>
+      ---
+    </span>
+    <span class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip mt-1" data-reveal>
+      Hi,
+    </span>{' '}
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="50% 20%"
+    >
+      My name is <span class="text-green-900 font-black">Thomas Yuill</span>.
+    </span>
+  </p>
+  <p class="leading-loose">
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="50% 30%"
+    >
+      I am a <span class="text-green-900 font-black">designer</span> and{' '}
+      <span class="text-green-900 font-black">engineer</span> and I currently work at{' '}
+      <Link external href="https://livekit.com/" title="Day job!!" class="font-black">
+        LiveKit
+      </Link>
+      .
+    </span>
+  </p>
+  <p class="mt-2 leading-loose">
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="50% 35%"
+    >
+      I enjoy building dynamic, accessible,
+    </span>{' '}
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="35% 40%"
+    >
+      and aesthetic web experiences powered with
+    </span>{' '}
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="20% 45%"
+    >
+      real-time data/media.
+    </span>
+  </p>
+  <p class="mt-2 leading-loose">
+    <span
+      class="wide:block wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="50% 35%"
+    >
+      If I have free time, you'll find me
+    </span>
+    <span
+      class="block mt-1 ml-1 wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="35% 40%"
+    >
+      * reading a great book
+    </span>
+    <span
+      class="block ml-1 wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="35% 40%"
+    >
+      * organizing a new adventure
+    </span>
+    <span
+      class="block ml-1 wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="35% 40%"
+    >
+      * breaking, fixing or building something
+    </span>
+    <span
+      class="block ml-1 wide:h-[1.8em] wide:break-all wide:overflow-clip"
+      data-reveal
+      data-reveal-range="20% 45%"
+    >
+      * searching for new grass to touch
+    </span>
+  </p>
+</Section>

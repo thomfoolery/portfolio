@@ -3,11 +3,24 @@
 A résumé, served as a terminal session on a 72-column grid.
 
 Astro and Tailwind are build-time tools here. The page is prerendered to static
-HTML. The JavaScript it ships is two handlers inlined at build time, about 1.4 KB
-between them — the nav hotkeys and the "show more" buttons — plus three modules,
-about 7 KB gzipped: Motion's `scroll()`, which scrubs every reveal, its spring,
-which opens and closes a job, and the caret, which is small enough that the build
-inlines it into the page.
+HTML. The JavaScript it ships is the nav hotkeys, inlined at build time, plus a
+few modules, about 9 KB gzipped in all: Motion's `scrollInfo()`, which scrubs
+every reveal and is the one script the page requests; and the disclosures, the
+"show more" lists, the caret, the stray bit, the art's glitch and the Work
+carousel's loops, which are small enough that the build inlines them into the
+page. The spring the disclosures and lists open on is worked out at build time,
+so its solver never ships.
+
+The heavy part is the Work carousel. Each tile is a poster, made a 1366px AVIF
+at build time (20 to 40 KB), and a silent loop that is fetched only when its
+tile first comes on screen, plays only while it is on screen, and is never
+fetched under `prefers-reduced-motion`. A tile is a button: clicking it zooms its
+video to fill the screen, two lines in from every edge, and a click anywhere,
+Esc or Tab zooms it back. The tile's own video moves into an overlay, so it keeps
+playing and nothing is fetched again; under reduced motion the zoom is instant.
+Under the carousel, `[ < prev ]` and `[ next > ]` step it to the neighbouring
+tile's snap, and dim at either end rather than disable, so keyboard focus stays
+put. Without scripts they are hidden, with the other buttons.
 
 ## Commands
 
@@ -20,9 +33,12 @@ inlines it into the page.
 | `pnpm lint`             | ESLint, type-aware, with eslint-plugin-astro       |
 | `pnpm format`           | Prettier, in place. `format:check` verifies        |
 | `pnpm preview`          | serves `dist/` on 4321                             |
+| `pnpm github`           | refreshes `src/data/github.json` from GitHub       |
 
 `pnpm build` is the whole build: Astro renders the page and writes `dist/index.html`
-with its hashed stylesheet.
+with its hashed stylesheet. The GitHub table reads a committed snapshot,
+`src/data/github.json`, so the build never touches the network; `pnpm github`
+refreshes it, and the change is committed like any other.
 
 ## Deploy
 
@@ -31,9 +47,9 @@ Serve `dist/`. It is flat HTML plus its hashed assets:
 ```
 dist/index.html                 the résumé, block art, job entries collapsible
 dist/_astro/*.css               the hashed stylesheet
-dist/_astro/*.js                the reveals and the disclosures, the only scripts
-                                the page requests
+dist/_astro/*.js                the reveals: the only script the page requests
 dist/_astro/*.woff2             the hashed Ioskeley Mono subsets, one per weight
+dist/_astro/*.avif, *.mp4       the Work carousel's posters and loops
 ```
 
 Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
@@ -42,28 +58,36 @@ Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
 
 ```
 eslint.config.ts    type-aware lint; formatting is left to Prettier
-astro.config.mjs    the build, plus the dev-only art-editor and bit-lab integrations
+astro.config.mjs    the build, plus the dev-only art-editor and lab integrations
 .prettierrc.json    single quotes, no semicolons, 100 columns
 src/
-  components/       the shell: Section, Nav, Header, Footer, ArtHtml
+  assets/work/      the Work carousel's stills and loops, as uploaded
+  components/       the shell and the sections: Section, Nav, Header, WhoAmI,
+                    Experience, Work, Certifications, Footer; ArtHtml, which
+                    draws the art
+    art-editor/     the dev-only art editor
     bit-lab/        the dev-only panel that tunes the stray bit
-    honors/         HonorsList
-    jobs/           JobsList and the job rows
-    ui/             Link, Hint, Disclosure, Toggle — what the theme used to style
-    Welcome.astro   the introduction
+    jobs/           a job's row: its heading, its roles and their dotted rows
+    ui/             Link, Hint, Disclosure, Toggle, Button — what the theme used
+                    to style; Table, Tr and Td, the box-drawn tables; Prompt,
+                    ShowMore, Cursor and Bit
     Posts.astro     the posts list, not yet on the page
-  data/             nav.ts, jobs.ts, honors.ts, posts.ts, grid.ts, bit.json
+  data/             nav.ts, jobs.ts, honors.ts, recommendations.ts, posts.ts,
+                    work.ts, grid.ts, bit.json, github.json
     art/            the ASCII art, as character and colour arrays
   dev/              art-editor.ts and bit-lab.ts, which write art and the bit's
-                    settings back under `astro dev`
+                    settings back under `astro dev`; github.ts, which
+                    `pnpm github` runs to write data/github.json
   fonts/            the Ioskeley Mono subsets, with their OFL licence
   layouts/          Base.astro, the document shell
   lib/              art.ts, bit.ts (the bit's settings and flight plan),
-                    utils.ts (`cn`)
+                    ascii-table.ts (lays out a Table), html.ts (decodes the
+                    entities both read), spring.ts (the page's no-bounce
+                    spring, at build time), utils.ts (`cn`)
   pages/            index.astro, the one page
-  scripts/          hotkeys.js and show-more.js, inlined at build time;
-                    scroll-reveal.ts, disclosure.ts, cursor.ts and bit.ts, the
-                    modules that ship
+  scripts/          hotkeys.js, inlined at build time; scroll-reveal.ts,
+                    disclosure.ts, show-more.ts, cursor.ts, bit.ts, glitch.ts
+                    and work.ts, the modules that ship
   styles/           main.css: the theme, and the one rule a utility cannot state
 ```
 
@@ -93,7 +117,7 @@ curl -LO https://github.com/ahatem/IoskeleyMono/releases/latest/download/Ioskele
 unzip IoskeleyMono-Web.zip -d /tmp/ioskeley
 for w in ExtraLight Light Regular Medium SemiBold Bold Black; do
   /tmp/venv/bin/pyftsubset /tmp/ioskeley/WOFF2/IoskeleyMono-$w.woff2 --flavor=woff2 --layout-features='' \
-    --unicodes='U+0020-007E,U+00A9,U+00B7,U+00D7,U+2580,U+2584,U+2588,U+258C,U+2590,U+2591,U+2592,U+2593' \
+    --unicodes='U+0020-007E,U+00A9,U+00B7,U+00D7,U+00E9,U+2500,U+2502,U+250C,U+2510,U+2514,U+2518,U+251C,U+2524,U+252C,U+2534,U+253C,U+2580,U+2584,U+2588,U+258C,U+2590,U+2591,U+2592,U+2593' \
     --output-file=src/fonts/ioskeley-mono-$(echo $w | tr A-Z a-z)-subset.woff2
 done
 ```
@@ -112,7 +136,7 @@ than snapped to a pixel scale. Body text is 16px, clamped down so 72 columns
 still fit a narrow viewport, but never below 12px: under the `wide` breakpoint
 (546px, where the two part) the text reflows, nothing reveals on scroll, and
 only the art, sized by `--art-size`, keeps shrinking to hold 72 columns. `<p>`
-takes `leading-[2]`, a step looser than the terminal line.
+takes `leading-loose`, a step looser than the terminal line.
 
 **Everything else is markup.** The weights, the link lightbar and the prose
 rhythm are utilities on the elements that want them, so `main.css` holds the
@@ -124,22 +148,24 @@ more ]" button: full phosphor, filled with Link's lightbar on hover, focus and
 press.
 
 **The one dependency with a client.** Two modules import `motion`, for two
-things. `scripts/scroll-reveal.ts` takes `scroll()`: it reports how far an
+things. `scripts/scroll-reveal.ts` takes `scrollInfo()`: it reports how far an
 element has travelled, and the script scrubs a paused animation with
 `currentTime` — a width reveal, which types a line out, or a fade.
-`scripts/disclosure.ts` takes `spring()` and nothing else: it asks for the curve
-and samples it into the `linear()` easing a browser animation runs, so a job
-opens on a critically damped spring (`bounce: 0`, no overshoot) and its content
-fades over the same curve. Under `prefers-reduced-motion` the panel arrives at
+`lib/spring.ts` takes `spring()` and nothing else, at build time: it asks for the
+curve and samples it into the `linear()` easing a browser animation runs,
+critically damped (`bounce: 0`, no overshoot). `ui/Disclosure` and `ui/ShowMore`
+work their curves out with it and hand them to their scripts on an element, so
+only the numbers ship. `scripts/disclosure.ts` opens a job on it, and its
+content fades over the same curve. Under `prefers-reduced-motion` the panel arrives at
 its full height and only the fade runs, 150ms of it: the state change survives,
 the travel does not. A row opens and closes on a click, or on Enter or Space.
 An opening row also plays its line's reveal out, so a heading the scroll had only
 half drawn opens whole. When the close finishes the line travels back to wherever
 the scroll has got to meanwhile, over the span it had played, rather than
 snapping there. In both, animating and interpolating stay the
-browser's work, so no easing is reimplemented. The two chunks are about 6.5 KB
-gzipped together, and are the page's only script requests besides the stylesheet
-and the font.
+browser's work, so no easing is reimplemented. The reveal chunk is about 4 KB
+gzipped, and the page's only script request besides the stylesheet and the
+font; the rest is inline.
 
 **Markup carries the reveal.** An element opts in with `data-reveal`, and names
 its animation with `data-reveal="fade"` when it is not the default width reveal.
@@ -163,6 +189,10 @@ a scroll cannot cut it short. Then the scroll owns the element again: the row
 holds at full until the scroll catches up with it, and from there it is scrubbed
 like its neighbours — scroll back and it runs in reverse again. The two scripts
 do not import each other: one asks in an event, the other owns the animations.
+The list itself springs open (`scripts/show-more.ts`), on the same no-bounce
+spring as a job, from the height that keeps whatever follows it in place, so the
+button going and the rows arriving are one movement. Under
+`prefers-reduced-motion` the rows are simply there.
 
 **The art loses sync, but only while the page moves.** Glitches come from scroll
 events, not a timer (`scripts/glitch.ts`): the first scroll of a burst glitches
@@ -176,6 +206,12 @@ first glitches a block: a copy in the markup would double the art's bytes, and
 moving the rows themselves is impossible without giving each a box, which stops the
 block glyphs abutting and opens hairline seams. Only the hero and the blocks that
 reveal on scroll take part.
+
+The header's art is the exception. It is marked `glitch="loop"` and glitches on
+its own, page moving or not: runs of two to five glitches at the same pace, with
+0.8 to 2.5 s of quiet between them, and the scroll leaves it alone. The same
+rules hold: off screen, in a hidden tab, or under reduced motion its timer
+stops altogether, and coming back starts it again with a quiet gap.
 
 **The pointer is a caret.** `ui/Cursor.astro` draws the pointer as the terminal's
 own block: one column wide, phosphor, `mix-blend-mode: exclusion` so a glyph it
@@ -191,7 +227,7 @@ by dimmer followers a few ms apart. It is placed on the page, not the viewport,
 so a scroll carries it off. Its layer clips and is zero tall between trips, so it
 never changes the page's size. Like the caret, it only flies for a mouse or a
 pen, and not in a hidden tab or under `prefers-reduced-motion`. Its trail is
-made at launch and removed when the trip lands.
+made for the first trip and kept, hidden, for the rest.
 
 Its size, colours, trail, speed, timing and turns are `src/data/bit.json`, and a
 flight is a pure function of those settings, a seed and the screen
@@ -200,27 +236,28 @@ every setting is a slider, a change replays the current seed, `fly` draws a new
 one, and `save` writes `bit.json` — the file the page ships with.
 
 **The page is a stack of panels.** `Section.astro` wraps the header, each
-section and the footer: each panel is at least one viewport tall and centres its
-content, except the footer, which aligns to the end. It renders the element it
-is asked for, so the header stays a `<header>` and the footer a `<footer>`.
+section and the footer, each its own centred 72-column frame. It renders the
+element it is asked for, so the header stays a `<header>` and the footer a
+`<footer>`. The space between panels is each one's own top margin.
 
 **One thing stays hand-written.** The `[+]/[-]` disclosure markers are a rule in
 `ui/Toggle.astro`, because Tailwind cannot express generated content and should
 not try.
 
 **The art is content.** Each block in `src/data/art/` is two arrays — characters
-and colours — rendered to markup at build time and injected through a
-`display: contents` wrapper, so it does not become a component and costs no extra
-layout.
+and colours — rendered to markup at build time and injected by `ArtHtml` into
+one wrapper, which carries the block's classes, its reveal and its glitch, so the
+art itself never becomes components.
 
 **Two whitespace rules worth knowing.** The template compiler condenses runs of
 whitespace and drops leading or trailing whitespace inside an element, and this
 layout is a character grid. Significant spaces are interpolated from `GAP` and
 `SPACE` in `src/data/grid.ts`, and the job heading row is kept on one line.
 
-One element also carries a `prettier-ignore` for the same reason: Prettier's Astro
-printer reflows inline runs onto separate lines, which turns those spaces into
-newlines for the compiler to drop. Write the directive alone in its comment —
+Two elements also carry a `prettier-ignore` for the same reason, the rows in
+`ui/Table` and `jobs/LeaderRow`: Prettier's Astro printer reflows inline runs
+onto separate lines, which turns those spaces into newlines for the compiler to
+drop. Write the directive alone in its comment —
 Prettier matches the text exactly, so `prettier-ignore: why` is silently ignored and
 the row is reflowed anyway.
 
