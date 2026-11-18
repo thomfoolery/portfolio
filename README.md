@@ -36,6 +36,10 @@ put. Without scripts they are hidden, with the other buttons.
 | `pnpm preview`          | serves `dist/` on 4321                             |
 | `pnpm github`           | refreshes `src/data/github.json` from GitHub       |
 
+Under `pnpm dev`, `/ds` previews the design system: every colour token, with its
+contrast on black, and the face, its weights, sizes and leading, all read from
+`src/styles/main.css`. It is never built.
+
 `pnpm build` is the whole build: Astro renders the page and writes `dist/index.html`
 with its hashed stylesheet. The GitHub table reads a committed snapshot,
 `src/data/github.json`, so the build never touches the network; `pnpm github`
@@ -59,7 +63,7 @@ Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
 
 ```
 eslint.config.ts    type-aware lint; formatting is left to oxfmt
-astro.config.mjs    the build, plus the dev-only art-editor and lab integrations
+astro.config.mjs    the build, plus the dev-only art editor, bit lab and `/ds`
 .oxfmtrc.json       single quotes, no semicolons, 100 columns, Tailwind classes sorted
 src/
   assets/work/      the Work carousel's stills and loops, as uploaded
@@ -77,8 +81,10 @@ src/
                     work.ts, grid.ts, bit.json, github.json
     art/            the ASCII art, as character and colour arrays
   dev/              art-editor.ts and bit-lab.ts, which write art and the bit's
-                    settings back under `astro dev`; github.ts, which
-                    `pnpm github` runs to write data/github.json
+                    settings back under `astro dev`; design-system.ts and
+                    .astro, the `/ds` page of tokens, under `astro dev` only;
+                    github.ts, which `pnpm github` runs to write
+                    data/github.json. Not a Tailwind source
   fonts/            the Ioskeley Mono subsets, with their OFL licence
   layouts/          Base.astro, the document shell
   lib/              art.ts, bit.ts (the bit's settings and flight plan),

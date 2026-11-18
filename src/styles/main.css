@@ -1,10 +1,12 @@
 /* Sources are pinned to the code. Left to detect them on its own, Tailwind also
    scans the markdown, where ordinary prose like "inline" and "table" mints real
-   rules and quietly grows the stylesheet. */
+   rules and quietly grows the stylesheet. `src/dev` is left out for the same
+   reason: none of it ships, and `/ds` names every token it shows. */
 @import 'tailwindcss' source(none);
 @source '../**/*.astro';
 @source '../**/*.ts';
 @source '../**/*.html';
+@source not '../dev';
 
 /* Ioskeley Mono, subset to the characters this page draws — printable ASCII, ©,
    and the block glyphs the art is built from — plus the few the dev-only editor

@@ -1,0 +1,291 @@
+---
+/**
+ * `/ds`, under `pnpm dev` only (`dev/design-system.ts`): the design system's
+ * tokens, drawn in the page's own layout, type and caret.
+ *
+ * Every token is read from `styles/main.css` as it stands — the `@theme`
+ * colours, the font stack, the sizes and leading, one weight per `@font-face` —
+ * so a new ramp or weight shows up here with nothing else to edit, and a token
+ * renamed out from under it fails the page rather than going missing.
+ *
+ * `src/dev` is not a Tailwind source (main.css), so this page cannot grow the
+ * site's stylesheet: a utility here works only if the site uses it too. The
+ * rest is the scoped CSS below.
+ */
+import theme from '@/styles/main.css?raw'
+import Base from '@/layouts/Base.astro'
+import Section from '@/components/Section.astro'
+import Prompt from '@/components/ui/Prompt.astro'
+
+/** The value of a custom property in main.css, its whitespace collapsed. */
+function token(name: string) {
+  const value = new RegExp(`--${name}:\\s*([^;]+);`).exec(theme)?.[1]
+  if (!value) throw new Error(`ds: main.css declares no --${name}`)
+  return value.replace(/\s+/g, ' ').trim()
+}
+
+/** WCAG contrast against black, the page's one background. */
+function onBlack(hex: string) {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const channel = parseInt(hex.slice(i, i + 2), 16) / 255
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+  }) as [number, number, number]
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b + 0.05) / 0.05
+}
+
+/** The floor for body text, WCAG AA. */
+const AA = 4.5
+
+interface Swatch {
+  step?: number
+  hex: string
+  contrast: number
+}
+
+/** One ramp per colour, in the theme's order, steps rising; a lone colour is a ramp of one. */
+const ramps = new Map<string, Swatch[]>()
+for (const [, name, step, hex] of theme.matchAll(
+  /--color-([a-z]+)(?:-(\d+))?:\s*(#[0-9a-f]{6});/g,
+)) {
+  const ramp = ramps.get(name!) ?? []
+  ramp.push({ step: step ? Number(step) : undefined, hex: hex!, contrast: onBlack(hex!) })
+  ramps.set(
+    name!,
+    ramp.sort((a, b) => (a.step ?? 0) - (b.step ?? 0)),
+  )
+}
+
+/** Tailwind's name for each weight. */
+const WEIGHT_NAMES: Record<number, string> = {
+  100: 'thin',
+  200: 'extralight',
+  300: 'light',
+  400: 'normal',
+  500: 'medium',
+  600: 'semibold',
+  700: 'bold',
+  800: 'extrabold',
+  900: 'black',
+}
+const weights = [...theme.matchAll(/@font-face\s*{[^}]*?font-weight:\s*(\d+)/g)].map(([, weight]) =>
+  Number(weight),
+)
+
+const bodySize = /body\s*{[^}]*?font-size:\s*([^;]+);/.exec(theme)?.[1]
+if (!bodySize) throw new Error('ds: main.css gives body no font-size')
+
+const ASCII = String.fromCharCode(...Array.from({ length: 94 }, (_, i) => 0x21 + i))
+/** Everything past ASCII the subsets keep (README.md has the list). */
+const GLYPHS = '© · × é ─ │ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼ ▀ ▄ █ ▌ ▐ ░ ▒ ▓'
+const PANGRAM = 'Sphinx of black quartz, judge my vow. 0123456789'
+const PROSE =
+  'Every length in this layout is a character cell or a terminal line, never a pixel, so a paragraph falls on the grid the art is drawn on.'
+/** Block rows, one font size tall: at the art's leading they meet with no seam. */
+const ART = ['█▀▀▀▀▀▀▀▀█', '█ ░▒▓▓▒░ █', '█▄▄▄▄▄▄▄▄█'].join('\n')
+---
+
+<Base title="design system | thomfoolery" description="The design system's tokens.">
+  <h1 class="sr-only">Design system</h1>
+
+  <Section as="header" class="mt-3">
+    <Prompt>cd design-system</Prompt>
+    <p class="mt-1 leading-loose">
+      The tokens the page is drawn with, read from{' '}
+      <code class="text-green-900">src/styles/main.css</code> as it stands. Under{' '}
+      <code class="text-green-900">pnpm dev</code> only.
+    </p>
+  </Section>
+
+  <main>
+    <Section id="colors" labelledby="colors-title" class="mt-3">
+      <h2 id="colors-title" class="sr-only">
+        Colours
+      </h2>
+      <Prompt>cat colors.md</Prompt>
+      <p class="mt-1 leading-loose">
+        Under each swatch: its step, its value, and its contrast on black, the page's one
+        background. Below {AA}:1, too dim for body text, the contrast is dimmed too.
+      </p>
+
+      {[...ramps].map(([name, swatches]) => (
+        <>
+          <h3 class="mt-2 font-bold text-green-900">
+            --color-{name}
+            {swatches.length > 1 && '-*'}
+          </h3>
+          <ol class="ramp mt-0.5">
+            {swatches.map(({ step, hex, contrast }) => (
+              <li>
+                <div class="chip" style={`background-color: ${hex}`} />
+                <span class="font-black text-green-900">{step ?? name}</span>
+                <span>{hex}</span>
+                <span class:list={[contrast < AA && 'text-green-300']}>
+                  {contrast.toFixed(1)}:1
+                </span>
+              </li>
+            ))}
+          </ol>
+        </>
+      ))}
+    </Section>
+
+    <Section id="type" labelledby="type-title" class="mt-8">
+      <h2 id="type-title" class="sr-only">
+        Typography
+      </h2>
+      <Prompt>cat type.md</Prompt>
+
+      <h3 class="mt-2 font-bold text-green-900">--font-mono</h3>
+      <p class="mt-0.5 leading-loose">{token('font-mono')}</p>
+      <p class="specimen mt-1 text-green-900">{ASCII}</p>
+      <p class="specimen mt-1 text-green-900">{GLYPHS}</p>
+
+      <h3 class="mt-2 font-bold text-green-900">font-weight</h3>
+      <ol class="weights mt-0.5">
+        {weights.map((weight) => (
+          <li>
+            <span class="font-black text-green-900">{weight}</span>
+            <span>font-{WEIGHT_NAMES[weight]}</span>
+            <span class="pangram text-green-900" style={`font-weight: ${weight}`}>
+              {PANGRAM}
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      <h3 class="mt-2 font-bold text-green-900">font-size</h3>
+      <ol class="rows mt-0.5">
+        <li>
+          <span class="font-black text-green-900">body</span>
+          <code>{bodySize}</code>
+          <p class="leading-loose">
+            The text: 16px, clamped down so 72 columns still fit, to 12px, the floor for reading.
+            Below that it reflows. Now <output data-size class="text-green-900"></output>.
+          </p>
+        </li>
+        <li>
+          <span class="font-black text-green-900">--art-size</span>
+          <code>{token('art-size')}</code>
+          <p class="leading-loose">
+            The art: 72 columns across the window, at most 16px, so it always fits. Now{' '}
+            <output data-size class="text-(length:--art-size) text-green-900"></output>, drawn at
+            that size.
+          </p>
+        </li>
+      </ol>
+
+      <h3 class="mt-2 font-bold text-green-900">line-height</h3>
+      <ol class="rows mt-0.5">
+        <li>
+          <span class="font-black text-green-900">--spacing</span>
+          <code>{token('spacing')}</code>
+          <p>
+            One terminal line: everything's leading, and the unit of every length. <code>mt-3</code>{' '}
+            is three lines.
+          </p>
+          <p class="sample ruled mt-0.5">{PROSE}</p>
+        </li>
+        <li>
+          <span class="font-black text-green-900">leading-loose</span>
+          <code>2</code>
+          <p>
+            A paragraph's: every <code>&lt;p&gt;</code> of prose states it. Tailwind's own value.
+          </p>
+          <p class="sample ruled mt-0.5 leading-loose">{PROSE}</p>
+        </li>
+        <li>
+          <span class="font-black text-green-900">--leading-tight</span>
+          <code>{token('leading-tight')}</code>
+          <p>An art row's: one block tall, so the rows meet with no seam.</p>
+          <pre class="mt-0.5 leading-tight text-green-900">{ART}</pre>
+        </li>
+      </ol>
+    </Section>
+  </main>
+</Base>
+
+<style>
+  /* Nine steps of eight columns: a ramp fills the 72-column frame. Below the
+     `wide` breakpoint (546px, main.css) the text is 12px and that no longer
+     fits, so it folds into rows of three. */
+  .ramp {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+  }
+  /* As wide as its hex, with a column of space after it. The hairline is so
+     black shows on the black page: 1px, because it is a rule, not a cell. */
+  .chip {
+    height: calc(var(--spacing) * 2);
+    margin-right: 1ch;
+    border: 1px solid var(--color-green-100);
+  }
+  .ramp span {
+    display: block;
+    white-space: nowrap;
+  }
+
+  /* Weight, utility, specimen, on the grid's columns. */
+  .weights li {
+    display: grid;
+    grid-template-columns: 4ch 17ch 1fr;
+  }
+
+  /* A token, its value, then what it is for, under the value. */
+  .rows li {
+    display: grid;
+    grid-template-columns: 17ch 1fr;
+    margin-top: var(--spacing);
+  }
+  .rows li:first-child {
+    margin-top: 0;
+  }
+  .rows li > :not(:first-child) {
+    grid-column: 2;
+  }
+
+  .specimen,
+  .rows code {
+    overflow-wrap: anywhere;
+  }
+  /* Narrow enough to wrap a few times, so the leading shows. */
+  .sample {
+    max-width: 36ch;
+  }
+  /* A hairline under every line box, `lh` apart, so the leading can be seen. */
+  .ruled {
+    background-image: repeating-linear-gradient(
+      transparent 0 calc(1lh - 1px),
+      var(--color-green-100) calc(1lh - 1px) 1lh
+    );
+  }
+
+  @media (width < 546px) {
+    .ramp {
+      grid-template-columns: repeat(3, 1fr);
+      row-gap: var(--spacing);
+    }
+    .weights li {
+      grid-template-columns: 4ch 1fr;
+    }
+    .pangram {
+      grid-column: 1 / -1;
+    }
+    .rows li {
+      grid-template-columns: 1fr;
+    }
+    .rows li > :not(:first-child) {
+      grid-column: 1;
+    }
+  }
+</style>
+
+<script>
+  // Each size as the window has it now: an output shows its own computed size,
+  // so a resize can be watched crossing the clamp.
+  const show = () => {
+    for (const output of document.querySelectorAll('output[data-size]'))
+      output.textContent = getComputedStyle(output).fontSize
+  }
+  show()
+  addEventListener('resize', show)
+</script>

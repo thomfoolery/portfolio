@@ -124,6 +124,11 @@ dependency decision: ask first.
   setting, and the dev-only lab (`[bit]` under `pnpm dev`) writes it. Flights
   come from `plan()` in `lib/bit.ts`, which must stay pure — same settings,
   seed and screen, same path — or the lab's replay and save stop meaning anything.
+- `/ds` previews the design system under `pnpm dev` only
+  (`dev/design-system.astro`), reading every token from `main.css` rather than
+  listing it again. `src/dev` is not a Tailwind source, so nothing there can grow
+  the shipped stylesheet — and a utility used only there gets no rule: style
+  such a page with scoped CSS.
 - The site is one page, `src/pages/index.astro`, built from `src/components/`.
   The page holds the structure — the header panel, the nav, the sections in
   order, the footer — and each takes its fragments from `blockArt`. There is
