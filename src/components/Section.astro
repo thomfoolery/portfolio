@@ -25,7 +25,7 @@ const { as: Tag = 'section', id, labelledby, class: className } = Astro.props
       w-full keeps it from sizing to its content, where a job's rule is 72
       unbreakable columns and would widen a phone's page. It is a flex column so
       its children's margins never collapse through it. */}
-  <div class="flex flex-col mx-auto w-full wide:w-[72ch]">
+  <div class="mx-auto flex w-full flex-col wide:w-[72ch]">
     <slot />
   </div>
 </Tag>

@@ -674,8 +674,7 @@ function open(frame) {
       () => {
         glyph = char
         setStamp(null) // picking a character is what makes the area brush temporary
-        if (tool === 'text')
-          typeChar(char) // clicking a glyph types it
+        if (tool === 'text') typeChar(char) // clicking a glyph types it
         else {
           drawing.brush = true
           setTool('draw')

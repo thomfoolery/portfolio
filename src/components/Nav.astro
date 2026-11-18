@@ -12,7 +12,7 @@ import { navItems } from '@/data/nav'
     the footer instead of covering it. -1px tucks its bottom rule off screen. */}
 <nav
   aria-label="Main"
-  class="sticky -bottom-px order-last overflow-x-clip bg-black py-0.5 z-(--z-nav) border-t border-b border-green-200"
+  class="sticky -bottom-px z-(--z-nav) order-last overflow-x-clip border-t border-b border-green-200 bg-black py-0.5"
 >
   <div class="mx-auto wide:w-[72ch]">
     {/* On a touch screen each link's target is the bar's full two lines, and a
@@ -25,7 +25,7 @@ import { navItems } from '@/data/nav'
         <li class={item.right ? 'ml-auto' : undefined}>
           {item.key && <Hint>[{item.key}]</Hint>}
           <Link
-            class="relative no-underline py-[3px] px-[1ch] font-semibold pointer-coarse:before:absolute pointer-coarse:before:-inset-x-[1ch] pointer-coarse:before:top-1/2 pointer-coarse:before:h-2 pointer-coarse:before:-translate-y-1/2"
+            class="relative px-[1ch] py-[3px] font-semibold no-underline pointer-coarse:before:absolute pointer-coarse:before:-inset-x-[1ch] pointer-coarse:before:top-1/2 pointer-coarse:before:h-2 pointer-coarse:before:-translate-y-1/2"
             href={item.href}
             title={item.title}
             data-key={item.key}

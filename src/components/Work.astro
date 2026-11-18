@@ -24,7 +24,7 @@ const step =
 ---
 
 <section id="work" aria-labelledby="work-title" class="mt-4">
-  <div class="wide:max-w-[72ch] mx-auto">
+  <div class="mx-auto wide:max-w-[72ch]">
     <h2 id="work-title" class="sr-only font-bold">
       Work
     </h2>
@@ -32,11 +32,11 @@ const step =
     <p class="mt-2">Click to inspect</p>
   </div>
 
-  <div class="mt-0.5 overflow-x-clip w-full bg-green-100/25 border-y border-green-100 py-1">
+  <div class="mt-0.5 w-full overflow-x-clip border-y border-green-100 bg-green-100/25 py-1">
     <div
       id="work-tiles"
       data-work-tiles
-      class="w-full px-[calc((100vw-72ch)/2)] flex gap-1 overflow-x-scroll snap-x [scrollbar-color:transparent_transparent]"
+      class="flex w-full snap-x [scrollbar-color:transparent_transparent] gap-1 overflow-x-scroll px-[calc((100vw-72ch)/2)]"
     >
       {/* A tile is a button that enlarges its video. Its poster is also its
         background, so the tile is not left empty while the video is enlarged.
@@ -48,7 +48,7 @@ const step =
           data-work-title={item.title}
           aria-label={`Enlarge ${item.title}`}
           style={`background-image: url(${item.poster})`}
-          class="relative h-15 aspect-video snap-start scroll-ml-[calc((100vw-72ch)/2)] bg-green-100 bg-cover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-green-900 cursor-zoom-in!"
+          class="relative aspect-video h-15 cursor-zoom-in! snap-start scroll-ml-[calc((100vw-72ch)/2)] bg-green-100 bg-cover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-green-900"
         >
           <video
             data-work-video
@@ -59,7 +59,7 @@ const step =
             loop
             playsinline
             preload="none"
-            class="block w-full h-full object-cover border border-green-100"
+            class="block h-full w-full border border-green-100 object-cover"
           />
           {/* The loop's colour, taken away and given back: `color` blends the hue
             and saturation of green-900 over the grayscale video and leaves its
@@ -74,7 +74,7 @@ const step =
 
   <p
     data-work-steps
-    class="flex justify-between wide:max-w-[72ch] mx-auto gap-x-2 mt-0.5 leading-loose"
+    class="mx-auto mt-0.5 flex justify-between gap-x-2 leading-loose wide:max-w-[72ch]"
   >
     <Button
       data-work-step="-1"
@@ -93,7 +93,7 @@ const step =
       class="relative flex-1 overflow-clip text-center whitespace-nowrap"
       aria-hidden="true"
     >
-      <span class="block text-green-900 font-black uppercase">{work[0]?.title}</span>
+      <span class="block font-black text-green-900 uppercase">{work[0]?.title}</span>
     </span>
     <Button data-work-step="1" aria-controls="work-tiles" aria-label="Next" class={step}>
       [ &gt;&gt; ]

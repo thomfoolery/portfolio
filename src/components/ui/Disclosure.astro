@@ -31,7 +31,7 @@ const { duration, easing } = springCurve(0.2)
 ---
 
 <details class={className} data-disclosure data-duration={duration} data-easing={easing}>
-  <summary class="relative pointer-coarse:before:absolute pointer-coarse:before:inset-x-0 pointer-coarse:before:-inset-y-0.5 cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-900">
+  <summary class="relative cursor-pointer list-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-900 pointer-coarse:before:absolute pointer-coarse:before:inset-x-0 pointer-coarse:before:-inset-y-0.5 [&::-webkit-details-marker]:hidden">
     <slot name="summary" />
   </summary>
   <div data-disclosure-panel class="overflow-hidden">

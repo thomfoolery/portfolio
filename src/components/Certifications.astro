@@ -36,7 +36,7 @@ const measures = {
         data-reveal-range="80% 10%"
         data-folded={index > 2 ? '' : undefined}
       >
-        <h3 class="whitespace-pre max-wide:whitespace-pre-wrap font-bold">
+        <h3 class="font-bold whitespace-pre max-wide:whitespace-pre-wrap">
           <time datetime={honor.datetime} class="text-green-900">
             {honor.date}
           </time>
@@ -47,7 +47,7 @@ const measures = {
             <span class="text-green-900">{honor.title}</span>
           )}
         </h3>
-        <p class:list={['mt-1 ml-[2ch] wide:ml-[9ch] leading-loose', measures[honor.measure]]}>
+        <p class:list={['mt-1 ml-[2ch] leading-loose wide:ml-[9ch]', measures[honor.measure]]}>
           {honor.blurb}
         </p>
       </li>

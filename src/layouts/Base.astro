@@ -93,7 +93,7 @@ const dev = import.meta.env.DEV
       nav): preflight makes everything border-box, so a padded frame would come
       out 24px narrow. The body is a flex column so the nav, first in the
       markup, can be drawn last, docked to the bottom (Nav.astro). */}
-  <body class="flex flex-col antialiased font-light leading-1 text-green-500 selection:bg-green-600 selection:text-black">
+  <body class="flex flex-col leading-1 font-light text-green-500 antialiased selection:bg-green-600 selection:text-black">
     <slot />
     <Bit />
     <Cursor />

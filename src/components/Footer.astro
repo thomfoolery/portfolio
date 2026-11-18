@@ -61,11 +61,11 @@ const year = new Date().getFullYear()
     </Tr>
   </Table>
 
-  <div class="flex flex-col justify-end h-[300dvh]">
-    <ArtHtml art={blockArt.footer} hoverReveal class="peer ml-4 mt-12" />
+  <div class="flex h-[300dvh] flex-col justify-end">
+    <ArtHtml art={blockArt.footer} hoverReveal class="peer mt-12 ml-4" />
 
-    <p class="text-right my-1 leading-loose peer-hover:opacity-100 opacity-10 max-wide:opacity-100 duration-200 peer-hover:duration-500 transition-opacity">
-      <small class="bg-clip-text text-transparent bg-linear-to-r from-green-100 via-green-900 to-green-100 [font-size:inherit]">
+    <p class="my-1 text-right leading-loose opacity-10 transition-opacity duration-200 peer-hover:opacity-100 peer-hover:duration-500 max-wide:opacity-100">
+      <small class="bg-linear-to-r from-green-100 via-green-900 to-green-100 bg-clip-text [font-size:inherit] text-transparent">
         &copy; Thomas Yuill {year}
       </small>
     </p>
