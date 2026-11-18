@@ -18,7 +18,7 @@ fetched under `prefers-reduced-motion`. A tile is a button: clicking it zooms it
 video to fill the screen, two lines in from every edge, and a click anywhere,
 Esc or Tab zooms it back. The tile's own video moves into an overlay, so it keeps
 playing and nothing is fetched again; under reduced motion the zoom is instant.
-Under the carousel, `[ < prev ]` and `[ next > ]` step it to the neighbouring
+Under the carousel, `[ << ]` and `[ >> ]` step it to the neighbouring
 tile's snap, and dim at either end rather than disable, so keyboard focus stays
 put. Without scripts they are hidden, with the other buttons.
 

@@ -1,9 +1,7 @@
 ---
 import { getImage } from 'astro:assets'
-import { blockArt } from '@/data/art'
 import { work } from '@/data/work'
 import { springCurve } from '@/lib/spring'
-import ArtHtml from '@/components/ArtHtml.astro'
 import Button from '@/components/ui/Button.astro'
 
 // A tile is at most 683px wide (15 lines of 16px text, at 16:9), so a 1366px
@@ -25,16 +23,16 @@ const step =
   'aria-disabled:cursor-default aria-disabled:text-green-200 aria-disabled:hover:bg-transparent aria-disabled:hover:text-green-200'
 ---
 
-<section id="work" aria-labelledby="work-title" class="mt-8">
+<section id="work" aria-labelledby="work-title" class="mt-4">
   <h2 id="work-title" class="sr-only font-bold">
     Work
   </h2>
 
-  <div class="wide:max-w-[72ch] mx-auto">
+  {/* <div class="wide:max-w-[72ch] mx-auto">
     <ArtHtml art={blockArt.work} scrollReveal class="mt-1" />
 
     <p class="mt-2">Click to reveal</p>
-  </div>
+  </div> */}
 
   <div class="mt-1 overflow-x-clip w-full">
     <div

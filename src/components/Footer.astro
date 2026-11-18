@@ -11,7 +11,7 @@ import Tr from '@/components/ui/Tr.astro'
 const year = new Date().getFullYear()
 ---
 
-<Section as="footer" class="overflow-clip mt-12">
+<Section as="footer" class="mt-12">
   <ArtHtml art={blockArt.eyes} fullWidth scrollReveal />
 
   <Prompt class="mt-12">cat design.md</Prompt>
@@ -61,11 +61,13 @@ const year = new Date().getFullYear()
     </Tr>
   </Table>
 
-  <ArtHtml art={blockArt.footer} hoverReveal class="peer ml-4 mt-12" />
+  <div class="flex flex-col justify-end h-[300dvh]">
+    <ArtHtml art={blockArt.footer} hoverReveal class="peer ml-4 mt-12" />
 
-  <p class="text-right my-1 leading-loose peer-hover:opacity-100 opacity-10 max-wide:opacity-100 duration-200 peer-hover:duration-500 transition-opacity">
-    <small class="bg-clip-text text-transparent bg-linear-to-r from-green-100 via-green-900 to-green-100 [font-size:inherit]">
-      &copy; Thomas Yuill {year}
-    </small>
-  </p>
+    <p class="text-right my-1 leading-loose peer-hover:opacity-100 opacity-10 max-wide:opacity-100 duration-200 peer-hover:duration-500 transition-opacity">
+      <small class="bg-clip-text text-transparent bg-linear-to-r from-green-100 via-green-900 to-green-100 [font-size:inherit]">
+        &copy; Thomas Yuill {year}
+      </small>
+    </p>
+  </div>
 </Section>

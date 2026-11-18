@@ -25,32 +25,32 @@ export type WorkItem = {
 
 export const work: WorkItem[] = [
   {
-    title: "LiveKit's homepage",
+    title: 'LiveKit - Homepage',
     poster: livekitPoster,
     video: livekitVideo,
   },
   {
-    title: "LiveKit's infrastructure globe",
+    title: 'LiveKit - infrastructure globe',
     poster: livekitGlobePoster,
     video: livekitGlobeVideo,
   },
   {
-    title: "LiveKit's Agents UI page",
+    title: 'LiveKit - Agents UI page',
     poster: livekitAgentsUiPoster,
     video: livekitAgentsUiVideo,
   },
   {
-    title: "LiveKit's Agents UI docs",
+    title: 'LiveKit - Agents UI docs',
     poster: livekitAgentUiDocsPoster,
     video: livekitAgentUiDocsVideo,
   },
   {
-    title: "LiveKit's pricing page",
+    title: 'LiveKit - pricing page',
     poster: livekitPricingPoster,
     video: livekitPricingVideo,
   },
   {
-    title: "Shopify's GraphQL Admin API reference",
+    title: 'Shopify - GraphQL Admin API reference',
     poster: shopifyGraphqlPoster,
     video: shopifyGraphqlVideo,
   },

@@ -9,10 +9,9 @@ export type NavItem = {
 }
 
 export const navItems: NavItem[] = [
-  { href: '#welcome', label: 'whoami', key: '1' },
+  { href: '#whoami', label: 'whoami', key: '1' },
   { href: '#experience', label: 'xp', key: '2' },
-  { href: '#work', label: 'work', key: '3' },
-  { href: '#honors', label: 'certs', key: '4' },
+  { href: '#honors', label: 'certs', key: '3' },
   {
     href: 'https://github.com/thomasyuill-livekit',
     label: 'github',
