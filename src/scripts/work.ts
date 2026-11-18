@@ -155,6 +155,74 @@ if (scroller) {
     return forward ? all.find((stop) => stop > from + 1) : all.findLast((stop) => stop < from - 1)
   }
 
+  const caption = document.querySelector<HTMLElement>('[data-work-caption]')
+  const tiles = [...scroller.children] as HTMLElement[]
+  let captioned = 0
+
+  /** The tile the scroller is nearest to, or headed for. */
+  const nearest = () => {
+    const all = stops()
+    const at = heading ?? scroller.scrollLeft
+    return all.reduce(
+      (best, stop, index) => (Math.abs(stop - at) < Math.abs(all[best]! - at) ? index : best),
+      0,
+    )
+  }
+
+  /**
+   * Names the current tile: the old name leaves for the side the carousel is
+   * leaving, the new one arrives from the side it is coming from, and both play
+   * at once. The outgoing span is taken out of flow so the box — and the row
+   * either side of it — keep their size while the two cross, which is what
+   * `popLayout` does for `AnimatePresence` in Motion for React. This page has no
+   * React, so the same thing is arranged here: absolute exits, in-flow entry.
+   */
+  const leave = (span: HTMLElement, forward: boolean) => {
+    span.style.position = 'absolute'
+    span.style.inset = '0'
+    span
+      .animate(
+        [
+          { transform: 'none', opacity: 1 },
+          { transform: `translateX(${forward ? '-2ch' : '2ch'})`, opacity: 0 },
+        ],
+        { duration: 180, easing: 'cubic-bezier(0.23, 1, 0.32, 1)', fill: 'forwards' },
+      )
+      .finished.then(
+        () => span.remove(),
+        () => span.remove(),
+      )
+  }
+
+  const name = () => {
+    const index = nearest()
+    if (!caption || index === captioned) return
+
+    const forward = index > captioned
+    captioned = index
+    const title = tiles[index]?.dataset.workTitle ?? ''
+    const outgoing = [...caption.children] as HTMLElement[]
+
+    const incoming = document.createElement('span')
+    incoming.className = outgoing[0]?.className ?? 'block'
+    incoming.textContent = title
+    caption.append(incoming)
+
+    if (reduced.matches) {
+      for (const span of outgoing) span.remove()
+      return
+    }
+
+    for (const span of outgoing) leave(span, forward)
+    incoming.animate(
+      [
+        { transform: `translateX(${forward ? '2ch' : '-2ch'})`, opacity: 0 },
+        { transform: 'none', opacity: 1 },
+      ],
+      { duration: 220, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
+    )
+  }
+
   /** Dims a step with nowhere to go. */
   const mark = () => {
     if (heading !== undefined && Math.abs(scroller.scrollLeft - heading) < 1) heading = undefined
@@ -174,7 +242,23 @@ if (scroller) {
     })
   }
 
-  scroller.addEventListener('scroll', mark, { passive: true })
+  // One layout read per frame, however many scroll events arrive: both `mark`
+  // and `name` measure every tile, and doing it per event was the jank.
+  let queued = false
+  const sync = () => {
+    queued = false
+    mark()
+    name()
+  }
+  scroller.addEventListener(
+    'scroll',
+    () => {
+      if (queued) return
+      queued = true
+      requestAnimationFrame(sync)
+    },
+    { passive: true },
+  )
   scroller.addEventListener('scrollend', () => {
     heading = undefined
     mark()

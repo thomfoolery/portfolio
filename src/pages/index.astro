@@ -1,6 +1,5 @@
 ---
 import Nav from '@/components/Nav.astro'
-// import Posts from '@/components/Posts.astro'
 import Base from '@/layouts/Base.astro'
 import Header from '@/components/Header.astro'
 import WhoAmI from '@/components/WhoAmI.astro'
@@ -8,6 +7,8 @@ import Experience from '@/components/Experience.astro'
 import Work from '@/components/Work.astro'
 import Certifications from '@/components/Certifications.astro'
 import Footer from '@/components/Footer.astro'
+import ArtHtml from '@/components/ArtHtml.astro'
+import { blockArt } from '@/data/art'
 ---
 
 <Base
@@ -20,7 +21,13 @@ import Footer from '@/components/Footer.astro'
   <main>
     <Work />
     <WhoAmI />
-    {/* <Posts /> */}
+
+    <div class="bg-green-100/25 border-y border-green-100 mt-8">
+      <div class="max-w-[72ch] mx-auto">
+        <ArtHtml art={blockArt.prism} fullWidth scrollReveal />
+      </div>
+    </div>
+
     <Experience />
     <Certifications />
   </main>

@@ -24,17 +24,15 @@ const step =
 ---
 
 <section id="work" aria-labelledby="work-title" class="mt-4">
-  <h2 id="work-title" class="sr-only font-bold">
-    Work
-  </h2>
+  <div class="wide:max-w-[72ch] mx-auto">
+    <h2 id="work-title" class="sr-only font-bold">
+      Work
+    </h2>
 
-  {/* <div class="wide:max-w-[72ch] mx-auto">
-    <ArtHtml art={blockArt.work} scrollReveal class="mt-1" />
+    <p class="mt-2">Click to inspect</p>
+  </div>
 
-    <p class="mt-2">Click to reveal</p>
-  </div> */}
-
-  <div class="mt-1 overflow-x-clip w-full">
+  <div class="mt-0.5 overflow-x-clip w-full bg-green-100/25 border-y border-green-100 py-1">
     <div
       id="work-tiles"
       data-work-tiles
@@ -47,6 +45,7 @@ const step =
         <button
           type="button"
           data-work-tile
+          data-work-title={item.title}
           aria-label={`Enlarge ${item.title}`}
           style={`background-image: url(${item.poster})`}
           class="relative h-15 aspect-video snap-start scroll-ml-[calc((100vw-72ch)/2)] bg-green-100 bg-cover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-green-900 cursor-zoom-in!"
@@ -71,24 +70,35 @@ const step =
     </div>
 
     {/* Steps the carousel a tile at a time, to the next snap either way. */}
-    <p
-      data-work-steps
-      class="flex justify-between wide:max-w-[72ch] mx-auto gap-x-2 mt-1 leading-loose"
-    >
-      <Button
-        data-work-step="-1"
-        aria-controls="work-tiles"
-        aria-label="Previous"
-        aria-disabled="true"
-        class={step}
-      >
-        [ &lt;&lt; ]
-      </Button>
-      <Button data-work-step="1" aria-controls="work-tiles" aria-label="Next" class={step}>
-        [ &gt;&gt; ]
-      </Button>
-    </p>
   </div>
+
+  <p
+    data-work-steps
+    class="flex justify-between wide:max-w-[72ch] mx-auto gap-x-2 mt-0.5 leading-loose"
+  >
+    <Button
+      data-work-step="-1"
+      aria-controls="work-tiles"
+      aria-label="Previous"
+      aria-disabled="true"
+      class={step}
+    >
+      [ &lt;&lt; ]
+    </Button>
+    {/* The current tile's title, between the steps. The box clips and centres;
+          the script keeps one span per name in it and takes the outgoing one out
+          of flow, so the two can cross without the row shifting. */}
+    <span
+      data-work-caption
+      class="relative flex-1 overflow-clip text-center whitespace-nowrap"
+      aria-hidden="true"
+    >
+      <span class="block text-green-900 font-black uppercase">{work[0]?.title}</span>
+    </span>
+    <Button data-work-step="1" aria-controls="work-tiles" aria-label="Next" class={step}>
+      [ &gt;&gt; ]
+    </Button>
+  </p>
 
   {/* The enlarged video's overlay. It sits outside the carousel, whose reveal
     would fade it and whose scroller would clip it, and it is not a <dialog>:
