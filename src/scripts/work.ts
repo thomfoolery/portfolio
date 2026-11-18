@@ -48,7 +48,7 @@ for (const video of videos) sight.observe(video)
 document.addEventListener('visibilitychange', tend)
 reduced.addEventListener('change', tend)
 
-/** The transform that puts the box `at` over the box `over`: both are 16:9. */
+/** The transform that puts the box `at` over the box `over`: both are one shape. */
 const onto = (over: DOMRect, at: DOMRect) =>
   `translate(${over.left - at.left}px, ${over.top - at.top}px) scale(${over.width / at.width})`
 

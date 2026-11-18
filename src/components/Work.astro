@@ -4,12 +4,14 @@ import { work } from '@/data/work'
 import { springCurve } from '@/lib/spring'
 import Button from '@/components/ui/Button.astro'
 
-// A tile is at most 683px wide (15 lines of 16px text, at 16:9), so a 1366px
-// poster covers a 2x screen. AVIF makes it about a quarter of the JPEG.
+// A tile is 15 lines tall, at most 384px (16px text), whatever its shape, so a
+// poster 768px tall covers a 2x screen. AVIF makes it about a quarter of the JPEG.
+// The tile and its enlarged video take the poster's shape, as `ratio`.
 const tiles = await Promise.all(
   work.map(async (item) => ({
     ...item,
-    poster: (await getImage({ src: item.poster, width: 1366, format: 'avif' })).src,
+    ratio: `${item.poster.width} / ${item.poster.height}`,
+    poster: (await getImage({ src: item.poster, height: 768, format: 'avif' })).src,
   })),
 )
 
@@ -47,14 +49,15 @@ const step =
           data-work-tile
           data-work-title={item.title}
           aria-label={`Enlarge ${item.title}`}
-          style={`background-image: url(${item.poster})`}
-          class="relative aspect-video h-15 cursor-zoom-in! snap-start scroll-ml-[calc((100vw-72ch)/2)] bg-green-100 bg-cover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-green-900"
+          style={`aspect-ratio: ${item.ratio}; background-image: url(${item.poster})`}
+          class="relative h-15 cursor-zoom-in! snap-start scroll-ml-[calc((100vw-72ch)/2)] bg-green-100 bg-cover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-green-900"
         >
           <video
             data-work-video
             src={item.video}
             poster={item.poster}
             aria-label={item.title}
+            style={`--ratio: ${item.ratio}`}
             muted
             loop
             playsinline
@@ -143,14 +146,15 @@ const step =
     visibility: hidden;
   }*/
 
-  /* Enlarged, a video is 16:9 and as large as fits inside the overlay's padding
-     of two lines a side, over the backdrop. Its transform starts from the top
-     left, which is what the script's zoom is worked out from. */
+  /* Enlarged, a video keeps its tile's shape and is as large as fits inside the
+     overlay's padding of two lines a side, over the backdrop. The shape is
+     `--ratio` on the video itself, since it leaves the tile. Its transform starts
+     from the top left, which is what the script's zoom is worked out from. */
   .zoom video {
     position: relative;
-    width: min(100%, calc((100dvh - var(--spacing) * 4) * 16 / 9));
+    width: min(100%, calc((100dvh - var(--spacing) * 4) * var(--ratio)));
     height: auto;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--ratio);
     transform-origin: 0 0;
   }
 </style>

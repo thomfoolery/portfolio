@@ -11,10 +11,11 @@ carousel's loops, which are small enough that the build inlines them into the
 page. The spring the disclosures and lists open on is worked out at build time,
 so its solver never ships.
 
-The heavy part is the Work carousel. Each tile is a poster, made a 1366px AVIF
-at build time (20 to 40 KB), and a silent loop that is fetched only when its
-tile first comes on screen, plays only while it is on screen, and is never
-fetched under `prefers-reduced-motion`. A tile is a button: clicking it zooms its
+The heavy part is the Work carousel. Each tile is a poster, made a 768px-tall
+AVIF at build time (20 to 40 KB) in the poster's own shape, so a portrait loop
+makes a narrow tile, and a silent loop that is fetched only when its tile first
+comes on screen, plays only while it is on screen, and is never fetched under
+`prefers-reduced-motion`. A tile is a button: clicking it zooms its
 video to fill the screen, two lines in from every edge, and a click anywhere,
 Esc or Tab zooms it back. The tile's own video moves into an overlay, so it keeps
 playing and nothing is fetched again; under reduced motion the zoom is instant.
