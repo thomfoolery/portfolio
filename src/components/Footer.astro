@@ -11,9 +11,7 @@ import Tr from '@/components/ui/Tr.astro'
 const year = new Date().getFullYear()
 ---
 
-<Section as="footer" class="mt-12">
-  <ArtHtml art={blockArt.eyes} fullWidth scrollReveal />
-
+<Section as="footer" class="">
   <Prompt class="mt-12">cat design.md</Prompt>
 
   <Table class="mt-0.5">
@@ -60,6 +58,8 @@ const year = new Date().getFullYear()
       </Td>
     </Tr>
   </Table>
+
+  <ArtHtml art={blockArt.eyes} fullWidth scrollReveal class="mt-4" />
 
   <div class="flex h-[300dvh] flex-col justify-end">
     <ArtHtml art={blockArt.footer} hoverReveal class="peer mt-12 ml-4" />
