@@ -4,9 +4,9 @@ import tseslint from 'typescript-eslint'
 import { defineConfig } from 'eslint/config'
 
 /**
- * Prettier owns formatting, so `eslint-config-prettier` turns off every rule that
- * would have an opinion about it. `pnpm lint` and `pnpm format` stay separate
- * jobs.
+ * oxfmt owns formatting, so `eslint-config-prettier` turns off every rule that
+ * would have an opinion about it: it is named for Prettier but serves any
+ * formatter. `pnpm lint` and `pnpm format` stay separate jobs.
  */
 export default defineConfig(
   { ignores: ['dist/**', '.astro/**', 'node_modules/**'] },

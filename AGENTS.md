@@ -58,15 +58,17 @@ Every length is a character cell or a terminal line.
    source line. See `JobHeading.astro`.
 2. **Preflight is border-box.** A padded `w-[72ch]` frame comes out 24px narrow
    and the art gets clipped. The gutter lives on `body`, not on the frames.
-3. **Prettier would reflow the grid.** Its Astro printer breaks inline runs onto
-   separate lines, which turns those significant spaces into newlines for the
-   compiler to drop. Such a row carries a `prettier-ignore`, with the
-   reason in the comment above. Write the directive alone in its comment: Prettier
-   matches the text exactly, so `prettier-ignore: why` is silently ignored and the
-   row is reflowed anyway. After any `pnpm format`, the guards are what keep the
-   design still — check them before trusting it.
-   Use the JSX form, `{/* prettier-ignore */}`. The HTML form works for Prettier
-   too, but Astro emits it into the page, so it ships a comment per use.
+3. **The formatter would reflow the grid.** oxfmt formats `.astro` with
+   Prettier's Astro printer, bundled, which breaks inline runs onto separate
+   lines and turns those significant spaces into newlines for the compiler to
+   drop. Such a row carries a `prettier-ignore`, with the reason in the comment
+   above: that is the directive Astro markup reads, and `oxfmt-ignore` is not.
+   Write it alone in its comment: it matches the text exactly, so
+   `prettier-ignore: why` is silently ignored and the row is reflowed anyway.
+   After any `pnpm format`, the guards are what keep the design still — check
+   them before trusting it.
+   Use the JSX form, `{/* prettier-ignore */}`. The HTML form works too, but
+   Astro emits it into the page, so it ships a comment per use.
 
 ## Verify against the previous output, do not eyeball it
 
@@ -83,9 +85,15 @@ what was not.
 ## Checks
 
 `pnpm typecheck`, `pnpm lint`, `pnpm format:check` and `pnpm build` all pass on
-`HEAD`. Lint is type-aware, and Prettier owns formatting: ESLint is configured
-with `skip-formatting`, so the two do not overlap. Run `pnpm lint` and
-`pnpm format` before committing.
+`HEAD`. Lint is type-aware, and oxfmt owns formatting: ESLint is configured
+with `eslint-config-prettier`, which turns its formatting rules off for any
+formatter, so the two do not overlap. Run `pnpm lint` and `pnpm format` before
+committing.
+
+oxfmt also sorts Tailwind classes, in `class`, `class:list` and `cn()`, reading
+the theme and the custom variants from `src/styles/main.css` (`.oxfmtrc.json`).
+A class string held in a constant is not sorted. oxfmt is pinned to an exact
+version, since a 0.x release can change its output.
 
 `pnpm test:e2e` from the parent file does not exist here. Adding Playwright is a
 dependency decision: ask first.

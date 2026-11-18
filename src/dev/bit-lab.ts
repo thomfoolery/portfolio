@@ -17,7 +17,7 @@ import type { BitConfig } from '../lib/bit'
 const ENDPOINT = '/__bit-lab/save'
 const TARGET = 'src/data/bit.json'
 
-/** Keys in a fixed order, ranges kept on one line: the file Prettier would write. */
+/** Keys in a fixed order, ranges kept on one line: the file oxfmt would write. */
 function serialize(config: BitConfig) {
   const order: (keyof BitConfig)[] = [
     'seed',

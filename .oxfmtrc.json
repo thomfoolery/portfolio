@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "semi": false,
+  "printWidth": 100,
+  "trailingComma": "all",
+  "sortPackageJson": false,
+  "astro": {},
+  "sortTailwindcss": {
+    "stylesheet": "./src/styles/main.css",
+    "functions": ["cn"]
+  },
+  "ignorePatterns": ["dist/", ".astro/", "node_modules/", "pnpm-lock.yaml", "src/data/art/*.json"]
+}

@@ -31,7 +31,7 @@ put. Without scripts they are hidden, with the other buttons.
 | `pnpm build`            | prerenders the page into `dist/`                   |
 | `pnpm typecheck`        | `astro check`                                      |
 | `pnpm lint`             | ESLint, type-aware, with eslint-plugin-astro       |
-| `pnpm format`           | Prettier, in place. `format:check` verifies        |
+| `pnpm format`           | oxfmt, in place. `format:check` verifies           |
 | `pnpm preview`          | serves `dist/` on 4321                             |
 | `pnpm github`           | refreshes `src/data/github.json` from GitHub       |
 
@@ -57,9 +57,9 @@ Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
 ## Layout
 
 ```
-eslint.config.ts    type-aware lint; formatting is left to Prettier
+eslint.config.ts    type-aware lint; formatting is left to oxfmt
 astro.config.mjs    the build, plus the dev-only art-editor and lab integrations
-.prettierrc.json    single quotes, no semicolons, 100 columns
+.oxfmtrc.json       single quotes, no semicolons, 100 columns, Tailwind classes sorted
 src/
   assets/work/      the Work carousel's stills and loops, as uploaded
   components/       the shell and the sections: Section, Nav, Header, WhoAmI,
@@ -255,14 +255,15 @@ layout is a character grid. Significant spaces are interpolated from `GAP` and
 `SPACE` in `src/data/grid.ts`, and the job heading row is kept on one line.
 
 Two elements also carry a `prettier-ignore` for the same reason, the rows in
-`ui/Table` and `jobs/LeaderRow`: Prettier's Astro printer reflows inline runs
-onto separate lines, which turns those spaces into newlines for the compiler to
-drop. Write the directive alone in its comment —
-Prettier matches the text exactly, so `prettier-ignore: why` is silently ignored and
-the row is reflowed anyway.
+`ui/Table` and `jobs/LeaderRow`: oxfmt formats `.astro` with Prettier's Astro
+printer, which reflows inline runs onto separate lines, and that turns those
+spaces into newlines for the compiler to drop. `prettier-ignore` is the directive
+Astro markup reads; `oxfmt-ignore` is not. Write it alone in its comment — it
+matches the text exactly, so `prettier-ignore: why` is silently ignored and the
+row is reflowed anyway.
 
-Use the JSX form, `{/* prettier-ignore */}`. The HTML form works for Prettier too,
-but Astro emits it into the page as a comment.
+Use the JSX form, `{/* prettier-ignore */}`. The HTML form works too, but Astro
+emits it into the page as a comment.
 
 **The art goes through one component.** `ArtHtml` injects the `src/data/art`
 fragments and holds the single exemption from `astro/no-set-html-directive`, with its reason. The
