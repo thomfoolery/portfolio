@@ -223,14 +223,15 @@ is only hidden once the script has run — a touch screen keeps its own.
 
 **A stray bit crosses now and then.** `ui/Bit.astro` flies a filled square
 across what is on screen, behind the text. It glides only up, down, left or
-right, turning at right angles, with a fading trail: the same keyframes played
-by dimmer followers a few ms apart. It is placed on the page, not the viewport,
-so a scroll carries it off. Its layer clips and is zero tall between trips, so it
-never changes the page's size. Like the caret, it only flies for a mouse or a
-pen, and not in a hidden tab or under `prefers-reduced-motion`. Its trail is
-made for the first trip and kept, hidden, for the rest.
+right, turning at right angles, and leaves a fading trail that nothing draws:
+on a canvas the size of the screen, every frame dims what is there and draws the
+bit where it is now, stretched back through any corner to where it was the frame
+before, so the line is unbroken at any speed. The canvas is pinned to the page
+where the trip starts, so a scroll carries it off, and it is hidden between
+trips. Like the caret, it only flies for a mouse or a pen, and not in a hidden
+tab or under `prefers-reduced-motion`.
 
-Its size, colours, trail, speed, timing and turns are `src/data/bit.json`, and a
+Its size, colours, fade, speed, timing and turns are `src/data/bit.json`, and a
 flight is a pure function of those settings, a seed and the screen
 (`lib/bit.ts`). Under `pnpm dev` the **[bit]** button opens a lab over the page:
 every setting is a slider, a change replays the current seed, `fly` draws a new

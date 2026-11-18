@@ -22,11 +22,10 @@ export interface BitConfig {
   size: number
   lead: Green
   trail: Green
-  /** how many copies replay the flight behind the bit */
-  followers: number
-  /** ms each follower runs behind the one ahead of it */
-  lag: number
-  /** the trail's opacity is `(1 - i / n) ** fade`: 1 is linear, more dies off sooner */
+  /**
+   * how much of the trail dims every 60th of a second: more is a shorter trail
+   * that dies sooner. Measured in time, not frames, so every screen draws the same.
+   */
   fade: number
   /** px per second, drawn afresh for each leg so the flight lurches */
   speed: Range
@@ -40,6 +39,20 @@ export interface BitConfig {
   swerve: number
 }
 
+/** Every setting, in the order `data/bit.json` lists them. */
+export const KEYS = [
+  'seed',
+  'size',
+  'lead',
+  'trail',
+  'fade',
+  'speed',
+  'gap',
+  'turns',
+  'stride',
+  'swerve',
+] as const satisfies readonly (keyof BitConfig)[]
+
 type Scalar = Exclude<keyof BitConfig, 'lead' | 'trail'>
 
 /**
@@ -50,9 +63,7 @@ type Scalar = Exclude<keyof BitConfig, 'lead' | 'trail'>
 export const BOUNDS: Record<Scalar, { min: number; max: number; step: number }> = {
   seed: { min: 0, max: 2 ** 32 - 1, step: 1 },
   size: { min: 2, max: 24, step: 1 },
-  followers: { min: 0, max: 256, step: 1 },
-  lag: { min: 1, max: 40, step: 1 },
-  fade: { min: 0.25, max: 4, step: 0.05 },
+  fade: { min: 0.01, max: 0.5, step: 0.01 },
   speed: { min: 50, max: 3000, step: 10 },
   gap: { min: 200, max: 60000, step: 100 },
   turns: { min: 0, max: 8, step: 1 },
@@ -63,9 +74,13 @@ export const BOUNDS: Record<Scalar, { min: number; max: number; step: number }> 
 
 const RANGES = ['speed', 'gap', 'turns', 'stride'] as const
 /** counts and whole pixels; a slider cannot reach a fraction of these */
-const WHOLE = ['seed', 'size', 'followers', 'lag', 'turns'] as const
+const WHOLE = ['seed', 'size', 'turns'] as const
 
-/** Checks a settings object field by field and says which one is wrong. */
+/**
+ * Checks a settings object field by field and says which one is wrong. What
+ * comes back has every setting in `KEYS` order and nothing else, so a retired
+ * one in an old save is dropped rather than written back.
+ */
 export function parseBitConfig(value: unknown): BitConfig {
   if (typeof value !== 'object' || value === null)
     throw new Error('bit: settings are not an object')
@@ -95,7 +110,7 @@ export function parseBitConfig(value: unknown): BitConfig {
       throw new Error(`bit: ${key} must be one of ${GREENS.join(', ')}`)
   }
 
-  return input as unknown as BitConfig
+  return Object.fromEntries(KEYS.map((key) => [key, input[key]])) as unknown as BitConfig
 }
 
 /** A small seeded generator, so a seed is a flight. */
@@ -114,15 +129,22 @@ export const randomSeed = () => Math.floor(Math.random() * 2 ** 32)
 
 type Axis = 'x' | 'y'
 
-/** The part of the page on screen as the trip starts, in page coordinates. */
-export interface Screen {
-  box: Record<Axis, Range>
-  /** the bit's own box, so it can start and finish just past an edge */
-  size: Record<Axis, number>
+/**
+ * The part of the page on screen as the trip starts, in page coordinates: where
+ * the bit's top left corner may go.
+ */
+export type Box = Record<Axis, Range>
+
+/** Where the bit's top left corner is, `time` ms into the trip. */
+export interface Point {
+  x: number
+  y: number
+  time: number
 }
 
+/** The trip as the bit's start, each corner it turns and its end. */
 export interface Flight {
-  keyframes: Keyframe[]
+  points: Point[]
   duration: number
 }
 
@@ -131,14 +153,14 @@ export interface Flight {
  * turn, and out off an edge. Every leg is straight and every turn is a right
  * angle.
  */
-export function plan(config: BitConfig, seed: number, { box, size }: Screen): Flight {
+export function plan(config: BitConfig, seed: number, box: Box): Flight {
   const random = mulberry32(seed)
   const between = ([min, max]: Range) => min + random() * (max - min)
   const coin = () => random() < 0.5
 
   // Just past an edge, so it enters and leaves whole.
   const outside = (axis: Axis, forward: boolean) =>
-    forward ? box[axis][1] + size[axis] : box[axis][0] - size[axis]
+    forward ? box[axis][1] + config.size : box[axis][0] - config.size
 
   // The edge it enters by sets the crossing: the axis it travels along and
   // which way. The other axis is where it wanders.
@@ -177,11 +199,22 @@ export function plan(config: BitConfig, seed: number, { box, size }: Screen): Fl
     points.push({ ...pos, time })
   }
 
-  return {
-    keyframes: points.map((point) => ({
-      transform: `translate3d(${point.x}px, ${point.y}px, 0)`,
-      offset: time ? point.time / time : 0,
-    })),
-    duration: time,
+  return { points, duration: time }
+}
+
+/**
+ * The way the bit went between two moments of a trip: where it was, each corner
+ * it turned since, and where it is. Every step from one to the next is along a
+ * single axis, so a frame that covers a corner draws an L, not a diagonal.
+ */
+export function trace({ points }: Flight, from: number, to: number) {
+  const at = (time: number) => {
+    const next = points.findIndex((point) => point.time >= time)
+    if (next <= 0) return next === 0 ? points[0]! : points.at(-1)!
+    const a = points[next - 1]!
+    const b = points[next]!
+    const share = (time - a.time) / (b.time - a.time)
+    return { x: a.x + (b.x - a.x) * share, y: a.y + (b.y - a.y) * share, time }
   }
+  return [at(from), ...points.filter((point) => point.time > from && point.time < to), at(to)]
 }

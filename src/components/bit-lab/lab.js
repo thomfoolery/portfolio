@@ -26,9 +26,7 @@ const CONTROLS = [
   { key: 'size', label: 'size px' },
   { key: 'lead', label: 'lead', green: true },
   { key: 'trail', label: 'trail', green: true },
-  { key: 'followers', label: 'followers' },
-  { key: 'lag', label: 'lag ms' },
-  { key: 'fade', label: 'fade' },
+  { key: 'fade', label: 'fade /60s' },
   { key: 'speed', label: 'speed px/s', range: true },
   { key: 'gap', label: 'gap ms', range: true },
   { key: 'turns', label: 'turns', range: true },
@@ -252,7 +250,7 @@ if (bit) {
 
   // Trips the page launches on its own show their seed too, so one worth
   // keeping can be replayed.
-  document.querySelector('[data-bit-layer]')?.addEventListener('bit:fly', (event) => {
+  document.querySelector('[data-bit]')?.addEventListener('bit:fly', (event) => {
     showSeed(event.detail)
   })
 

@@ -1,51 +1,29 @@
 ---
 /**
  * A stray bit: every so often a filled square glides across the page behind the
- * text, turning a few times at right angles on the way, with a fading trail. It
- * is placed on the page rather than the viewport, so a scroll carries it off
- * with the text around it.
+ * text, turning a few times at right angles on the way, with a fading trail.
  *
- * The layer clips, so a bit past the right or bottom edge never widens or
- * lengthens the page, and it is zero tall between trips. Only the lead is in the
- * markup: the script adds the trail, which is the same flight played again by
- * each follower, a few ms late and dimmer. Its look and timing are
+ * It is drawn on this canvas, which the script sizes to the screen as each trip
+ * starts and pins to the page there, so a scroll carries the bit off with the
+ * text around it. It never reaches past the page, so it never widens or
+ * lengthens it, and it is hidden between trips. Its look and timing are
  * `data/bit.json`, tuned with the dev-only lab. See `scripts/bit.ts`.
  */
 ---
 
-<div data-bit-layer aria-hidden="true" class="layer">
-  <span data-bit class="bit"></span>
-</div>
+<canvas data-bit aria-hidden="true" hidden class="bit"></canvas>
 
 <style>
-  .layer {
+  .bit {
     position: absolute;
-    top: 0;
     left: 0;
-    width: 100%;
-    height: 0;
-    overflow: clip;
     /* Behind the page: the text and art paint over it, and the sticky nav, the
        one opaque surface, hides it. The black is the canvas, so it stays below. */
     z-index: var(--z-bit);
     pointer-events: none;
-  }
-  /* Size and colours come from data/bit.json, set on the layer by the script. */
-  .bit {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: var(--bit-size);
-    height: var(--bit-size);
-    background-color: var(--bit-lead);
-    visibility: hidden;
-  }
-  /* Followers are cloned from the lead, so they carry its scoping attribute. */
-  .bit.trail {
-    background-color: var(--bit-trail);
-  }
-  .layer[data-flying] .bit {
-    visibility: visible;
+    /* One canvas pixel to a CSS pixel, scaled up without blurring on a dense
+       screen: the bit is drawn in whole pixels. */
+    image-rendering: pixelated;
   }
 </style>
 

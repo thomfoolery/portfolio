@@ -17,26 +17,15 @@ import type { BitConfig } from '../lib/bit'
 const ENDPOINT = '/__bit-lab/save'
 const TARGET = 'src/data/bit.json'
 
-/** Keys in a fixed order, ranges kept on one line: the file oxfmt would write. */
+/**
+ * Ranges kept on one line: the file oxfmt would write. The keys come out in
+ * `KEYS` order, which is how `parseBitConfig` returns them.
+ */
 function serialize(config: BitConfig) {
-  const order: (keyof BitConfig)[] = [
-    'seed',
-    'size',
-    'lead',
-    'trail',
-    'followers',
-    'lag',
-    'fade',
-    'speed',
-    'gap',
-    'turns',
-    'stride',
-    'swerve',
-  ]
-  const lines = order.map((key) => {
-    const value = config[key]
-    return `  "${key}": ${Array.isArray(value) ? `[${value.join(', ')}]` : JSON.stringify(value)}`
-  })
+  const lines = Object.entries(config).map(
+    ([key, value]: [string, unknown]) =>
+      `  "${key}": ${Array.isArray(value) ? `[${value.join(', ')}]` : JSON.stringify(value)}`,
+  )
   return `{\n${lines.join(',\n')}\n}\n`
 }
 
