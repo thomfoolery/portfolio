@@ -11,14 +11,14 @@ carousel's loops, which are small enough that the build inlines them into the
 page. The spring the disclosures and lists open on is worked out at build time,
 so its solver never ships.
 
-The heavy part is the Work carousel. Each tile is a poster, made a 768px-tall
-AVIF at build time (20 to 40 KB) in the poster's own shape, so a portrait loop
-makes a narrow tile, and a silent loop that is fetched only when its tile first
-comes on screen, plays only while it is on screen, and is never fetched under
-`prefers-reduced-motion`. A tile is a button: clicking it zooms its
-video to fill the screen, two lines in from every edge, and a click anywhere,
-Esc or Tab zooms it back. The tile's own video moves into an overlay, so it keeps
-playing and nothing is fetched again; under reduced motion the zoom is instant.
+The heavy part is the Work carousel. Each tile is its poster in the page's
+green: a WebP made at build time in the poster's own shape, so a portrait loop
+makes a narrow tile, and drawn without smoothing. A tile is a button: clicking
+it zooms the poster to fill the screen, two lines in from every edge, and once it
+lands and the loop has a picture, the loop fades in over it in its own colour.
+That is the only time a loop is fetched or plays. A click anywhere, Esc or Tab
+fades it back to the poster, then zooms it back. The tile's own video moves into
+an overlay, so nothing is fetched twice; under reduced motion the zoom is instant.
 Under the carousel, `[ << ]` and `[ >> ]` step it to the neighbouring
 tile's snap, and dim at either end rather than disable, so keyboard focus stays
 put. Without scripts they are hidden, with the other buttons.
@@ -54,7 +54,7 @@ dist/index.html                 the résumé, block art, job entries collapsible
 dist/_astro/*.css               the hashed stylesheet
 dist/_astro/*.js                the reveals: the only script the page requests
 dist/_astro/*.woff2             the hashed Ioskeley Mono subsets, one per weight
-dist/_astro/*.avif, *.mp4       the Work carousel's posters and loops
+dist/_astro/*.{webp,mp4,webm}   the Work carousel's posters and loops
 ```
 
 Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.

@@ -1,52 +1,51 @@
 /**
- * The Work carousel's tiles: each plays its loop while it is on screen, and
- * enlarges when it is clicked. Under them, prev and next step the carousel to
- * the neighbouring snap, smoothly unless motion is reduced.
+ * The Work carousel's tiles: each is its poster as tinted pixels, and enlarges
+ * when it is clicked. Under them, prev and next step the carousel to the
+ * neighbouring snap, smoothly unless motion is reduced.
  *
- * A loop pauses scrolled away, in a hidden tab, or under
- * `prefers-reduced-motion`, where it never starts and the poster stands in. The
- * tiles are `preload="none"`, so a loop is only fetched the first time it plays.
+ * Only an enlarged tile plays its loop, and not in a hidden tab. The videos are
+ * `preload="none"`, so a loop is fetched the first time its tile is enlarged.
  *
- * Enlarged, the tile's own video moves into the overlay, so it keeps playing
- * and nothing is fetched again, and zooms there from the tile with a transform
- * on the page's spring. It is the one loop that plays while it is enlarged,
- * under reduced motion too, since the click asked for it; there the zoom is
- * instant. A click anywhere, Esc or Tab zooms it back to wherever its tile is by
- * then, and focus goes back to the tile.
+ * Enlarged, the tile's frame — its pixels, and its video hidden over them —
+ * moves into the overlay, so nothing is fetched twice, and zooms there from the
+ * tile with a transform on the page's spring. Once it has landed and the loop
+ * has a picture, the video fades in over the pixels in its own colour; until
+ * then the pixels stand in. A click anywhere, Esc or Tab fades it back out to
+ * the pixels, then zooms it back to wherever its tile is by then, and focus goes
+ * back to the tile. Under `prefers-reduced-motion` the zoom is instant, and the
+ * fades, which move nothing, stay. The loop plays there too, since the click
+ * asked for it.
  */
 const reduced = matchMedia('(prefers-reduced-motion: reduce)')
-const videos = document.querySelectorAll<HTMLVideoElement>('[data-work-video]')
 const overlay = document.querySelector<HTMLElement>('[data-work-zoom]')
 const backdrop = overlay?.querySelector<HTMLElement>('[data-work-backdrop]')
-/** The tiles the observer last saw on screen, the carousel's own scroll included. */
-const seen = new Set<Element>()
-/** The enlarged tile and its video, from the click until it is back. */
-let zoomed: { tile: HTMLElement; video: HTMLVideoElement; closing: boolean } | undefined
+/** The fade between the pixels and the loop, on the tint's old timing. */
+const FADE = { duration: 180, easing: 'ease', fill: 'forwards' } as const
+
+interface Zoomed {
+  tile: HTMLElement
+  frame: HTMLElement
+  video: HTMLVideoElement
+  closing: boolean
+}
+/** The enlarged tile, its frame and its video, from the click until it is back. */
+let zoomed: Zoomed | undefined
 
 const tend = () => {
-  for (const video of videos) {
-    const wanted =
-      !document.hidden && (zoomed ? video === zoomed.video : seen.has(video) && !reduced.matches)
-    if (wanted) {
-      // A play the browser refuses, or a pause that cuts it short, leaves the
-      // poster showing, which is the tile's fallback anyway.
-      video.play().catch(() => {})
-    } else {
-      video.pause()
-    }
-  }
+  if (!zoomed) return
+  // A play the browser refuses leaves the pixels showing, which is the
+  // tile's fallback anyway.
+  if (document.hidden) zoomed.video.pause()
+  else zoomed.video.play().catch(() => {})
 }
-
-const sight = new IntersectionObserver((entries) => {
-  for (const { target, isIntersecting } of entries) {
-    if (isIntersecting) seen.add(target)
-    else seen.delete(target)
-  }
-  tend()
-})
-for (const video of videos) sight.observe(video)
 document.addEventListener('visibilitychange', tend)
-reduced.addEventListener('change', tend)
+
+/** Settles once the video has a picture to show. */
+const pictured = (video: HTMLVideoElement) =>
+  new Promise<void>((resolve) => {
+    if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) resolve()
+    else video.addEventListener('loadeddata', () => resolve(), { once: true })
+  })
 
 /** The transform that puts the box `at` over the box `over`: both are one shape. */
 const onto = (over: DOMRect, at: DOMRect) =>
@@ -55,23 +54,35 @@ const onto = (over: DOMRect, at: DOMRect) =>
 if (overlay && backdrop) {
   const spring = { duration: Number(overlay.dataset.duration), easing: overlay.dataset.easing }
 
-  const open = (tile: HTMLElement, video: HTMLVideoElement) => {
+  const open = (tile: HTMLElement, frame: HTMLElement, video: HTMLVideoElement) => {
     if (zoomed) return
-    zoomed = { tile, video, closing: false }
+    const shown: Zoomed = { tile, frame, video, closing: false }
+    zoomed = shown
     const from = tile.getBoundingClientRect()
 
     overlay.setAttribute('aria-label', video.getAttribute('aria-label') ?? '')
     overlay.hidden = false
-    overlay.append(video)
+    overlay.append(frame)
     overlay.focus({ preventScroll: true })
     tend()
 
-    if (reduced.matches) return
-    video.animate(
-      [{ transform: onto(from, video.getBoundingClientRect()) }, { transform: 'none' }],
-      spring,
+    let landed: Promise<unknown> = Promise.resolve()
+    if (!reduced.matches) {
+      landed = frame.animate(
+        [{ transform: onto(from, frame.getBoundingClientRect()) }, { transform: 'none' }],
+        spring,
+      ).finished
+      backdrop.animate([{ opacity: 0 }, { opacity: 1 }], spring)
+    }
+    // A close mid-zoom cancels it, so the fade never starts; a close while the
+    // loop is still loading is `closing`.
+    Promise.all([landed, pictured(video)]).then(
+      () => {
+        if (zoomed === shown && !shown.closing)
+          video.animate([{ opacity: 0 }, { opacity: 1 }], FADE)
+      },
+      () => {},
     )
-    backdrop.animate([{ opacity: 0 }, { opacity: 1 }], spring)
   }
 
   const close = () => {
@@ -81,38 +92,57 @@ if (overlay && backdrop) {
     shown.tile.focus({ preventScroll: true })
 
     const done = () => {
-      // Back under the tint, not over it: appending would put the video last and
-      // the tile would come back gray with the green behind it.
-      const tint = shown.tile.querySelector('[data-work-tint]')
-      shown.tile.insertBefore(shown.video, tint)
+      shown.tile.append(shown.frame)
       overlay.hidden = true
-      for (const animation of [...shown.video.getAnimations(), ...backdrop.getAnimations()]) {
+      const { frame, video } = shown
+      for (const animation of [
+        ...frame.getAnimations(),
+        ...video.getAnimations(),
+        ...backdrop.getAnimations(),
+      ]) {
         animation.cancel()
       }
+      shown.video.pause()
       zoomed = undefined
-      tend()
-    }
-    if (reduced.matches) {
-      done()
-      return
     }
 
-    // From wherever an opening zoom has got to, so a quick Esc reverses it
-    // rather than jumping to full size first.
-    const transform = getComputedStyle(shown.video).transform
-    const opacity = getComputedStyle(backdrop).opacity
-    for (const animation of [...shown.video.getAnimations(), ...backdrop.getAnimations()]) {
-      animation.cancel()
-    }
-    const to = onto(shown.tile.getBoundingClientRect(), shown.video.getBoundingClientRect())
-    const settle = { ...spring, fill: 'forwards' } as const
-    backdrop.animate([{ opacity }, { opacity: 0 }], settle)
-    shown.video.animate([{ transform }, { transform: to }], settle).finished.then(done, () => {})
+    // Back to the pixels first, from wherever the fade-in has got to: nothing
+    // to fade if the loop never showed.
+    const shade = getComputedStyle(shown.video).opacity
+    for (const animation of shown.video.getAnimations()) animation.cancel()
+    const faded =
+      Number(shade) > 0
+        ? shown.video.animate([{ opacity: shade }, { opacity: 0 }], FADE).finished
+        : Promise.resolve()
+
+    faded.then(
+      () => {
+        if (reduced.matches) {
+          done()
+          return
+        }
+        // From wherever an opening zoom has got to, so a quick Esc reverses it
+        // rather than jumping to full size first.
+        const transform = getComputedStyle(shown.frame).transform
+        const opacity = getComputedStyle(backdrop).opacity
+        for (const animation of [...shown.frame.getAnimations(), ...backdrop.getAnimations()]) {
+          animation.cancel()
+        }
+        const to = onto(shown.tile.getBoundingClientRect(), shown.frame.getBoundingClientRect())
+        const settle = { ...spring, fill: 'forwards' } as const
+        backdrop.animate([{ opacity }, { opacity: 0 }], settle)
+        shown.frame
+          .animate([{ transform }, { transform: to }], settle)
+          .finished.then(done, () => {})
+      },
+      () => {},
+    )
   }
 
   for (const tile of document.querySelectorAll<HTMLElement>('[data-work-tile]')) {
-    const video = tile.querySelector('video')
-    if (video) tile.addEventListener('click', () => open(tile, video))
+    const frame = tile.querySelector<HTMLElement>('[data-work-frame]')
+    const video = frame?.querySelector('video')
+    if (frame && video) tile.addEventListener('click', () => open(tile, frame, video))
   }
   overlay.addEventListener('click', close)
   document.addEventListener('keydown', (event) => {

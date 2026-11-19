@@ -112,12 +112,13 @@ dependency decision: ask first.
   `recommendations.ts`, `posts.ts`, `work.ts`, `nav.ts`, `grid.ts`, the art. Edit
   the data, not the markup.
 - The Work carousel's media lives in `src/assets/work/`, not a public folder:
-  `data/work.ts` imports it, so the build hashes it, and the poster is resized
-  and made AVIF there (`getImage`). A loop stays `preload="none"` and plays only
-  through `scripts/work.ts`, so it costs nothing until its tile is on screen.
+  `data/work.ts` imports it, so the build hashes it, and the poster is made a
+  WebP there (`getImage`). A loop stays `preload="none"` and plays only
+  enlarged, through `scripts/work.ts`, so it costs nothing until it is clicked.
   The enlarged view is an overlay on `--z-zoom`, not a `<dialog>`: a modal is
   drawn in the top layer, over the caret, and the page hides the system pointer.
-  The tile's own video moves into it rather than a copy, which would fetch again.
+  The tile's own frame, video and all, moves into it rather than a copy, which
+  would fetch again.
 - `src/data/github.json` is a snapshot, not hand-edited: `pnpm github` rewrites
   it from GitHub's public API. The build reads the file, never the network.
 - The stray bit is tuned, not hand-edited: `src/data/bit.json` holds every

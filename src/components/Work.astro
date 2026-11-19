@@ -4,14 +4,13 @@ import { work } from '@/data/work'
 import { springCurve } from '@/lib/spring'
 import Button from '@/components/ui/Button.astro'
 
-// A tile is 15 lines tall, at most 384px (16px text), whatever its shape, so a
-// poster 768px tall covers a 2x screen. AVIF makes it about a quarter of the JPEG.
-// The tile and its enlarged video take the poster's shape, as `ratio`.
+// A tile shows its poster, made a WebP at its own size. The tile and its enlarged
+// video take the poster's shape, as `ratio`.
 const tiles = await Promise.all(
   work.map(async (item) => ({
     ...item,
     ratio: `${item.poster.width} / ${item.poster.height}`,
-    poster: (await getImage({ src: item.poster, height: 768, format: 'avif' })).src,
+    pixels: (await getImage({ src: item.poster, format: 'webp' })).src,
   })),
 )
 
@@ -40,34 +39,35 @@ const step =
       data-work-tiles
       class="flex w-full snap-x [scrollbar-color:transparent_transparent] gap-1 overflow-x-scroll px-[calc((100vw-72ch)/2)]"
     >
-      {/* A tile is a button that enlarges its video. Its poster is also its
-        background, so the tile is not left empty while the video is enlarged.
-        The focus ring is drawn inside it: the scroller clips anything outside. */}
+      {/* A tile is a button that enlarges its video. What enlarges is the
+        frame: the pixels, with the video over them, hidden until it plays. The
+        tile draws the same pixels, so it is not left empty while the frame is
+        away. The focus ring is drawn inside it: the scroller clips anything
+        outside. */}
       {tiles.map((item) => (
         <button
           type="button"
           data-work-tile
           data-work-title={item.title}
           aria-label={`Enlarge ${item.title}`}
-          style={`aspect-ratio: ${item.ratio}; background-image: url(${item.poster})`}
+          style={`aspect-ratio: ${item.ratio}; background-image: url(${item.pixels})`}
           class="relative h-15 cursor-zoom-in! snap-start scroll-ml-[calc((100vw-72ch)/2)] bg-green-100 bg-cover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-green-900"
         >
-          <video
-            data-work-video
-            src={item.video}
-            poster={item.poster}
-            aria-label={item.title}
-            style={`--ratio: ${item.ratio}`}
-            muted
-            loop
-            playsinline
-            preload="none"
-            class="block h-full w-full border border-green-100 object-cover"
-          />
-          {/* The loop's colour, taken away and given back: `color` blends the hue
-            and saturation of green-900 over the grayscale video and leaves its
-            luminance alone, so the tile is one green until you touch it. */}
-          <span data-work-tint aria-hidden="true" class="tint"></span>
+          <span
+            data-work-frame
+            style={`--ratio: ${item.ratio}; background-image: url(${item.pixels})`}
+            class="border border-green-100 bg-cover"
+          >
+            <video
+              src={item.video}
+              aria-label={item.title}
+              muted
+              loop
+              playsinline
+              preload="none"
+              class="h-full w-full object-cover"
+            />
+          </span>
         </button>
       ))}
     </div>
@@ -106,7 +106,7 @@ const step =
   {/* The enlarged video's overlay. It sits outside the carousel, whose reveal
     would fade it and whose scroller would clip it, and it is not a <dialog>:
     a modal draws over everything, the caret included, and the page hides the
-    system pointer. The script moves the tile's own video in and out of it. */}
+    system pointer. The script moves the tile's own frame in and out of it. */}
   <div
     data-work-zoom
     data-duration={duration}
@@ -122,20 +122,33 @@ const step =
 </section>
 
 <style>
-  /* A tile is a duotone: its loop and its poster are drawn in one green, and
-     stay that way under the pointer. Enlarged, the video leaves the tile and with
-     it the tint, so the overlay is the one place it shows its own colour. */
-  [data-work-tile] video {
-    filter: grayscale(1);
-    transition: filter 180ms ease;
+  /* A tile, and the frame it enlarges, is a duotone: the poster, drawn without
+     smoothing, under a tint whose `color` blend keeps the poster's luminance and
+     gives it green-900's hue and saturation. */
+  [data-work-tile],
+  [data-work-frame] {
+    image-rendering: pixelated;
   }
-  [data-work-tile] .tint {
+  [data-work-tile]::before,
+  [data-work-frame]::before {
+    content: '';
     position: absolute;
     inset: 0;
     background-color: var(--color-green-900);
     mix-blend-mode: color;
     pointer-events: none;
-    transition: opacity 180ms ease;
+  }
+  /* Over the tile's own pixels, which show only while it is away. */
+  [data-work-frame] {
+    position: absolute;
+    inset: 0;
+  }
+  /* The loop, in its own colour, over the pixels: the script fades it in once
+     the frame is enlarged and the loop has a picture, and out before it leaves. */
+  [data-work-frame] video {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
   }
   /* Over a tile the pointer is the platform's magnifier, so the page's caret
      steps aside — the same bargain the dev lab makes over its panel. */
@@ -146,14 +159,14 @@ const step =
     visibility: hidden;
   }*/
 
-  /* Enlarged, a video keeps its tile's shape and is as large as fits inside the
+  /* Enlarged, a frame keeps its tile's shape and is as large as fits inside the
      overlay's padding of two lines a side, over the backdrop. The shape is
-     `--ratio` on the video itself, since it leaves the tile. Its transform starts
+     `--ratio` on the frame itself, since it leaves the tile. Its transform starts
      from the top left, which is what the script's zoom is worked out from. */
-  .zoom video {
+  .zoom [data-work-frame] {
     position: relative;
+    inset: auto;
     width: min(100%, calc((100dvh - var(--spacing) * 4) * var(--ratio)));
-    height: auto;
     aspect-ratio: var(--ratio);
     transform-origin: 0 0;
   }
