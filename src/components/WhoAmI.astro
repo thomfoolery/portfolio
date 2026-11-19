@@ -1,100 +1,109 @@
 ---
 import Section from '@/components/Section.astro'
+import Prompt from '@/components/ui/Prompt.astro'
 import Link from '@/components/ui/Link.astro'
 ---
 
-<Section id="whoami" labelledby="whoami-title" class="mt-4 scroll-mt-1 overflow-clip">
+<Section id="whoami" labelledby="whoami-title" class="mt-12 scroll-mt-1 overflow-clip">
   <h2 id="whoami-title" class="sr-only">
     Who Am I?
   </h2>
 
-  <p class="mt-1 leading-loose">
-    <span class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all" data-reveal>
-      ---
-    </span>
-    <span class="mt-1 wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all" data-reveal>
-      Hi,
-    </span>{' '}
-    <span
-      class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="50% 20%"
-    >
-      My name is <span class="font-black text-green-900">Thomas Yuill</span>.
-    </span>
+  <Prompt>whoami</Prompt>
+
+  <p>
+    <code class="ml-1 font-black text-green-900">thomas_yuill</code>
   </p>
-  <p class="leading-loose">
-    <span
-      class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="50% 30%"
-    >
-      I am a <span class="font-black text-green-900">designer</span> and{' '}
-      <span class="font-black text-green-900">engineer</span> and I currently work at{' '}
-      <Link external href="https://livekit.com/" title="Day job!!" class="font-black">
-        LiveKit
-      </Link>
-      .
-    </span>
-  </p>
-  <p class="mt-2 leading-loose">
-    <span
-      class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="50% 35%"
-    >
-      I enjoy building dynamic, accessible,
-    </span>{' '}
-    <span
-      class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="35% 40%"
-    >
-      and aesthetic web experiences powered with
-    </span>{' '}
-    <span
-      class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="20% 45%"
-    >
-      real-time data/media.
-    </span>
-  </p>
-  <p class="mt-2 leading-loose">
-    <span
-      class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="50% 35%"
-    >
-      If I have free time, you'll find me
-    </span>
-    <span
-      class="mt-1 ml-1 block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="35% 40%"
-    >
-      * reading a great book
-    </span>
-    <span
-      class="ml-1 block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="35% 40%"
-    >
-      * organizing a new adventure
-    </span>
-    <span
-      class="ml-1 block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="35% 40%"
-    >
-      * breaking, fixing or building something
-    </span>
-    <span
-      class="ml-1 block wide:h-[1.8em] wide:overflow-clip wide:break-all"
-      data-reveal
-      data-reveal-range="20% 45%"
-    >
-      * searching for new grass to touch
-    </span>
-  </p>
+
+  <div class="mt-1 ml-1">
+    <p class="leading-loose">
+      <span class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all" data-reveal>
+        ---
+      </span>
+      <span class="mt-1 wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all" data-reveal>
+        Hi,
+      </span>{' '}
+      <span
+        class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="50% 20%"
+      >
+        My name is <span class="font-black text-green-900">Thomas Yuill</span>.
+      </span>
+    </p>
+    <p class="leading-loose">
+      <span
+        class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="50% 30%"
+      >
+        I am a <span class="font-black text-green-900">designer</span> and{' '}
+        <span class="font-black text-green-900">engineer</span> and I currently work at{' '}
+        <Link external href="https://livekit.com/" title="Day job!!" class="font-black">
+          LiveKit
+        </Link>
+        .
+      </span>
+    </p>
+    <p class="mt-2 leading-loose">
+      <span
+        class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="50% 35%"
+      >
+        I enjoy building dynamic, accessible,
+      </span>{' '}
+      <span
+        class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="35% 40%"
+      >
+        and aesthetic web experiences powered with
+      </span>{' '}
+      <span
+        class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="20% 45%"
+      >
+        real-time data/media.
+      </span>
+    </p>
+    <p class="mt-2 leading-loose">
+      <span
+        class="wide:block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="50% 35%"
+      >
+        If I have free time, you'll find me
+      </span>
+      <span
+        class="mt-1 ml-1 block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="35% 40%"
+      >
+        * reading a great book
+      </span>
+      <span
+        class="ml-1 block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="35% 40%"
+      >
+        * organizing a new adventure
+      </span>
+      <span
+        class="ml-1 block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="35% 40%"
+      >
+        * breaking, fixing or building something
+      </span>
+      <span
+        class="ml-1 block wide:h-[1.8em] wide:overflow-clip wide:break-all"
+        data-reveal
+        data-reveal-range="20% 45%"
+      >
+        * searching for new grass to touch
+      </span>
+    </p>
+  </div>
 </Section>

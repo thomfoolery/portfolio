@@ -2,7 +2,6 @@
 import Section from './Section.astro'
 import ArtHtml from '@/components/ArtHtml.astro'
 import { blockArt } from '@/data/art'
-import Prompt from '@/components/ui/Prompt.astro'
 import Table from '@/components/ui/Table.astro'
 import Td from '@/components/ui/Td.astro'
 import Tr from '@/components/ui/Tr.astro'
@@ -16,11 +15,6 @@ const years = new Date().getFullYear() - since
   <h1 class="sr-only font-bold">Thom Yuill - UX developer and design engineer</h1>
   <ArtHtml art={blockArt.header} glitch="loop" />
 
-  <Prompt arria-hidden="true">whoami</Prompt>
-
-  <p>
-    <code class="ml-1 font-black text-green-900">thomas_yuill</code>
-  </p>
   <Table class="mt-1">
     <Tr>
       <Td heading="Location">waterloo on, canada</Td>

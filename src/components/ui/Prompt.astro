@@ -12,8 +12,8 @@ const { class: className } = Astro.props
 
 <p class={className}>
   <code>
-    root@thomfoolery:~#{' '}
-    <span class="font-black text-green-900">
+    <span aria-hidden="true">root@thomfoolery:~#</span>{' '}
+    <span class="font-black text-yellow-900">
       <slot />
     </span>
   </code>

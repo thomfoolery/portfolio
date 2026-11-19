@@ -30,7 +30,6 @@ import type { SectionArtItem } from '@/data/art'
 interface Props {
   art: SectionArtItem
   fullWidth?: boolean
-  hoverReveal?: boolean
   scrollReveal?: boolean
   glitch?: boolean | 'loop'
   class?: string
@@ -40,7 +39,6 @@ const {
   art,
   fullWidth = false,
   scrollReveal = false,
-  hoverReveal = false,
   glitch = scrollReveal,
   class: className,
 } = Astro.props
@@ -53,12 +51,7 @@ const fragment = renderFragment(
 
 {/* eslint-disable astro/no-set-html-directive -- art is constant, generated from src/data/art */}
 <div
-  class:list={[
-    fullWidth && 'wide:-mx-1',
-    hoverReveal &&
-      'opacity-10 transition-opacity duration-200 hover:opacity-100 hover:duration-500 max-wide:opacity-100',
-    className,
-  ]}
+  class:list={[fullWidth && 'wide:-mx-1', className]}
   data-glitch={glitch === 'loop' ? 'loop' : glitch ? '' : undefined}
   data-reveal={scrollReveal ? 'fade' : undefined}
   data-reveal-range={scrollReveal ? '50% 20%' : undefined}
