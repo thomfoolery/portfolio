@@ -9,7 +9,7 @@ export default defineConfig({
   // A flat /index.html rather than a directory per route.
   build: { format: 'file' },
   vite: { plugins: [tailwindcss()] },
-  // Dev only: the art editor's and the bit lab's save endpoints, and the /ds
-  // page. Never run for a build.
+  // The art editor's and the bit lab's save endpoints, dev only, and the
+  // /design-system page, which is built too.
   integrations: [artEditor(), bitLab(), designSystem()],
 })

@@ -1,7 +1,7 @@
 ---
 /**
- * `/ds`, under `pnpm dev` only (`dev/design-system.ts`): the design system's
- * tokens, drawn in the page's own layout, type and caret.
+ * `/design-system` (`dev/design-system.ts`), linked from the footer: the design
+ * system's tokens, drawn in the page's own layout, type and caret.
  *
  * Every token is read from `styles/main.css` as it stands — the `@theme`
  * colours, the font stack, the sizes and leading, one weight per `@font-face` —
@@ -91,8 +91,7 @@ const ART = ['█▀▀▀▀▀▀▀▀█', '█ ░▒▓▓▒░ █', '�
     <Prompt>cd design-system</Prompt>
     <p class="mt-1 leading-loose">
       The tokens the page is drawn with, read from{' '}
-      <code class="text-green-900">src/styles/main.css</code> as it stands. Under{' '}
-      <code class="text-green-900">pnpm dev</code> only.
+      <code class="text-green-900">src/styles/main.css</code> as it stands.
     </p>
   </Section>
 

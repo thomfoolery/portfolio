@@ -36,14 +36,15 @@ put. Without scripts they are hidden, with the other buttons.
 | `pnpm preview`          | serves `dist/` on 4321                             |
 | `pnpm github`           | refreshes `src/data/github.json` from GitHub       |
 
-Under `pnpm dev`, `/ds` previews the design system: every colour token, with its
+`/design-system` previews the design system: every colour token, with its
 contrast on black, and the face, its weights, sizes and leading, all read from
-`src/styles/main.css`. It is never built.
+`src/styles/main.css`. The footer links to it.
 
-`pnpm build` is the whole build: Astro renders the page and writes `dist/index.html`
-with its hashed stylesheet. The GitHub table reads a committed snapshot,
-`src/data/github.json`, so the build never touches the network; `pnpm github`
-refreshes it, and the change is committed like any other.
+`pnpm build` is the whole build: Astro renders the résumé and `/design-system`
+and writes `dist/index.html` and `dist/design-system.html` with their hashed
+stylesheet. The GitHub table reads a committed snapshot, `src/data/github.json`,
+so the build never touches the network; `pnpm github` refreshes it, and the
+change is committed like any other.
 
 ## Deploy
 
@@ -51,6 +52,7 @@ Serve `dist/`. It is flat HTML plus its hashed assets:
 
 ```
 dist/index.html                 the résumé, block art, job entries collapsible
+dist/design-system.html         the design system's tokens, linked from the footer
 dist/_astro/*.css               the hashed stylesheet
 dist/_astro/*.js                the reveals: the only script the page requests
 dist/_astro/*.woff2             the hashed Ioskeley Mono subsets, one per weight
@@ -63,7 +65,8 @@ Nothing in `dist/` needs a server-side runtime, a rewrite rule, or a CDN.
 
 ```
 eslint.config.ts    type-aware lint; formatting is left to oxfmt
-astro.config.mjs    the build, plus the dev-only art editor, bit lab and `/ds`
+astro.config.mjs    the build and `/design-system`, plus the dev-only art editor
+                    and bit lab
 .oxfmtrc.json       single quotes, no semicolons, 100 columns, Tailwind classes sorted
 src/
   assets/work/      the Work carousel's stills and loops, as uploaded
@@ -82,8 +85,8 @@ src/
     art/            the ASCII art, as character and colour arrays
   dev/              art-editor.ts and bit-lab.ts, which write art and the bit's
                     settings back under `astro dev`; design-system.ts and
-                    .astro, the `/ds` page of tokens, under `astro dev` only;
-                    github.ts, which `pnpm github` runs to write
+                    .astro, the `/design-system` page of tokens, built with
+                    the résumé; github.ts, which `pnpm github` runs to write
                     data/github.json. Not a Tailwind source
   fonts/            the Ioskeley Mono subsets, with their OFL licence
   layouts/          Base.astro, the document shell
@@ -91,7 +94,8 @@ src/
                     ascii-table.ts (lays out a Table), html.ts (decodes the
                     entities both read), spring.ts (the page's no-bounce
                     spring, at build time), utils.ts (`cn`)
-  pages/            index.astro, the one page
+  pages/            index.astro, the résumé (`/design-system` is injected from
+                    `dev/`)
   scripts/          hotkeys.js, inlined at build time; scroll-reveal.ts,
                     disclosure.ts, show-more.ts, cursor.ts, bit.ts, glitch.ts
                     and work.ts, the modules that ship

@@ -3,6 +3,7 @@ import Section from './Section.astro'
 import ArtHtml from '@/components/ArtHtml.astro'
 import { blockArt } from '@/data/art'
 
+import Link from '@/components/ui/Link.astro'
 import Prompt from '@/components/ui/Prompt.astro'
 import Table from '@/components/ui/Table.astro'
 import Td from '@/components/ui/Td.astro'
@@ -58,6 +59,12 @@ const year = new Date().getFullYear()
       </Td>
     </Tr>
   </Table>
+
+  <p class="text-right leading-loose">
+    <Link href="/design-system" class="no-underline">
+      /design-system
+    </Link>
+  </p>
 
   <ArtHtml art={blockArt.eyes} fullWidth scrollReveal class="mt-4" />
 
